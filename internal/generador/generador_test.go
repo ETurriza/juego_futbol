@@ -180,3 +180,115 @@ func TestMinimoPorPosicionCoincideConLaPlantillaGenerada(t *testing.T) {
 		t.Error("una posicion invalida deberia tener minimo 0")
 	}
 }
+
+// mediaPorEdad promedia la valoración de n jugadores creados por f, agrupados por
+// tramos de edad.
+func mediaPorEdad(n int, f func(i int) modelo.Jugador) map[string]float64 {
+	suma, cuenta := map[string]float64{}, map[string]float64{}
+	for i := 0; i < n; i++ {
+		j := f(i)
+		var tramo string
+		switch {
+		case j.Edad <= 19:
+			tramo = "<=19"
+		case j.Edad <= 25:
+			tramo = "20-25"
+		case j.Edad <= 31:
+			tramo = "26-31"
+		case j.Edad <= 35:
+			tramo = "32-35"
+		default:
+			tramo = ">=36"
+		}
+		suma[tramo] += float64(j.Valoracion())
+		cuenta[tramo]++
+	}
+	out := map[string]float64{}
+	for t, s := range suma {
+		out[t] = s / cuenta[t]
+	}
+	return out
+}
+
+func TestLaCalidadDeLosJugadoresSigueLaCurvaDeEdad(t *testing.T) {
+	r := nuevoRand(31)
+	media := mediaPorEdad(20000, func(i int) modelo.Jugador { return Jugador(r, i, modelo.Delantero) })
+	t.Logf("valoracion media de un delantero por edad: %v", media)
+	// Los jóvenes valen mucho menos que los jugadores en su mejor momento, y los
+	// veteranos de 36 o más han caído por debajo.
+	if media["26-31"]-media["<=19"] < 12 {
+		t.Errorf("de <=19 (%.1f) a 26-31 (%.1f) deberia haber al menos 12 puntos", media["<=19"], media["26-31"])
+	}
+	if media["20-25"] <= media["<=19"] || media["26-31"] <= media["20-25"] {
+		t.Errorf("la calidad deberia crecer con la edad hasta la madurez: %v", media)
+	}
+	if media[">=36"] > media["26-31"]-4 {
+		t.Errorf("a partir de los 36 (%.1f) deberia haber una caida clara respecto de 26-31 (%.1f)", media[">=36"], media["26-31"])
+	}
+}
+
+func TestLosJuvenilesCrecenConLaEdad(t *testing.T) {
+	// Un juvenil de 19 años ha pasado tres años de crecimiento desde los 16: vale
+	// bastante mas que uno de 16, igual que lo haria cualquier jugador de la liga.
+	r := nuevoRand(32)
+	suma, cuenta := map[int]float64{}, map[int]float64{}
+	for i := 0; i < 20000; i++ {
+		j := Juvenil(r, i, modelo.Mediocampista)
+		suma[j.Edad] += float64(j.Valoracion())
+		cuenta[j.Edad]++
+	}
+	var anterior float64
+	for edad := EdadJuvenilMin; edad <= EdadJuvenilMax; edad++ {
+		if cuenta[edad] == 0 {
+			t.Fatalf("no se genero ningun juvenil de %d anos", edad)
+		}
+		media := suma[edad] / cuenta[edad]
+		t.Logf("juvenil de %d: valoracion media %.1f", edad, media)
+		if edad > EdadJuvenilMin && media < anterior+3 {
+			t.Errorf("a los %d (%.1f) deberia valer al menos 3 puntos mas que a los %d (%.1f)", edad, media, edad-1, anterior)
+		}
+		anterior = media
+	}
+}
+
+func TestUnJuvenilYUnJugadorDeLaMismaEdadSonIguales(t *testing.T) {
+	// Son el mismo proceso: la calidad de un jugador de 18 años no depende de
+	// cómo se creó.
+	r := nuevoRand(33)
+	var juv, nJuv, jug, nJug float64
+	for i := 0; nJuv < 6000 || nJug < 6000; i++ {
+		if j := Juvenil(r, i, modelo.Defensa); j.Edad == 18 {
+			juv += float64(j.Valoracion())
+			nJuv++
+		}
+		if j := Jugador(r, i, modelo.Defensa); j.Edad == 18 {
+			jug += float64(j.Valoracion())
+			nJug++
+		}
+		if i > 400000 {
+			t.Fatal("no salieron suficientes jugadores de 18 años")
+		}
+	}
+	if d := juv/nJuv - jug/nJug; d > 1.5 || d < -1.5 {
+		t.Errorf("un juvenil de 18 (%.1f) y un jugador de 18 (%.1f) deberian valer lo mismo", juv/nJuv, jug/nJug)
+	}
+}
+
+func TestLasEdadesIniciales(t *testing.T) {
+	r := nuevoRand(34)
+	minC, maxC, minP, maxP := 99, 0, 99, 0
+	for i := 0; i < 5000; i++ {
+		for _, p := range modelo.Posiciones {
+			j := Jugador(r, i, p)
+			if p == modelo.Portero {
+				minP, maxP = min(minP, j.Edad), max(maxP, j.Edad)
+			} else {
+				minC, maxC = min(minC, j.Edad), max(maxC, j.Edad)
+			}
+		}
+	}
+	// Los jugadores de campo, de 17 a 36; los porteros juegan tres años más.
+	if minC != 17 || maxC != 36 || minP != 17 || maxP != 39 {
+		t.Errorf("edades de campo %d-%d y de porteros %d-%d; se esperaban 17-36 y 17-39", minC, maxC, minP, maxP)
+	}
+}

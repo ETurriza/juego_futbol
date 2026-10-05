@@ -18,6 +18,14 @@ const (
 	ruidoAtributo = 1.5
 	ruidoForma    = 1.5
 
+	// Rendimientos decrecientes: cuanto más cerca del tope está un atributo, menos
+	// crece. Con valor <= techoAtributo-amplitudTecho crece al ritmo normal; al
+	// llegar a techoAtributo, solo factorMinimo de lo normal. Solo afecta al
+	// crecimiento: la caída por edad no se frena.
+	techoAtributo = 92.0
+	amplitudTecho = 25.0
+	factorMinimo  = 0.10
+
 	// "Último prime": entre estas edades, cada año hay una probabilidad de un
 	// gran año que suma un bono a los atributos técnicos.
 	granAnoDesde = 31
@@ -119,6 +127,9 @@ func Envejecer(r *rand.Rand, j modelo.Jugador) modelo.Jugador {
 	forma := r.NormFloat64() * ruidoForma
 
 	mover := func(valor int, cambio float64) int {
+		if cambio > 0 {
+			cambio *= factorCrecimiento(valor)
+		}
 		v := float64(valor) + cambio + forma + r.NormFloat64()*ruidoAtributo
 		return min(max(int(math.Round(v)), modelo.AtributoMin), modelo.AtributoMax)
 	}
@@ -140,4 +151,10 @@ func Envejecer(r *rand.Rand, j modelo.Jugador) modelo.Jugador {
 		j.Atributos.Reflejos = mover(a.Reflejos, tecnico)
 	}
 	return j
+}
+
+// factorCrecimiento es la fracción del crecimiento normal que conserva un
+// atributo con el valor dado: 1 lejos del tope y factorMinimo cerca de él.
+func factorCrecimiento(valor int) float64 {
+	return math.Min(math.Max((techoAtributo-float64(valor))/amplitudTecho, factorMinimo), 1)
 }

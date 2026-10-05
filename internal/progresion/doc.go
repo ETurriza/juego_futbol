@@ -6,5 +6,8 @@
 // una meseta larga, con un posible "último prime" pasados los 30, y el declive
 // llega rápido después de los 34. Los porteros envejecen unos años más tarde.
 //
+// El crecimiento tiene rendimientos decrecientes cerca del tope de los atributos
+// (la caída por edad, no), de modo que los atributos no se apilan en 99.
+//
 // Toda la aleatoriedad se recibe como *rand.Rand. Solo depende de modelo.
 package progresion

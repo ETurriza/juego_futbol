@@ -21,7 +21,7 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 ## Dependencias entre paquetes
 
 - `internal/modelo` no importa ningún otro paquete del proyecto.
-- `generador` y `progresion` solo dependen de `modelo`.
+- `progresion` solo depende de `modelo`; `generador`, de `modelo` y `progresion`.
 - `simulacion`, `liga` y `mercado` solo dependen de `modelo` y entre sí; nunca
   de `aplicacion`, `menus`, `persistencia` o `red`.
 - `aplicacion` depende de `modelo` y de los servicios de dominio. Define los
@@ -61,6 +61,13 @@ tienen sus constantes con nombre al inicio del archivo. Sus pruebas imprimen con
 `go test -v` las tablas y porcentajes medidos, para juzgar la calibración a
 simple vista, y comprueban rangos realistas. Cambiar una constante exige
 revisar esas pruebas.
+
+Una media global estable no basta: la liga se calibra por posición y por edad
+(`aplicacion/calibracion_test.go`): dispersión, porcentaje de estrellas,
+atributos en el tope, y que la liga inicial se parezca a la de muchas
+temporadas después. Los jugadores iniciales y los juveniles se crean con la
+propia progresión (`generador` usa `progresion`), nunca con una distribución
+aparte.
 
 ## Aleatoriedad
 

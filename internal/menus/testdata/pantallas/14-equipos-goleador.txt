@@ -1,15 +1,15 @@
 EQUIPOS · Temporada 4 · Jornada 11 / 18
 
    #  Equipo                    PJ  GF  GC Imb SM  Am Ro  Goleador
->  1  Deportivo Valmora         11  17   9   5  3  19  1  Anselmo Fuentalba (3)
-   2  Academia Castelmar        11  18   7   6  4  16  0  Nolven Quintaleo (4)
-   3  Academia Altamira del Sur 11  20   8   5  2  27  0  Rodvan Calderan (4)
-   4  Estrella Olivarejo        11  15  13   3  1  15  1  Pelayo Hontoria (3)
-   5  Estrella Salinera         11  11  11   6  2  22  2  Pelayo Abrelda (6)
-   6  Deportivo Embalse Nuevo   11   7  13   3  6  17  2  Baltor Sandoral (2)
-   7  Club Brisanda             11  14  17   2  2  18  1  Galdo Dunavar (3)
-   8  Academia Lomaverde        11   9  15   3  5  18  1  Hilaro Valmeron (5)
-   9  Academia Riobravo         11  10  18   1  5  19  2  Wenceo Landrosa (3)
-  10  Unión Olivarejo           11   9  19   2  6  25  2  Xandro Valmeron (3)
+>  1  Juventud Altamira del Sur 11  20   8   5  2  22  0  Lisandor Illanes (4)
+   2  Unión Fontalva            11  15  13   4  1  27  2  Tavio Orbaneja (4)
+   3  Deportivo Hondaluz        11  15   9   5  3  19  1  Dorvan Landrosa (5)
+*  4  Estrella Altamira del Sur 11  13  10   3  4  18  0  Lorvin Dunavar (4)
+   5  Estrella Salinera         11  10  11   5  3  21  2  Lorvin Lacerna (3)
+   6  Unión Altamira del Sur    11  12  13   4  3  12  0  Kaelo Zaldumar (3)
+   7  Club Brisanda             11  15  17   1  3  19  0  Lorvin Duelmo (3)
+   8  Academia Salinera         11   5   7   6  6  22  2  Galdo Montecal (2)
+   9  Juventud Riobravo         11  11  17   1  4  18  2  Joldan Landrosa (2)
+  10  Deportivo Nuevaluna       11   7  18   1  6  24  3  Nervio Bocanegro (2)
 
 ↑/↓ mover · enter plantilla · tab goleador/asistente · * tu club · esc volver

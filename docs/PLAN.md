@@ -205,14 +205,35 @@ nuevo calendario y tabla a cero, en el mismo club. Se entrega en dos PR:
     suya, y la evolución de las plantillas usa otra semilla derivada.
   - `Guardado` v2 y migración 2 de la base de datos (las partidas existentes
     quedan en la temporada 1).
-  - Se verificó con pruebas que la liga es estable a largo plazo: promediando
-    12 semillas, la valoración media va de 70,8 a 71,1 en 40 temporadas y la
-    edad media se queda en 27.
+  - La estabilidad de la liga a largo plazo se midió primero solo con la media
+    global, y eso resultó insuficiente: ver la calibración, más abajo.
 - **6b, menús:** opción "Siguiente temporada" al terminar; pantalla de inicio de
   temporada con las bajas y altas del club y la valoración antes y después;
   pantalla de historial (también en el menú principal, con scroll); número de
   temporada en los encabezados; y confirmación al elegir "Nueva carrera", que
   pierde la carrera actual. E2E de varias temporadas seguidas con el teclado.
+
+- **Calibración por posición y por edad (PR aparte):** al revisar la ficha de un
+  portero de 20 años con valoración 87 se vio que la media global estable
+  ocultaba dos defectos: una inflación (el 40 % de los porteros con valoración
+  >= 85) y una dispersión que crecía. Las causas y su corrección:
+  - La liga inicial no seguía la curva de la progresión (jugadores de 17 años con
+    la calidad de uno de 30, que luego crecían +30): ahora un jugador inicial se
+    crea como juvenil de 16 años y envejece con la propia progresión.
+  - Los juveniles de 17 a 19 años entraban sin los años de crecimiento previos,
+    lo que bajaba cada tramo de edad unos 4 puntos con las temporadas: ahora
+    crecen desde los 16 como todos.
+  - El crecimiento no tenía techo y los atributos se apilaban en 99: ahora hay
+    rendimientos decrecientes cerca del tope (el crecimiento se frena, la caída
+    por edad no).
+  - La valoración del portero dependía en un 60 % de los reflejos: ahora 50 %, y
+    su ventaja en reflejos baja de +25 a +16.
+  - Los porteros se generan con edades de 17 a 39 (juegan tres años más).
+  Resultado, medido con 30 ligas: la liga de la temporada 20 se parece a la
+  inicial por posición (campo 70,5 y porteros 72,7 de media; élite >= 85 de
+  ~4 % y ~10 %; dispersión de 9,5 y 11), y cada tramo de edad vale lo mismo en
+  la temporada 1 que en la 20. Las pruebas de `aplicacion/calibracion_test.go`
+  miden por posición y por edad, no solo la media.
 
 *Terminado cuando*: se juegan varias temporadas seguidas desde la terminal, el
 historial es correcto y la carrera guardada se reanuda de forma idéntica.
