@@ -55,4 +55,11 @@ con el paquete en su fase. No repetir ahí las reglas de este archivo.
 ## Git
 
 - Nunca trabajar en `main`.
-- Nunca hacer commit, push ni merge. De git se encarga el usuario.
+- Se pueden hacer commits y crear ramas, pero antes de cada commit se entrega
+  al usuario un resumen detallado de lo que se va a hacer (rama, archivos
+  incluidos, mensaje).
+- Se pueden abrir PR con `gh`, también previo resumen detallado al usuario
+  (rama origen y destino, título, descripción). Para eso se permite hacer push
+  de la rama de trabajo, y solo de ella.
+- Nunca hacer push a `main` ni a `dev`, y nunca hacer merge. De eso se encarga
+  el usuario.
