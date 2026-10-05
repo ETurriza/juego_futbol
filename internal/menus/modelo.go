@@ -14,12 +14,17 @@ const (
 	pantallaTabla
 	pantallaJornada
 	pantallaFin
+	pantallaInicioTemporada
+	pantallaHistorial
+	pantallaConfirmar
 )
 
 // Opciones de cada menú, en orden.
 var (
-	opcionesMenu = []string{"Avanzar jornada", "Tabla de posiciones", "Plantilla", "Salir"}
-	opcionesFin  = []string{"Nueva carrera", "Ver tabla final", "Salir"}
+	opcionesMenu = []string{"Avanzar jornada", "Tabla de posiciones", "Plantilla", "Historial", "Salir"}
+	opcionesFin  = []string{"Siguiente temporada", "Ver tabla final", "Historial", "Nueva carrera", "Salir"}
+	// Confirmación de "Nueva carrera": la opción segura va primero.
+	opcionesConfirmar = []string{"No, volver", "Sí, empezar de cero"}
 )
 
 // NuevaCarreraFunc crea una carrera nueva; el menú de fin de temporada la usa
@@ -37,6 +42,9 @@ type Modelo struct {
 	scroll      int
 	ancho, alto int
 	aviso       string
+	// cambios y valoracionAntes alimentan la pantalla de inicio de temporada.
+	cambios         aplicacion.CambiosTemporada
+	valoracionAntes int
 }
 
 // Nuevo crea el modelo para una carrera ya iniciada. nueva se invoca al elegir
@@ -73,9 +81,9 @@ func (m Modelo) tecla(k string) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 	switch m.pantalla {
-	case pantallaMenu, pantallaFin:
+	case pantallaMenu, pantallaFin, pantallaConfirmar:
 		return m.teclaMenu(k)
-	case pantallaPlantilla, pantallaTabla:
+	case pantallaPlantilla, pantallaTabla, pantallaHistorial:
 		return m.teclaLista(k), nil
 	case pantallaJornada:
 		if k == "enter" {
@@ -86,13 +94,21 @@ func (m Modelo) tecla(k string) (tea.Model, tea.Cmd) {
 				m.pantalla = pantallaMenu
 			}
 		}
+	case pantallaInicioTemporada:
+		if k == "enter" {
+			m.cursor, m.aviso = 0, ""
+			m.pantalla = pantallaMenu
+		}
 	}
 	return m, nil
 }
 
 func (m Modelo) opciones() []string {
-	if m.pantalla == pantallaFin {
+	switch m.pantalla {
+	case pantallaFin:
 		return opcionesFin
+	case pantallaConfirmar:
+		return opcionesConfirmar
 	}
 	return opcionesMenu
 }
@@ -105,10 +121,20 @@ func (m Modelo) teclaMenu(k string) (tea.Model, tea.Cmd) {
 	case "down", "j":
 		m.cursor = min(m.cursor+1, n-1)
 	case "q":
-		return m, tea.Quit
+		// En la confirmación una tecla suelta no debe cerrar el juego.
+		if m.pantalla != pantallaConfirmar {
+			return m, tea.Quit
+		}
+	case "esc":
+		if m.pantalla == pantallaConfirmar {
+			return m.cancelarNueva(), nil
+		}
 	case "enter":
-		if m.pantalla == pantallaFin {
+		switch m.pantalla {
+		case pantallaFin:
 			return m.elegirFin()
+		case pantallaConfirmar:
+			return m.elegirConfirmar()
 		}
 		return m.elegirMenu()
 	}
@@ -129,6 +155,8 @@ func (m Modelo) elegirMenu() (tea.Model, tea.Cmd) {
 	case 2:
 		m.abrirLista(pantallaPlantilla)
 	case 3:
+		m.abrirLista(pantallaHistorial)
+	case 4:
 		return m, tea.Quit
 	}
 	return m, nil
@@ -137,18 +165,44 @@ func (m Modelo) elegirMenu() (tea.Model, tea.Cmd) {
 func (m Modelo) elegirFin() (tea.Model, tea.Cmd) {
 	m.aviso = ""
 	switch m.cursor {
-	case 0: // Nueva carrera
-		carrera, err := m.nueva()
+	case 0: // Siguiente temporada
+		antes := m.carrera.ValoracionEquipo()
+		cambios, err := m.carrera.SiguienteTemporada()
 		if err != nil {
 			m.aviso = err.Error()
 			return m, nil
 		}
-		m.carrera, m.pantalla, m.cursor = carrera, pantallaMenu, 0
+		m.cambios, m.valoracionAntes = cambios, antes
+		m.pantalla, m.cursor = pantallaInicioTemporada, 0
 	case 1:
 		m.abrirLista(pantallaTabla)
 	case 2:
+		m.abrirLista(pantallaHistorial)
+	case 3: // Nueva carrera: pide confirmación
+		m.pantalla, m.cursor = pantallaConfirmar, 0
+	case 4:
 		return m, tea.Quit
 	}
+	return m, nil
+}
+
+// cancelarNueva vuelve de la confirmación al fin de temporada, sobre la opción
+// "Nueva carrera".
+func (m Modelo) cancelarNueva() Modelo {
+	m.pantalla, m.cursor = pantallaFin, 3
+	return m
+}
+
+func (m Modelo) elegirConfirmar() (tea.Model, tea.Cmd) {
+	if m.cursor == 0 {
+		return m.cancelarNueva(), nil
+	}
+	carrera, err := m.nueva()
+	if err != nil {
+		m.aviso = err.Error()
+		return m.cancelarNueva(), nil
+	}
+	m.carrera, m.pantalla, m.cursor = carrera, pantallaMenu, 0
 	return m, nil
 }
 
@@ -185,8 +239,11 @@ func (m Modelo) teclaLista(k string) Modelo {
 const lineasFijas = 5
 
 func (m Modelo) totalFilas() int {
-	if m.pantalla == pantallaPlantilla {
+	switch m.pantalla {
+	case pantallaPlantilla:
 		return len(m.carrera.Plantilla())
+	case pantallaHistorial:
+		return len(m.carrera.Historial)
 	}
 	return len(m.carrera.Tabla())
 }

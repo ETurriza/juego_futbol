@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -108,7 +109,7 @@ func TestTemporadaCompletaConTeclado(t *testing.T) {
 		t.Fatalf("la temporada deberia estar terminada: jornada %d", carrera.Jornada())
 	}
 	campeon, _ := carrera.Campeon()
-	for _, f := range []string{"TEMPORADA TERMINADA", "Campeón: " + campeon, "Tu equipo: " + carrera.NombreEquipo()} {
+	for _, f := range []string{"TEMPORADA 1 TERMINADA", "Campeón: " + campeon, "Tu equipo: " + carrera.NombreEquipo()} {
 		if !strings.Contains(pantalla(modelo), f) {
 			t.Errorf("la pantalla final deberia contener %q:\n%s", f, pantalla(modelo))
 		}
@@ -144,24 +145,84 @@ func TestSalirConQEnElMenu(t *testing.T) {
 	}
 }
 
-func TestNuevaCarreraAlTerminar(t *testing.T) {
+// temporadaCompleta son las teclas que juegan una temporada entera: avanzar
+// jornada y continuar, 18 veces.
+func temporadaCompleta() []string {
 	var teclas []string
 	for i := 0; i < 18; i++ {
 		teclas = append(teclas, enter, enter)
 	}
-	teclas = append(teclas, enter) // "Nueva carrera"
-	teclas = append(teclas, "q")   // salir desde el menú de la carrera nueva
+	return teclas
+}
+
+func TestNuevaCarreraAlTerminar(t *testing.T) {
+	teclas := temporadaCompleta()
+	// Nueva carrera es la cuarta opción del fin de temporada y pide
+	// confirmación: se baja a "Sí, empezar de cero".
+	teclas = append(teclas, abajo, abajo, abajo, enter, abajo, enter)
+	teclas = append(teclas, "q") // salir desde el menú de la carrera nueva
 
 	modelo, _ := jugar(t, 1, teclas...)
 	carrera := modelo.Carrera()
-	if carrera.Jornada() != 0 || carrera.Terminada() {
-		t.Fatalf("deberia haber una carrera nueva: jornada %d", carrera.Jornada())
-	}
-	anterior, _ := aplicacion.NuevaCarrera(1, equipos)
-	if carrera.NombreEquipo() == anterior.NombreEquipo() && carrera.Semilla == anterior.Semilla {
-		t.Error("la carrera nueva deberia usar otra semilla")
+	if carrera.Jornada() != 0 || carrera.Terminada() || carrera.Numero != 1 {
+		t.Fatalf("deberia haber una carrera nueva: jornada %d, temporada %d", carrera.Jornada(), carrera.Numero)
 	}
 	if carrera.Semilla != 2 {
 		t.Errorf("Semilla = %d, se esperaba 2", carrera.Semilla)
+	}
+}
+
+func TestNuevaCarreraCanceladaConservaLaActual(t *testing.T) {
+	teclas := temporadaCompleta()
+	teclas = append(teclas, abajo, abajo, abajo, enter) // pide confirmación
+	teclas = append(teclas, enter)                      // "No, volver"
+	teclas = append(teclas, "q")
+
+	modelo, _ := jugar(t, 1, teclas...)
+	carrera := modelo.Carrera()
+	if carrera.Semilla != 1 || !carrera.Terminada() {
+		t.Errorf("la carrera original deberia seguir: semilla %d, terminada %v", carrera.Semilla, carrera.Terminada())
+	}
+	if !strings.Contains(pantalla(modelo), "TEMPORADA 1 TERMINADA") {
+		t.Errorf("deberia volver al fin de temporada:\n%s", pantalla(modelo))
+	}
+}
+
+func TestVariasTemporadasSeguidasConTeclado(t *testing.T) {
+	var teclas []string
+	for i := 0; i < 2; i++ {
+		teclas = append(teclas, temporadaCompleta()...)
+		teclas = append(teclas, enter, enter) // siguiente temporada y continuar
+	}
+	teclas = append(teclas, temporadaCompleta()...) // tercera temporada
+	teclas = append(teclas, abajo, abajo, enter)    // historial
+	teclas = append(teclas, retroceso)              // volver al fin
+	teclas = append(teclas, "q")
+
+	modelo, _ := jugar(t, 1, teclas...)
+	carrera := modelo.Carrera()
+	if carrera.Numero != 3 || len(carrera.Historial) != 2 || !carrera.Terminada() {
+		t.Fatalf("temporada %d, historial %d, terminada %v", carrera.Numero, len(carrera.Historial), carrera.Terminada())
+	}
+	for i, h := range carrera.Historial {
+		if h.Numero != i+1 || h.Campeon == "" {
+			t.Errorf("resumen %d incorrecto: %+v", i+1, h)
+		}
+	}
+	for _, f := range []string{"TEMPORADA 3 TERMINADA", "> Historial"} {
+		if !strings.Contains(pantalla(modelo), f) {
+			t.Errorf("la pantalla final deberia contener %q:\n%s", f, pantalla(modelo))
+		}
+	}
+}
+
+func TestLaCarreraDeVariasTemporadasEsReproducible(t *testing.T) {
+	teclas := append(temporadaCompleta(), enter, enter) // temporada 1 y siguiente
+	teclas = append(teclas, temporadaCompleta()...)
+	teclas = append(teclas, "q")
+	a, _ := jugar(t, 9, teclas...)
+	b, _ := jugar(t, 9, teclas...)
+	if !reflect.DeepEqual(a.Carrera(), b.Carrera()) {
+		t.Error("las mismas teclas con la misma semilla deberian dar la misma carrera")
 	}
 }

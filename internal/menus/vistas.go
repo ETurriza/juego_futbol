@@ -6,6 +6,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	"github.com/ETurriza/juego_futbol/internal/modelo"
 )
 
 var (
@@ -28,6 +30,12 @@ func (m Modelo) View() tea.View {
 		cuerpo = m.vistaJornada()
 	case pantallaFin:
 		cuerpo = m.vistaFin()
+	case pantallaInicioTemporada:
+		cuerpo = m.vistaInicioTemporada()
+	case pantallaHistorial:
+		cuerpo = m.vistaHistorial()
+	case pantallaConfirmar:
+		cuerpo = m.vistaConfirmar()
 	default:
 		cuerpo = m.vistaMenu()
 	}
@@ -49,7 +57,7 @@ func fila(texto string, delUsuario bool) string {
 
 func (m Modelo) cabeceraEquipo() string {
 	c := m.carrera
-	return fmt.Sprintf("%s    Jornada %d / %d", c.NombreEquipo(), c.Jornada(), c.TotalJornadas())
+	return fmt.Sprintf("%s    Temporada %d · Jornada %d / %d", c.NombreEquipo(), c.Numero, c.Jornada(), c.TotalJornadas())
 }
 
 func (m Modelo) listaOpciones() string {
@@ -99,7 +107,7 @@ func (m Modelo) vistaPlantilla() string {
 func (m Modelo) vistaTabla() string {
 	var b strings.Builder
 	c := m.carrera
-	b.WriteString(estiloTitulo.Render(fmt.Sprintf("TABLA · Jornada %d / %d", c.Jornada(), c.TotalJornadas())) + "\n\n")
+	b.WriteString(estiloTitulo.Render(fmt.Sprintf("TABLA · Temporada %d · Jornada %d / %d", c.Numero, c.Jornada(), c.TotalJornadas())) + "\n\n")
 	fmt.Fprintf(&b, "  %3s  %-26s %3s %3s %3s %3s %4s %4s %4s %4s\n",
 		"#", "Equipo", "PJ", "G", "E", "P", "GF", "GC", "DG", "Pts")
 
@@ -126,7 +134,7 @@ func (m Modelo) ayudaLista(desde, hasta, total int) string {
 func (m Modelo) vistaJornada() string {
 	c := m.carrera
 	var b strings.Builder
-	b.WriteString(estiloTitulo.Render(fmt.Sprintf("JORNADA %d / %d", c.Jornada(), c.TotalJornadas())) + "\n\n")
+	b.WriteString(estiloTitulo.Render(fmt.Sprintf("JORNADA %d / %d · Temporada %d", c.Jornada(), c.TotalJornadas(), c.Numero)) + "\n\n")
 
 	juegaUsuario := false
 	for _, r := range c.UltimaJornada() {
@@ -144,7 +152,7 @@ func (m Modelo) vistaJornada() string {
 func (m Modelo) vistaFin() string {
 	c := m.carrera
 	var b strings.Builder
-	b.WriteString(estiloTitulo.Render("TEMPORADA TERMINADA") + "\n\n")
+	b.WriteString(estiloTitulo.Render(fmt.Sprintf("TEMPORADA %d TERMINADA", c.Numero)) + "\n\n")
 
 	campeon, _ := c.Campeon()
 	fmt.Fprintf(&b, "Campeón: %s\n", campeon)
@@ -164,5 +172,71 @@ func (m Modelo) vistaFin() string {
 		b.WriteString("\n" + estiloAviso.Render(m.aviso) + "\n")
 	}
 	b.WriteString("\n" + ayuda("↑/↓ mover · enter elegir · q salir"))
+	return b.String()
+}
+
+func (m Modelo) vistaInicioTemporada() string {
+	c := m.carrera
+	var b strings.Builder
+	b.WriteString(estiloTitulo.Render(fmt.Sprintf("TEMPORADA %d · %s", c.Numero, c.NombreEquipo())) + "\n\n")
+	fmt.Fprintf(&b, "Valoración del equipo: %d → %d\n\n", m.valoracionAntes, c.ValoracionEquipo())
+
+	if len(m.cambios.Retirados) == 0 {
+		b.WriteString("Nadie se retira este año.\n")
+	} else {
+		fmt.Fprintf(&b, "Se retiran (%d)\n", len(m.cambios.Retirados))
+		for _, j := range m.cambios.Retirados {
+			b.WriteString(filaJugador(j) + "\n")
+		}
+	}
+	b.WriteString("\n")
+	if len(m.cambios.Juveniles) == 0 {
+		b.WriteString("No llega nadie de la cantera.\n")
+	} else {
+		fmt.Fprintf(&b, "Llegan de la cantera (%d)\n", len(m.cambios.Juveniles))
+		for _, j := range m.cambios.Juveniles {
+			b.WriteString(filaJugador(j) + "\n")
+		}
+	}
+	fmt.Fprintf(&b, "\nEn toda la liga: %d retiros y %d juveniles.\n", m.cambios.RetiradosLiga, m.cambios.JuvenilesLiga)
+	b.WriteString("\n" + ayuda("enter continuar"))
+	return b.String()
+}
+
+func filaJugador(j modelo.Jugador) string {
+	return fmt.Sprintf("  %-22s %-14s %2d años   Val %d", j.Nombre, j.Posicion, j.Edad, j.Valoracion())
+}
+
+func (m Modelo) vistaHistorial() string {
+	c := m.carrera
+	var b strings.Builder
+	b.WriteString(estiloTitulo.Render("HISTORIAL · "+c.NombreEquipo()) + "\n\n")
+	if len(c.Historial) == 0 {
+		b.WriteString("Todavía no has terminado ninguna temporada.\n\n")
+		b.WriteString(ayuda("esc volver"))
+		return b.String()
+	}
+	fmt.Fprintf(&b, "  %4s  %-26s %10s %5s\n", "Temp", "Campeón", "Tu puesto", "Pts")
+
+	equipos := len(c.Temporada.Equipos)
+	desde := m.limitarScroll(m.scroll)
+	hasta := min(desde+m.filasVisibles(), len(c.Historial))
+	for _, h := range c.Historial[desde:hasta] {
+		puesto := fmt.Sprintf("%d de %d", h.PuestoUsuario, equipos)
+		b.WriteString(fila(fmt.Sprintf("%4d  %-26s %10s %5d",
+			h.Numero, h.Campeon, puesto, h.PuntosUsuario), h.PuestoUsuario == 1) + "\n")
+	}
+	b.WriteString("\n" + ayuda(m.ayudaLista(desde, hasta, len(c.Historial))))
+	return b.String()
+}
+
+func (m Modelo) vistaConfirmar() string {
+	c := m.carrera
+	var b strings.Builder
+	b.WriteString(estiloTitulo.Render("NUEVA CARRERA") + "\n\n")
+	fmt.Fprintf(&b, "Esto empieza una carrera nueva y pierdes la actual\n(Temporada %d con %s). Aún no hay guardado automático.\n¿Seguro?\n\n",
+		c.Numero, c.NombreEquipo())
+	b.WriteString(m.listaOpciones())
+	b.WriteString("\n" + ayuda("↑/↓ mover · enter elegir · esc volver"))
 	return b.String()
 }

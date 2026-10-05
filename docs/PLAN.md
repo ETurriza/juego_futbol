@@ -134,7 +134,7 @@ lista antes de conectar la interfaz con el guardado.
 | 3    | Liga                                        | hecha     | 3         |
 | 4    | Menús locales con Bubble Tea                | hecha     | 4         |
 | 5    | Guardado: backend con SQLite                | hecha     | 5a        |
-| 6    | Temporadas continuas (6a dominio, 6b menús) | en curso  | (nueva)   |
+| 6    | Temporadas continuas                        | hecha     | (nueva)   |
 | 7    | Guardado en la interfaz                     | pendiente | 5b        |
 | 8    | Partido rápido                              | pendiente | (nueva)   |
 | 9    | Estadísticas individuales y alineación      | pendiente | (nueva)   |
@@ -204,9 +204,11 @@ nuevo calendario y tabla a cero, en el mismo club. Se entrega en dos PR:
   - Se verificó con pruebas que la liga es estable a largo plazo: promediando
     12 semillas, la valoración media va de 70,8 a 71,1 en 40 temporadas y la
     edad media se queda en 27.
-- **6b, menús:** "Siguiente temporada" en el fin de temporada, pantalla de
-  inicio de temporada con bajas y altas del club, historial, número de
-  temporada en el encabezado y E2E de varias temporadas seguidas.
+- **6b, menús:** opción "Siguiente temporada" al terminar; pantalla de inicio de
+  temporada con las bajas y altas del club y la valoración antes y después;
+  pantalla de historial (también en el menú principal, con scroll); número de
+  temporada en los encabezados; y confirmación al elegir "Nueva carrera", que
+  pierde la carrera actual. E2E de varias temporadas seguidas con el teclado.
 
 *Terminado cuando*: se juegan varias temporadas seguidas desde la terminal, el
 historial es correcto y la carrera guardada se reanuda de forma idéntica.
@@ -228,15 +230,27 @@ ofrecerá también "jugar" el partido.
 *Terminado cuando*: se simula un partido rápido desde el menú, con pruebas.
 
 ### 9. Estadísticas individuales y alineación
-Base común de los dos modos.
-- La simulación atribuye cada gol y asistencia a jugadores concretos y registra
-  minutos y valoración por partido.
-- Alineación elegible: formación y once titulares, que la simulación usa (hoy
-  elige sola un 4-3-3).
-- Estadísticas acumuladas por jugador y por temporada, y tabla de goleadores.
-- `Guardado` v3 y nueva migración.
+Base común de los dos modos. Hoy la simulación solo devuelve un marcador; esta
+fase hace que genere los sucesos de cada partido. Se entregaría en tres PR:
+
+- **9a, sucesos y estadísticas (dominio):** la simulación atribuye goles y
+  asistencias a jugadores concretos, reparte tarjetas amarillas y rojas y
+  registra minutos, titularidades y valoración del partido. Con eso se
+  acumulan, por jugador y por equipo y por temporada (y en la carrera):
+  - jugador: partidos, titularidades, minutos, goles, asistencias, amarillas,
+    rojas, valoración media y, en porteros y defensas, porterías imbatidas;
+  - equipo: partidos, ganados/empatados/perdidos, goles a favor y en contra,
+    porterías imbatidas, partidos sin marcar, tarjetas, goleador y máximo
+    asistente;
+  - clasificaciones: goleadores, asistentes, tarjetas, porteros menos goleados.
+  Con un once automático (el mejor por posición); los suplentes no acumulan
+  minutos hasta que haya sustituciones. `Guardado` v3 y nueva migración.
+- **9b, pantallas:** estadísticas de jugadores y de equipos en `menus`.
+- **9c, alineación elegible:** formación y once titulares, que la simulación
+  usa (hoy elige sola un 4-3-3); sustituciones.
 *Terminado cuando*: se puede cambiar la alineación, cambia el rendimiento del
-equipo y las estadísticas individuales se acumulan y se guardan.
+equipo y las estadísticas individuales y de equipos se acumulan, se ven y se
+guardan.
 
 ### 10. Mercado de fichajes
 Paquete `mercado`: compra, venta y valoración de jugadores, con presupuesto.
