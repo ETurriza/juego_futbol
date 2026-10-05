@@ -1,0 +1,27 @@
+ACADEMIA CASTELMAR · estadísticas
+
+  Posición      Jugador                 PJ Tit   Min   G   A  Am  Ro Imb  Val
+> Portero       Yeraldo Yrigaldo        11  11   990   0   0   0   0   6  6.2
+  Portero       Tavio Garmendo           0   0     0   0   0   0   0   0    -
+  Defensa       Tavio Duelmo            11  11   967   0   2   1   0   6  6.3
+  Defensa       Cedrio Quintaleo        11  11   874   0   0   0   0   6  6.3
+  Defensa       Ivaro Korvena           11  11   814   0   1   3   0   5  6.2
+  Defensa       Isidoro Jurado          11  11   911   2   1   0   0   6  6.5
+  Defensa       Hemiro Valmeron          5   0   102   0   0   0   0   0  6.0
+  Defensa       Daveo Irueta             7   0   122   0   0   0   0   0  6.0
+  Defensa       Eskardo Estoral          7   0   204   0   0   1   0   0  6.0
+  Mediocampista Hilaro Gallardel        11  11   779   1   0   2   0   0  6.1
+  Mediocampista Ivaro Aguirel           11  11   912   3   3   4   0   0  6.4
+  Mediocampista Nolven Quintaleo        11  11   951   4   3   2   0   0  6.6
+  Mediocampista Belron Escalona          5   0    87   0   0   0   0   0  6.0
+  Mediocampista Kaelo Lacerna            3   0    87   0   0   0   0   0  6.1
+  Mediocampista Pelayo Landrosa          6   0   153   0   0   2   0   0  5.9
+  Mediocampista Mendo Herbasco           2   0    34   0   0   0   0   0  6.0
+  Delantero     Cedrio Illanes          11  11   829   3   1   0   0   0  6.4
+  Delantero     Hemiro Bocanegro        11  11   851   3   1   0   0   0  6.4
+  Delantero     Kaelo Gallardel         11  11   862   2   0   1   0   0  6.3
+  Delantero     Galdo Escalona           4   0   128   0   0   0   0   0  6.0
+  Delantero     Galdo Landrosa           7   0   146   0   0   0   0   0  6.0
+  Delantero     Nolven Olmedrar          3   0    87   0   0   0   0   0  6.0
+
+↑/↓ mover · enter ver ficha · esc volver

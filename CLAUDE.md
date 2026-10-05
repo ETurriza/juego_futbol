@@ -10,8 +10,8 @@ Módulo: `github.com/ETurriza/juego_futbol`.
 
 Todo el código vive en `internal/`, con nombres en español sin acentos:
 `modelo`, `generador`, `simulacion`, `liga`, `progresion`, `aplicacion`,
-`menus`, `persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
-la prueba que verifica las reglas de dependencias de abajo.
+`menus`, `persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura`
+solo contiene la prueba que verifica las reglas de dependencias de abajo.
 
 Al crear un paquete nuevo hay que agregarlo al mapa `permitidos` de
 `internal/arquitectura/arquitectura_test.go`; si no, `go test ./...` falla.
@@ -21,7 +21,7 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 ## Dependencias entre paquetes
 
 - `internal/modelo` no importa ningún otro paquete del proyecto.
-- `progresion` solo depende de `modelo`.
+- `generador` y `progresion` solo dependen de `modelo`.
 - `simulacion`, `liga` y `mercado` solo dependen de `modelo` y entre sí; nunca
   de `aplicacion`, `menus`, `persistencia` o `red`.
 - `aplicacion` depende de `modelo` y de los servicios de dominio. Define los
@@ -35,6 +35,32 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 
 `go run ./cmd/juego [--semilla N] [--equipos N]` (necesita una terminal real).
 La misma semilla da siempre la misma liga.
+
+## Interfaz (`menus`)
+
+- Cada pantalla cabe en 80 columnas; una prueba lo verifica con datos reales.
+- Teclas: `↑/↓` o `j/k`, `enter`, `esc` o `backspace` para volver, `tab` para
+  alternar vistas, `q` solo en el menú principal y el de fin de temporada,
+  `ctrl+c` en cualquier pantalla.
+- Las opciones de un menú se indexan con constantes con nombre (`opAvanzar`,
+  `opFinNueva`...), no con números. Las pruebas navegan con esas constantes.
+- Las pantallas con cursor guardan su estado en una pila para que `esc` vuelva a
+  cada pantalla tal como estaba. El club del usuario va marcado con `*`.
+- Si se agrega o se mueve una opción de menú, hay que actualizar las secuencias
+  de teclas de las pruebas unitarias y de `tests/e2e/`.
+- Las pantallas clave tienen archivos de referencia en
+  `internal/menus/testdata/pantallas/` y una página generada, `docs/PANTALLAS.md`
+  (semilla fija, terminal de 80x30). Tras un cambio visual intencionado:
+  `go test ./internal/menus -update` y revisar el diff. Una pantalla nueva
+  importante se agrega a `galeria` en `galeria_test.go`.
+
+## Calibración
+
+Los modelos con números (progresión por edad, sucesos de partido, valoración)
+tienen sus constantes con nombre al inicio del archivo. Sus pruebas imprimen con
+`go test -v` las tablas y porcentajes medidos, para juzgar la calibración a
+simple vista, y comprueban rangos realistas. Cambiar una constante exige
+revisar esas pruebas.
 
 ## Aleatoriedad
 
@@ -59,6 +85,8 @@ reales.
   `go test -tags=integration ./...`.
 - Cada implementación de un puerto pasa las pruebas de contrato de
   `internal/aplicacion/contrato`.
+- Una prueba nueva debe poder fallar: tras escribirla, romper a propósito el
+  código que cubre y comprobar que falla (y restaurar el archivo).
 
 ## CLAUDE.md por paquete
 

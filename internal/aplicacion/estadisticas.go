@@ -235,3 +235,60 @@ func (c *Carrera) estadisticasParaArchivar() ([]EstadisticaTemporada, error) {
 	}
 	return filas, nil
 }
+
+// EstadisticasDeEquipo devuelve a los jugadores de un equipo con sus números de
+// la temporada en curso, ordenados por posición (portero a delantero), luego por
+// valoración descendente y por ID. Devuelve nil si el equipo no existe.
+func (c *Carrera) EstadisticasDeEquipo(nombre string) ([]EstadisticaJugador, error) {
+	todos, err := c.EstadisticasJugadores()
+	if err != nil {
+		return nil, err
+	}
+	var filas []EstadisticaJugador
+	for _, j := range todos {
+		if j.Equipo == nombre {
+			filas = append(filas, j)
+		}
+	}
+	sort.SliceStable(filas, func(a, b int) bool {
+		x, y := filas[a].Jugador, filas[b].Jugador
+		switch {
+		case x.Posicion != y.Posicion:
+			return x.Posicion < y.Posicion
+		case x.Valoracion() != y.Valoracion():
+			return x.Valoracion() > y.Valoracion()
+		default:
+			return x.ID < y.ID
+		}
+	})
+	return filas, nil
+}
+
+// EstadisticaDeJugador devuelve la fila de un jugador de la liga con sus
+// números de la temporada en curso; false si no está en ningún equipo (por
+// ejemplo, si ya se retiró).
+func (c *Carrera) EstadisticaDeJugador(id int) (EstadisticaJugador, bool, error) {
+	todos, err := c.EstadisticasJugadores()
+	if err != nil {
+		return EstadisticaJugador{}, false, err
+	}
+	for _, j := range todos {
+		if j.Jugador.ID == id {
+			return j, true, nil
+		}
+	}
+	return EstadisticaJugador{}, false, nil
+}
+
+// Trayectoria devuelve las estadísticas archivadas de un jugador, una por cada
+// temporada terminada en que jugó, de la más antigua a la más reciente.
+func (c *Carrera) Trayectoria(jugador int) []EstadisticaTemporada {
+	var filas []EstadisticaTemporada
+	for _, a := range c.Archivo {
+		if a.Jugador == jugador {
+			filas = append(filas, a)
+		}
+	}
+	sort.SliceStable(filas, func(a, b int) bool { return filas[a].Temporada < filas[b].Temporada })
+	return filas
+}

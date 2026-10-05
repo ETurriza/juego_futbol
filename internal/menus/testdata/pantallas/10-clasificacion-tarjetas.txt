@@ -1,0 +1,30 @@
+TARJETAS · Temporada 4 · Jornada 11 / 18
+
+   #  Jugador                Equipo                     PJ  Amar  Roja   Pts
+>  1  Fabrel Korvena         Unión Olivarejo            11     4     1     7
+   2  Quirino Korvena        Academia Lomaverde         11     4     1     7
+   3  Hemiro Bastaro         Unión Olivarejo            11     4     1     7
+   4  Lorvin Korvena         Academia Riobravo          11     4     1     7
+   5  Mendo Maldovar         Estrella Olivarejo         11     3     1     6
+*  6  Marvel Zaldumar        Deportivo Valmora          11     3     1     6
+   7  Baltor Montecal        Club Brisanda              11     2     1     5
+   8  Mendo Estoral          Estrella Salinera          11     2     1     5
+   9  Rodvan Calderan        Deportivo Embalse Nuevo    11     2     1     5
+  10  Xandro Zaldumar        Estrella Salinera          11     5     0     5
+  11  Quirino Escalona       Academia Lomaverde         11     5     0     5
+  12  Kervo Pardovan         Estrella Salinera           3     1     1     4
+  13  Yeraldo Sandoral       Unión Olivarejo            11     4     0     4
+  14  Ivaro Aguirel          Academia Castelmar         11     4     0     4
+  15  Zenel Duelmo           Academia Altamira del Sur  11     4     0     4
+  16  Mendo Roblemar         Academia Altamira del Sur  11     4     0     4
+  17  Isidoro Quintaleo      Deportivo Embalse Nuevo     6     0     1     3
+  18  Dorvan Fuentalba       Academia Riobravo          11     0     1     3
+  19  Xandro Valmeron        Unión Olivarejo            11     3     0     3
+  20  Ivaro Korvena          Academia Castelmar         11     3     0     3
+  21  Ivaro Hontoria         Unión Olivarejo            11     3     0     3
+  22  Anselmo Bocanegro      Club Brisanda              11     3     0     3
+  23  Xandro Fuentalba       Club Brisanda              11     3     0     3
+  24  Xandro Jarvale         Academia Altamira del Sur  11     3     0     3
+  25  Rodvan Hontoria        Academia Altamira del Sur  11     3     0     3
+
+↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver

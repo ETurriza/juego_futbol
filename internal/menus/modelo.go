@@ -17,12 +17,37 @@ const (
 	pantallaInicioTemporada
 	pantallaHistorial
 	pantallaConfirmar
+	pantallaEstadisticas
+	pantallaClasificacion
+	pantallaEquipos
+	pantallaPlantillaEquipo
+	pantallaFicha
 )
 
-// Opciones de cada menú, en orden.
+// Opciones del menú principal, en orden.
+const (
+	opAvanzar = iota
+	opTabla
+	opPlantilla
+	opEstadisticas
+	opHistorial
+	opSalir
+)
+
+// Opciones del menú de fin de temporada, en orden.
+const (
+	opFinSiguiente = iota
+	opFinTabla
+	opFinEstadisticas
+	opFinHistorial
+	opFinNueva
+	opFinSalir
+)
+
+// Opciones de cada menú, en el orden de las constantes de arriba.
 var (
-	opcionesMenu = []string{"Avanzar jornada", "Tabla de posiciones", "Plantilla", "Historial", "Salir"}
-	opcionesFin  = []string{"Siguiente temporada", "Ver tabla final", "Historial", "Nueva carrera", "Salir"}
+	opcionesMenu = []string{"Avanzar jornada", "Tabla de posiciones", "Plantilla", "Estadísticas", "Historial", "Salir"}
+	opcionesFin  = []string{"Siguiente temporada", "Ver tabla final", "Estadísticas", "Historial", "Nueva carrera", "Salir"}
 	// Confirmación de "Nueva carrera": la opción segura va primero.
 	opcionesConfirmar = []string{"No, volver", "Sí, empezar de cero"}
 )
@@ -45,6 +70,14 @@ type Modelo struct {
 	// cambios y valoracionAntes alimentan la pantalla de inicio de temporada.
 	cambios         aplicacion.CambiosTemporada
 	valoracionAntes int
+
+	// Estado de las pantallas de estadísticas (ver estadisticas.go).
+	pila        []destino // pantallas por las que se bajó, para volver con esc
+	criterio    aplicacion.Criterio
+	equipoSel   string // equipo de la plantilla que se está viendo
+	fichaID     int    // jugador de la ficha
+	verAsistent bool   // en Equipos, mostrar asistente en vez de goleador
+	verStats    bool   // en Plantilla, mostrar estadísticas en vez de atributos
 }
 
 // Nuevo crea el modelo para una carrera ya iniciada. nueva se invoca al elegir
@@ -68,7 +101,7 @@ func (m Modelo) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.ancho, m.alto = msg.Width, msg.Height
-		m.scroll = m.limitarScroll(m.scroll)
+		m = m.ajustarVentana()
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.tecla(msg.String())
@@ -99,6 +132,12 @@ func (m Modelo) tecla(k string) (tea.Model, tea.Cmd) {
 			m.cursor, m.aviso = 0, ""
 			m.pantalla = pantallaMenu
 		}
+	case pantallaEstadisticas:
+		return m.teclaEstadisticas(k), nil
+	case pantallaClasificacion, pantallaEquipos, pantallaPlantillaEquipo:
+		return m.teclaSeleccion(k), nil
+	case pantallaFicha:
+		return m.teclaFicha(k), nil
 	}
 	return m, nil
 }
@@ -144,19 +183,21 @@ func (m Modelo) teclaMenu(k string) (tea.Model, tea.Cmd) {
 func (m Modelo) elegirMenu() (tea.Model, tea.Cmd) {
 	m.aviso = ""
 	switch m.cursor {
-	case 0: // Avanzar jornada
+	case opAvanzar:
 		if _, err := m.carrera.AvanzarJornada(); err != nil {
 			m.aviso = err.Error()
 			return m, nil
 		}
 		m.pantalla = pantallaJornada
-	case 1:
+	case opTabla:
 		m.abrirLista(pantallaTabla)
-	case 2:
+	case opPlantilla:
 		m.abrirLista(pantallaPlantilla)
-	case 3:
+	case opEstadisticas:
+		return m.irA(pantallaEstadisticas), nil
+	case opHistorial:
 		m.abrirLista(pantallaHistorial)
-	case 4:
+	case opSalir:
 		return m, tea.Quit
 	}
 	return m, nil
@@ -165,7 +206,7 @@ func (m Modelo) elegirMenu() (tea.Model, tea.Cmd) {
 func (m Modelo) elegirFin() (tea.Model, tea.Cmd) {
 	m.aviso = ""
 	switch m.cursor {
-	case 0: // Siguiente temporada
+	case opFinSiguiente:
 		antes := m.carrera.ValoracionEquipo()
 		cambios, err := m.carrera.SiguienteTemporada()
 		if err != nil {
@@ -174,13 +215,15 @@ func (m Modelo) elegirFin() (tea.Model, tea.Cmd) {
 		}
 		m.cambios, m.valoracionAntes = cambios, antes
 		m.pantalla, m.cursor = pantallaInicioTemporada, 0
-	case 1:
+	case opFinTabla:
 		m.abrirLista(pantallaTabla)
-	case 2:
+	case opFinEstadisticas:
+		return m.irA(pantallaEstadisticas), nil
+	case opFinHistorial:
 		m.abrirLista(pantallaHistorial)
-	case 3: // Nueva carrera: pide confirmación
+	case opFinNueva: // pide confirmación
 		m.pantalla, m.cursor = pantallaConfirmar, 0
-	case 4:
+	case opFinSalir:
 		return m, tea.Quit
 	}
 	return m, nil
@@ -189,7 +232,7 @@ func (m Modelo) elegirFin() (tea.Model, tea.Cmd) {
 // cancelarNueva vuelve de la confirmación al fin de temporada, sobre la opción
 // "Nueva carrera".
 func (m Modelo) cancelarNueva() Modelo {
-	m.pantalla, m.cursor = pantallaFin, 3
+	m.pantalla, m.cursor = pantallaFin, opFinNueva
 	return m
 }
 
@@ -226,6 +269,10 @@ func (m Modelo) teclaLista(k string) Modelo {
 		m.scroll = 0
 	case "end":
 		m.scroll = m.totalFilas()
+	case "tab":
+		if m.pantalla == pantallaPlantilla {
+			m.verStats = !m.verStats
+		}
 	case "esc", "backspace":
 		m.pantalla = m.origen
 		return m

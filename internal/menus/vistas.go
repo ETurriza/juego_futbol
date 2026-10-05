@@ -36,6 +36,16 @@ func (m Modelo) View() tea.View {
 		cuerpo = m.vistaHistorial()
 	case pantallaConfirmar:
 		cuerpo = m.vistaConfirmar()
+	case pantallaEstadisticas:
+		cuerpo = m.vistaEstadisticas()
+	case pantallaClasificacion:
+		cuerpo = m.vistaClasificacion()
+	case pantallaEquipos:
+		cuerpo = m.vistaEquipos()
+	case pantallaPlantillaEquipo:
+		cuerpo = m.vistaPlantillaEquipo()
+	case pantallaFicha:
+		cuerpo = m.vistaFicha()
 	default:
 		cuerpo = m.vistaMenu()
 	}
@@ -86,6 +96,9 @@ func (m Modelo) vistaMenu() string {
 }
 
 func (m Modelo) vistaPlantilla() string {
+	if m.verStats {
+		return m.vistaPlantillaStats()
+	}
 	var b strings.Builder
 	b.WriteString(estiloTitulo.Render("PLANTILLA · "+m.carrera.NombreEquipo()) + "\n\n")
 	fmt.Fprintf(&b, "  %-14s %-22s %3s %4s  %3s %3s %3s %3s %3s %3s %3s\n",
@@ -100,7 +113,7 @@ func (m Modelo) vistaPlantilla() string {
 			j.Posicion, j.Nombre, j.Edad, j.Valoracion(),
 			a.Ritmo, a.Tiro, a.Pase, a.Regate, a.Defensa, a.Fisico, a.Reflejos), false) + "\n")
 	}
-	b.WriteString("\n" + ayuda(m.ayudaLista(desde, hasta, len(plantilla))))
+	b.WriteString("\n" + ayuda(strings.Replace(m.ayudaLista(desde, hasta, len(plantilla)), "esc volver", "tab estadísticas · esc volver", 1)))
 	return b.String()
 }
 

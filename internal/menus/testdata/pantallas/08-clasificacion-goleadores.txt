@@ -1,0 +1,30 @@
+GOLEADORES · Temporada 4 · Jornada 11 / 18
+
+   #  Jugador                Equipo                     PJ Goles Asist   Min
+>  1  Pelayo Abrelda         Estrella Salinera          11     6     0   801
+   2  Hilaro Valmeron        Academia Lomaverde         11     5     0   810
+   3  Nolven Quintaleo       Academia Castelmar         11     4     3   951
+   4  Rodvan Hontoria        Academia Altamira del Sur  11     4     0   858
+   5  Rodvan Calderan        Academia Altamira del Sur  11     4     0   883
+   6  Zenel Rivasel          Academia Altamira del Sur  11     3     3   768
+*  7  Mendo Olmedrar         Deportivo Valmora          11     3     3   910
+   8  Ivaro Aguirel          Academia Castelmar         11     3     3   912
+*  9  Anselmo Fuentalba      Deportivo Valmora          11     3     3   953
+* 10  Florian Abrelda        Deportivo Valmora          11     3     2   779
+  11  Pelayo Hontoria        Estrella Olivarejo         11     3     2   878
+  12  Galdo Dunavar          Club Brisanda              11     3     2   948
+* 13  Elmiro Nebreda         Deportivo Valmora          11     3     1   779
+  14  Quirino Olmedrar       Estrella Olivarejo         11     3     1   784
+  15  Cedrio Illanes         Academia Castelmar         11     3     1   829
+  16  Hemiro Bocanegro       Academia Castelmar         11     3     1   851
+* 17  Quirino Valmeron       Deportivo Valmora          11     3     1   857
+  18  Wenceo Landrosa        Academia Riobravo          11     3     0   790
+  19  Xandro Valmeron        Unión Olivarejo            11     3     0   801
+  20  Gervasio Jarvale       Club Brisanda              11     3     0   916
+  21  Yeraldo Landrosa       Academia Riobravo          11     2     4   791
+  22  Joldan Yrigaldo        Estrella Olivarejo         11     2     3   911
+  23  Xandro Fuentalba       Club Brisanda              11     2     2   836
+  24  Yeraldo Quintaleo      Academia Altamira del Sur  11     2     2   943
+  25  Quirino Cordival       Academia Lomaverde         11     2     2   973
+
+↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver

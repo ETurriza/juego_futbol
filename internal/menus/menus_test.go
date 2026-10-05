@@ -126,7 +126,7 @@ func TestSalirDelMenu(t *testing.T) {
 	if _, cmd := pulsar(m, "q"); !esSalir(cmd) {
 		t.Error("q deberia salir desde el menu")
 	}
-	if _, cmd := pulsar(m, "down", "down", "down", "down", "enter"); !esSalir(cmd) {
+	if _, cmd := pulsar(m, "down", "down", "down", "down", "down", "enter"); !esSalir(cmd) {
 		t.Error("la opcion Salir deberia salir")
 	}
 	if _, cmd := pulsar(m, "esc"); esSalir(cmd) {
@@ -338,7 +338,7 @@ func TestSalirDesdeElFin(t *testing.T) {
 	if _, cmd := pulsar(m, "q"); !esSalir(cmd) {
 		t.Error("q deberia salir desde el fin de temporada")
 	}
-	if _, cmd := pulsar(m, "down", "down", "down", "down", "enter"); !esSalir(cmd) {
+	if _, cmd := pulsar(m, "down", "down", "down", "down", "down", "enter"); !esSalir(cmd) {
 		t.Error("la opcion Salir deberia salir")
 	}
 }
@@ -346,7 +346,7 @@ func TestSalirDesdeElFin(t *testing.T) {
 func TestNuevaCarreraPideConfirmacion(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	anterior := m.carrera
-	m, _ = pulsar(m, "down", "down", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter")
 	contiene(t, m, "NUEVA CARRERA", "pierdes la actual", "Temporada 1 con "+anterior.NombreEquipo(),
 		"> No, volver", "  Sí, empezar de cero")
 	if m.carrera != anterior {
@@ -374,7 +374,7 @@ func TestNuevaCarreraPideConfirmacion(t *testing.T) {
 func TestNuevaCarreraDesdeElFin(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	anterior := m.carrera
-	m, _ = pulsar(m, "down", "down", "down", "enter", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter", "down", "enter")
 	if m.carrera == anterior || m.carrera.Jornada() != 0 || m.carrera.Numero != 1 {
 		t.Fatal("deberia haber una carrera nueva sin jornadas jugadas")
 	}
@@ -385,7 +385,7 @@ func TestNuevaCarreraConErrorMuestraAviso(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	m.nueva = func() (*aplicacion.Carrera, error) { return nil, errors.New("sin espacio") }
 	anterior := m.carrera
-	m, _ = pulsar(m, "down", "down", "down", "enter", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter", "down", "enter")
 	if m.carrera != anterior {
 		t.Error("la carrera no deberia cambiar si falla")
 	}
@@ -486,7 +486,7 @@ func TestSiguienteTemporadaSoloEnElFin(t *testing.T) {
 
 func TestHistorialSinTemporadas(t *testing.T) {
 	m := modeloDePrueba(t, 1, 10)
-	m, _ = pulsar(m, "down", "down", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter")
 	contiene(t, m, "HISTORIAL · "+m.carrera.NombreEquipo(), "Todavía no has terminado ninguna temporada.", "esc volver")
 	noContiene(t, m, "Campeón")
 	m, _ = pulsar(m, "esc")
@@ -497,7 +497,7 @@ func TestHistorialConTemporadas(t *testing.T) {
 	c := carreraDePrueba(t, 4, 10)
 	avanzarCarrera(t, c, 3)
 	m := Nuevo(c, nil)
-	m, _ = pulsar(m, "down", "down", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter")
 	contiene(t, m, "HISTORIAL", "Temp", "Campeón", "Tu puesto", "Pts", "esc volver")
 	for _, h := range c.Historial {
 		contiene(t, m, h.Campeon, fmt.Sprintf("%d de 10", h.PuestoUsuario))
@@ -524,7 +524,7 @@ func TestHistorialConScroll(t *testing.T) {
 	c := carreraDePrueba(t, 4, 10)
 	avanzarCarrera(t, c, 12)
 	m := redimensionar(Nuevo(c, nil), 80, 10) // caben 5 filas de 12
-	m, _ = pulsar(m, "down", "down", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "down", "enter")
 	contiene(t, m, "1-5 de 12")
 	noContiene(t, m, "  12  ")
 	m, _ = pulsar(m, "pgdown", "pgdown", "pgdown")
@@ -535,7 +535,7 @@ func TestHistorialConScroll(t *testing.T) {
 
 func TestHistorialDesdeElFinVuelveAlFin(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
-	m, _ = pulsar(m, "down", "down", "enter")
+	m, _ = pulsar(m, "down", "down", "down", "enter")
 	contiene(t, m, "HISTORIAL", "Todavía no has terminado")
 	m, _ = pulsar(m, "esc")
 	contiene(t, m, "TEMPORADA 1 TERMINADA", "> Historial")
@@ -561,6 +561,6 @@ func TestSegundaTemporadaSePuedeJugarCompleta(t *testing.T) {
 	if len(m.carrera.Historial) != 1 || m.carrera.Numero != 2 {
 		t.Errorf("historial %d, temporada %d", len(m.carrera.Historial), m.carrera.Numero)
 	}
-	m, _ = pulsar(m, "down", "down", "enter") // historial
+	m, _ = pulsar(m, "down", "down", "down", "enter") // historial
 	contiene(t, m, "HISTORIAL", m.carrera.Historial[0].Campeon)
 }

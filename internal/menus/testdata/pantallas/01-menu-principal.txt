@@ -1,0 +1,13 @@
+JUEGO DE FÚTBOL · Modo carrera
+
+Deportivo Valmora    Temporada 4 · Jornada 11 / 18
+Valoración del equipo: 83
+
+> Avanzar jornada
+  Tabla de posiciones
+  Plantilla
+  Estadísticas
+  Historial
+  Salir
+
+↑/↓ mover · enter elegir · q salir
