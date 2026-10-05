@@ -30,6 +30,11 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 - `menus` y `red` dependen de `aplicacion`.
 - Las capas externas dependen de las internas, nunca al revés.
 
+## Ejecutar
+
+`go run ./cmd/juego [--semilla N] [--equipos N]` (necesita una terminal real).
+La misma semilla da siempre la misma liga.
+
 ## Aleatoriedad
 
 Toda aleatoriedad se recibe como parámetro (`*rand.Rand`), nunca global (nada de
