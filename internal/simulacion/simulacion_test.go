@@ -152,23 +152,26 @@ func TestEquiposVaciosNoFallan(t *testing.T) {
 	Simular(r, equipoUniforme("A", 60), vacio)
 }
 
-func TestMejoresEsDeterministaYNoMuta(t *testing.T) {
+func TestLaAlineacionAutomaticaEsDeterministaYNoMuta(t *testing.T) {
 	e := equipoUniforme("A", 60)
 	e.Plantilla[2].Atributos.Defensa = 90 // un defensa claramente mejor
 	antes := append([]modelo.Jugador(nil), e.Plantilla...)
 
-	m1 := mejores(e, modelo.Defensa, titularesDefensas)
-	m2 := mejores(e, modelo.Defensa, titularesDefensas)
-	if !reflect.DeepEqual(m1, m2) {
-		t.Error("mejores no es determinista")
+	f := modelo.F433
+	a1 := AlineacionAutomatica(e, Criterios{Formacion: &f})
+	a2 := AlineacionAutomatica(e, Criterios{Formacion: &f})
+	if !reflect.DeepEqual(a1, a2) {
+		t.Error("la alineacion automatica no es determinista")
 	}
-	if len(m1) != titularesDefensas {
-		t.Errorf("se esperaban %d titulares, hay %d", titularesDefensas, len(m1))
+	// El mejor defensa (el tercero de la plantilla, ID 3) está en el once.
+	titular := false
+	for _, id := range a1.Titulares {
+		titular = titular || id == e.Plantilla[2].ID
 	}
-	if m1[0].ID != e.Plantilla[2].ID {
-		t.Errorf("el mejor defensa deberia ser ID %d, es %d", e.Plantilla[2].ID, m1[0].ID)
+	if !titular {
+		t.Error("el mejor defensa deberia ser titular")
 	}
 	if !reflect.DeepEqual(antes, e.Plantilla) {
-		t.Error("mejores modifico la plantilla")
+		t.Error("la alineacion automatica modifico la plantilla")
 	}
 }

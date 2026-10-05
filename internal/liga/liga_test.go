@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/ETurriza/juego_futbol/internal/modelo"
+	"github.com/ETurriza/juego_futbol/internal/simulacion"
 )
 
 func nuevoRand(semilla int64) *rand.Rand {
@@ -327,5 +328,84 @@ func TestMejorEquipoTerminaArriba(t *testing.T) {
 	}
 	if campeon*100 < semillas*90 {
 		t.Errorf("el mejor equipo fue campeon %d/%d veces, se esperaba al menos el 90%%", campeon, semillas)
+	}
+}
+
+func TestJugarJornadaConUsaLaAlineacionElegida(t *testing.T) {
+	equipos := ligaConIDsUnicas(4, 62)
+	temp, err := Nueva(equipos)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// El equipo 0 juega con una formación fija y sus titulares en el orden inverso
+	// al automático dentro de cada línea no es válido; basta fijar un 5-3-2.
+	f := modelo.F532
+	elegida := simulacion.AlineacionAutomatica(equipos[0], simulacion.Criterios{Formacion: &f})
+	resultados, err := temp.JugarJornadaCon(nuevoRand(1), map[int]modelo.Alineacion{0: elegida})
+	if err != nil {
+		t.Fatal(err)
+	}
+	vistos := 0
+	for _, res := range resultados {
+		for _, lado := range []struct {
+			indice int
+			f      modelo.Formacion
+			t      [modelo.TitularesPorEquipo]int
+		}{
+			{res.Partido.Local, res.Detalle.FormacionLocal, res.Detalle.TitularesLocal},
+			{res.Partido.Visitante, res.Detalle.FormacionVisitante, res.Detalle.TitularesVisitante},
+		} {
+			if lado.indice != 0 {
+				continue
+			}
+			vistos++
+			if lado.f != modelo.F532 || lado.t != elegida.Titulares {
+				t.Errorf("el equipo 0 no jugo con su alineacion: %v %v", lado.f, lado.t)
+			}
+		}
+	}
+	if vistos != 1 {
+		t.Fatalf("el equipo 0 jugo %d veces en la jornada", vistos)
+	}
+}
+
+func TestJugarJornadaSinAlineacionesEsComoConLasAutomaticas(t *testing.T) {
+	a, _ := Nueva(ligaConIDsUnicas(6, 62))
+	b, _ := Nueva(ligaConIDsUnicas(6, 62))
+	for !a.Terminada() {
+		ra, err := a.JugarJornada(nuevoRand(int64(a.JornadaActual())))
+		if err != nil {
+			t.Fatal(err)
+		}
+		rb, err := b.JugarJornadaCon(nuevoRand(int64(b.JornadaActual())), map[int]modelo.Alineacion{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(ra, rb) {
+			t.Fatal("una jornada sin alineaciones elegidas deberia ser igual a JugarJornada")
+		}
+	}
+}
+
+func TestLasEstadisticasSeAcreditanAlPuestoJugado(t *testing.T) {
+	// Un delantero que juega de defensa (puesto 2) cuenta la porteria imbatida del
+	// equipo, aunque su posicion natural sea otra; y un defensa de delantero, no.
+	d := detalleDePrueba()
+	// slot 1 (defensa) <- 9 (delantero) y slot 8 (delantero) <- 2 (defensa); slot 2 y slot 9 se cruzan igual.
+	d.TitularesLocal[1], d.TitularesLocal[8] = 9, 2
+	d.TitularesLocal[2], d.TitularesLocal[9] = 10, 3
+	est, err := estadisticasDePartido(d, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	delanteroDeDefensa, defensaDeDelantero, portero := est[9], est[3], est[1]
+	if delanteroDeDefensa.PorteriasImbatidas != 1 {
+		t.Errorf("el delantero que jugo de defensa deberia sumar la porteria imbatida: %+v", delanteroDeDefensa)
+	}
+	if defensaDeDelantero.PorteriasImbatidas != 0 {
+		t.Errorf("el defensa que jugo de delantero no suma porterias imbatidas: %+v", defensaDeDelantero)
+	}
+	if portero.PorteriasImbatidas != 1 {
+		t.Errorf("el portero deberia sumar la porteria imbatida: %+v", portero)
 	}
 }

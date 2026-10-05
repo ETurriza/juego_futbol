@@ -4,8 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
@@ -16,10 +14,9 @@ import (
 
 // actualizar reescribe las pantallas de referencia: go test ./internal/menus -update
 var actualizar = flag.Bool("update", false,
-	"reescribe las pantallas de referencia (internal/menus/testdata/pantallas y docs/PANTALLAS.md)")
+	"reescribe las pantallas de referencia (docs/PANTALLAS.md)")
 
 const (
-	dirGaleria   = "testdata/pantallas"
 	archivoDocs  = "../../docs/PANTALLAS.md"
 	anchoGaleria = 80
 	altoGaleria  = 30
@@ -138,8 +135,8 @@ func primeraDiferencia(obtenido, esperado string) string {
 	return "sin diferencias visibles"
 }
 
-// TestGaleriaDePantallas compara cada pantalla con su archivo de referencia (y la
-// página docs/PANTALLAS.md, que los reúne). Si el cambio es intencionado:
+// TestGaleriaDePantallas compara las pantallas con la página de referencia
+// docs/PANTALLAS.md. Si el cambio es intencionado:
 //
 //	go test ./internal/menus -update
 func TestGaleriaDePantallas(t *testing.T) {
@@ -153,29 +150,8 @@ func TestGaleriaDePantallas(t *testing.T) {
 	pagina.WriteString("```\ngo test ./internal/menus -update\n```\n\n")
 	pagina.WriteString("En las filas con cursor, `>` marca la seleccionada y `*` las de tu club.\n")
 
-	esperados := map[string]bool{}
 	for _, c := range capturas {
 		contenido := c.contenido
-		archivo := filepath.Join(dirGaleria, c.archivo+".txt")
-		esperados[c.archivo+".txt"] = true
-
-		if *actualizar {
-			if err := os.MkdirAll(dirGaleria, 0o755); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(archivo, []byte(contenido), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			previo, err := os.ReadFile(archivo)
-			switch {
-			case err != nil:
-				t.Errorf("%s: falta el archivo de referencia (%v); generarlo con -update", c.archivo, err)
-			case string(previo) != contenido:
-				t.Errorf("%s cambio (si es intencionado, regenerar con -update). Primera diferencia, %s",
-					c.archivo, primeraDiferencia(contenido, string(previo)))
-			}
-		}
 		fmt.Fprintf(&pagina, "\n## %s\n\n```\n%s```\n", c.titulo, contenido)
 	}
 
@@ -188,18 +164,5 @@ func TestGaleriaDePantallas(t *testing.T) {
 	} else if string(previo) != pagina.String() {
 		t.Errorf("docs/PANTALLAS.md esta desactualizado; regenerarlo con -update. Primera diferencia, %s",
 			primeraDiferencia(pagina.String(), string(previo)))
-	}
-
-	// No deben sobrar archivos de pantallas que ya no existen.
-	entradas, _ := os.ReadDir(dirGaleria)
-	var sobran []string
-	for _, e := range entradas {
-		if !esperados[e.Name()] {
-			sobran = append(sobran, e.Name())
-		}
-	}
-	sort.Strings(sobran)
-	if len(sobran) > 0 && !*actualizar {
-		t.Errorf("archivos de referencia sin pantalla: %v", sobran)
 	}
 }

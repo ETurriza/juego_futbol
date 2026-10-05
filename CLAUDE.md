@@ -48,9 +48,9 @@ La misma semilla da siempre la misma liga.
   cada pantalla tal como estaba. El club del usuario va marcado con `*`.
 - Si se agrega o se mueve una opción de menú, hay que actualizar las secuencias
   de teclas de las pruebas unitarias y de `tests/e2e/`.
-- Las pantallas clave tienen archivos de referencia en
-  `internal/menus/testdata/pantallas/` y una página generada, `docs/PANTALLAS.md`
-  (semilla fija, terminal de 80x30). Tras un cambio visual intencionado:
+- Las pantallas clave están en una página generada, `docs/PANTALLAS.md`
+  (semilla fija, terminal de 80x30), que una prueba compara con el juego real.
+  Tras un cambio visual intencionado:
   `go test ./internal/menus -update` y revisar el diff. Una pantalla nueva
   importante se agrega a `galeria` en `galeria_test.go`.
 
@@ -66,7 +66,15 @@ Las pruebas de calibración también fijan cuántos cracks hay y cuánto pesan:
 ~3-4 % de los jugadores de campo con pico >= 90 repartidos por todas las
 posiciones, y un crack de 95 suma ~+8 puntos de victoria en cada una. Esos
 números salen de ligas generadas de verdad; para simular muchos partidos sin
-detalle se usa `simulacion.Marcador`, que es mucho más rápido que `Simular`.
+detalle se usa `simulacion.Marcador` (un 4-3-3 automático sin tarjetas), que es
+mucho más rápido que `Simular`.
+
+Las formaciones (`modelo.Formacion`) tienen perfiles de ataque y defensa en
+`simulacion/alineacion.go`, calibrados para que el promedio de puntos esperados
+sea el mismo en todas (`TestLasFormacionesSonEquilibradas`): si se toca un
+perfil o los pesos de `modelo/atributos.go`, hay que volver a medirlo. La
+alineación automática (`simulacion.AlineacionAutomatica`) es el servicio que
+reutilizarán el modo jugador y las disponibilidades de la fase 9c-2.
 
 Una media global estable no basta: la liga se calibra por posición y por edad
 (`aplicacion/calibracion_test.go`): dispersión, porcentaje de estrellas,

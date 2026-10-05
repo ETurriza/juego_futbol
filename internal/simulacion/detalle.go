@@ -1,6 +1,7 @@
 package simulacion
 
 import (
+	"math"
 	"math/rand"
 	"sort"
 
@@ -44,66 +45,11 @@ var (
 	}
 )
 
-// alineacion elige el once titular (un portero, cuatro defensas, tres
-// mediocampistas y tres delanteros, los mejores de cada línea) y la banca (el
-// resto de la plantilla, en su orden). El once sigue el orden portero,
-// defensas, medios y delanteros.
-func alineacion(e modelo.Equipo) (once, banca []modelo.Jugador) {
-	usados := map[int]bool{}
-	for _, linea := range []struct {
-		posicion modelo.Posicion
-		cantidad int
-	}{
-		{modelo.Portero, 1},
-		{modelo.Defensa, titularesDefensas},
-		{modelo.Mediocampista, titularesMedios},
-		{modelo.Delantero, titularesDelant},
-	} {
-		for _, j := range mejores(e, linea.posicion, linea.cantidad) {
-			once = append(once, j)
-			usados[j.ID] = true
-		}
-	}
-	for _, j := range e.Plantilla {
-		if !usados[j.ID] {
-			banca = append(banca, j)
-		}
-	}
-	return once, banca
-}
-
-// ids devuelve las IDs del once en un arreglo de tamaño fijo (0 donde falten).
-func ids(once []modelo.Jugador) [modelo.TitularesPorEquipo]int {
-	var out [modelo.TitularesPorEquipo]int
-	for i, j := range once {
-		if i < len(out) {
-			out[i] = j.ID
-		}
-	}
-	return out
-}
-
-// generarDetalle arma los sucesos del partido: para cada equipo, una línea de
-// tiempo con cambios, tarjetas, y después los goles y asistencias de los
-// jugadores que estaban en el campo en cada minuto.
-func generarDetalle(r *rand.Rand, local, visitante modelo.Equipo, golesL, golesV int) modelo.DetallePartido {
-	onceL, bancaL := alineacion(local)
-	onceV, bancaV := alineacion(visitante)
-
-	eventos := append(generarLado(r, true, onceL, bancaL, golesL), generarLado(r, false, onceV, bancaV, golesV)...)
-	// Orden por minuto; a igual minuto se conserva el orden de generación.
-	sort.SliceStable(eventos, func(a, b int) bool { return eventos[a].Minuto < eventos[b].Minuto })
-	return modelo.DetallePartido{
-		TitularesLocal:     ids(onceL),
-		TitularesVisitante: ids(onceV),
-		Eventos:            eventos,
-	}
-}
-
 // enCampo es un jugador durante el partido: está en el campo en los minutos
-// (desde, hasta].
+// (desde, hasta]. Juega en un puesto, que no tiene por qué ser su posición natural.
 type enCampo struct {
 	j          modelo.Jugador
+	puesto     modelo.Posicion
 	desde      int
 	hasta      int
 	titular    bool
@@ -129,16 +75,70 @@ type candidato struct {
 	tipo   tipoCandidato
 }
 
-// generarLado genera los sucesos de un equipo. Primero decide cuándo ocurren
-// los cambios y las tarjetas y los resuelve en orden de minuto (quién sale, quién
-// entra, quién es amonestado), y luego reparte los goles entre quienes estaban en
-// el campo en cada minuto. Todo es determinista dada la semilla.
-func generarLado(r *rand.Rand, local bool, once, banca []modelo.Jugador, goles int) []modelo.Evento {
-	campo := make([]*enCampo, 0, len(once)+5)
-	for _, j := range once {
-		campo = append(campo, &enCampo{j: j, hasta: modelo.MinutosPartido, titular: true})
+// tiempo es la línea de tiempo de un equipo en un partido: quién está en el campo
+// y los cambios y tarjetas que ocurren.
+type tiempo struct {
+	local   bool
+	campo   []*enCampo
+	eventos []modelo.Evento
+}
+
+// fraccionConDiez es la fracción del partido que el equipo juega con un hombre
+// menos por culpa de sus expulsiones (acotada a 1).
+func (t *tiempo) fraccionConDiez() float64 {
+	f := 0.0
+	for _, e := range t.eventos {
+		if e.Tipo == modelo.Roja {
+			f += float64(modelo.MinutosPartido-e.Minuto) / modelo.MinutosPartido
+		}
 	}
-	disponibles := append([]modelo.Jugador(nil), banca...)
+	return math.Min(f, 1)
+}
+
+// banquilloOrdenado devuelve a los suplentes en orden de preferencia: primero los
+// del banquillo de la alineación, en su orden, y después el resto de la
+// plantilla que no es titular.
+func banquilloOrdenado(e modelo.Equipo, al modelo.Alineacion) []modelo.Jugador {
+	plantilla := map[int]modelo.Jugador{}
+	for _, j := range e.Plantilla {
+		plantilla[j.ID] = j
+	}
+	usados := map[int]bool{}
+	for _, id := range al.Titulares {
+		usados[id] = true
+	}
+	var banca []modelo.Jugador
+	for _, id := range al.Banquillo {
+		if j, ok := plantilla[id]; ok && !usados[id] {
+			banca = append(banca, j)
+			usados[id] = true
+		}
+	}
+	for _, j := range e.Plantilla {
+		if !usados[j.ID] {
+			banca = append(banca, j)
+		}
+	}
+	return banca
+}
+
+// lineaDeTiempo genera los cambios y las tarjetas de un equipo. Primero decide
+// cuándo ocurre cada cosa y luego las resuelve en orden de minuto: quién sale,
+// quién entra (según el orden del banquillo), quién es amonestado o expulsado.
+// Todo es determinista dada la semilla.
+func lineaDeTiempo(r *rand.Rand, local bool, e modelo.Equipo, al modelo.Alineacion) *tiempo {
+	t := &tiempo{local: local}
+	plantilla := map[int]modelo.Jugador{}
+	for _, j := range e.Plantilla {
+		plantilla[j.ID] = j
+	}
+	puestos := al.Formacion.Puestos()
+	for i, id := range al.Titulares {
+		if j, ok := plantilla[id]; ok {
+			t.campo = append(t.campo, &enCampo{j: j, puesto: puestos[i], hasta: modelo.MinutosPartido, titular: true})
+		}
+	}
+	disponibles := banquilloOrdenado(e, al)
 
 	// 1. Cuándo ocurre cada cosa.
 	var cands []candidato
@@ -159,68 +159,72 @@ func generarLado(r *rand.Rand, local bool, once, banca []modelo.Jugador, goles i
 	})
 
 	// 2. Resolverlo en orden.
-	var eventos []modelo.Evento
 	for _, c := range cands {
 		switch c.tipo {
 		case candCambio:
-			sale := elegirQueSale(r, campo, c.minuto)
+			sale := elegirQueSale(r, t.campo, c.minuto)
 			if sale == nil {
 				continue
 			}
-			k := elegirQueEntra(r, disponibles, sale.j.Posicion)
+			k := elegirQueEntra(r, disponibles, sale.puesto)
 			if k < 0 {
 				continue
 			}
 			entra := disponibles[k]
 			disponibles = append(disponibles[:k], disponibles[k+1:]...)
 			sale.hasta, sale.fuera = c.minuto, true
-			campo = append(campo, &enCampo{j: entra, desde: c.minuto, hasta: modelo.MinutosPartido})
-			eventos = append(eventos, modelo.Evento{
+			t.campo = append(t.campo, &enCampo{j: entra, puesto: sale.puesto, desde: c.minuto, hasta: modelo.MinutosPartido})
+			t.eventos = append(t.eventos, modelo.Evento{
 				Minuto: c.minuto, Tipo: modelo.Sustitucion, Local: local, Jugador: sale.j.ID, Otro: entra.ID,
 			})
 
 		case candRoja:
-			p := elegirTarjeta(r, campo, c.minuto, true)
+			p := elegirTarjeta(r, t.campo, c.minuto, true)
 			if p == nil {
 				continue
 			}
 			p.hasta, p.fuera = c.minuto, true
-			eventos = append(eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Roja, Local: local, Jugador: p.j.ID})
+			t.eventos = append(t.eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Roja, Local: local, Jugador: p.j.ID})
 
 		case candAmarilla:
-			p := elegirTarjeta(r, campo, c.minuto, false)
+			p := elegirTarjeta(r, t.campo, c.minuto, false)
 			if p == nil {
 				continue
 			}
-			eventos = append(eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Amarilla, Local: local, Jugador: p.j.ID})
+			t.eventos = append(t.eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Amarilla, Local: local, Jugador: p.j.ID})
 			if p.amonestado { // segunda amarilla: expulsión
 				p.hasta, p.fuera = c.minuto, true
-				eventos = append(eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Roja, Local: local, Jugador: p.j.ID})
+				t.eventos = append(t.eventos, modelo.Evento{Minuto: c.minuto, Tipo: modelo.Roja, Local: local, Jugador: p.j.ID})
 			}
 			p.amonestado = true
 		}
 	}
+	return t
+}
 
-	// 3. Goles y asistencias entre quienes estaban en el campo.
+// goles reparte los goles del equipo (y sus asistencias) entre los jugadores que
+// estaban en el campo en el minuto de cada gol, según el puesto en que jugaban.
+func (t *tiempo) goles(r *rand.Rand, goles int) []modelo.Evento {
+	var eventos []modelo.Evento
 	for i := 0; i < goles; i++ {
 		minuto := 1 + r.Intn(modelo.MinutosPartido)
-		jugando := jugandoEn(campo, minuto)
+		jugando := jugandoEn(t.campo, minuto)
 		k := elegirPonderado(r, len(jugando), func(i int) float64 {
-			j := jugando[i].j
-			return pesoGol[j.Posicion] * float64(j.Atributos.Tiro)
+			c := jugando[i]
+			return pesoGol[c.puesto] * float64(c.j.Atributos.Tiro)
 		})
 		if k < 0 {
 			continue
 		}
 		goleador := jugando[k]
-		ev := modelo.Evento{Minuto: minuto, Tipo: modelo.Gol, Local: local, Jugador: goleador.j.ID}
+		ev := modelo.Evento{Minuto: minuto, Tipo: modelo.Gol, Local: t.local, Jugador: goleador.j.ID}
 		if r.Float64() < probAsistencia {
 			a := elegirPonderado(r, len(jugando), func(i int) float64 {
-				j := jugando[i].j
-				if j.ID == goleador.j.ID {
+				c := jugando[i]
+				if c.j.ID == goleador.j.ID {
 					return 0
 				}
-				return pesoAsistencia[j.Posicion] * float64(j.Atributos.Pase+j.Atributos.Regate) / 2
+				return pesoAsistencia[c.puesto] * float64(c.j.Atributos.Pase+c.j.Atributos.Regate) / 2
 			})
 			if a >= 0 {
 				ev.Otro = jugando[a].j.ID
@@ -265,7 +269,7 @@ func jugandoEn(campo []*enCampo, minuto int) []*enCampo {
 func elegirQueSale(r *rand.Rand, campo []*enCampo, minuto int) *enCampo {
 	var cand []*enCampo
 	for _, c := range campo {
-		if c.titular && !c.fuera && c.j.Posicion != modelo.Portero && c.jugando(minuto) {
+		if c.titular && !c.fuera && c.puesto != modelo.Portero && c.jugando(minuto) {
 			cand = append(cand, c)
 		}
 	}
@@ -278,20 +282,18 @@ func elegirQueSale(r *rand.Rand, campo []*enCampo, minuto int) *enCampo {
 	return cand[k]
 }
 
-// elegirQueEntra elige un suplente de la banca (nunca un portero): casi siempre
-// de la misma posición que el que sale, y los mejores tienen más probabilidad.
-// Devuelve su índice en la banca, o -1 si no hay.
-func elegirQueEntra(r *rand.Rand, banca []modelo.Jugador, posicion modelo.Posicion) int {
+// elegirQueEntra elige un suplente de la banca, que está en orden de preferencia
+// (nunca un portero): casi siempre el primero que juega la misma posición que el
+// puesto que queda libre, y si no, el primero que pueda jugar en el campo.
+// Devuelve su índice en la banca, o -1 si no hay. Siempre consume un número
+// aleatorio.
+func elegirQueEntra(r *rand.Rand, banca []modelo.Jugador, puesto modelo.Posicion) int {
 	misma := r.Float64() < probMismaPosicion
 	for _, soloMisma := range []bool{misma, false} {
-		k := elegirPonderado(r, len(banca), func(i int) float64 {
-			j := banca[i]
-			if j.Posicion == modelo.Portero || (soloMisma && j.Posicion != posicion) {
-				return 0
+		for k, j := range banca {
+			if j.Posicion == modelo.Portero || (soloMisma && j.Posicion != puesto) {
+				continue
 			}
-			return float64(j.Valoracion())
-		})
-		if k >= 0 {
 			return k
 		}
 	}
@@ -306,10 +308,10 @@ func elegirTarjeta(r *rand.Rand, campo []*enCampo, minuto int, roja bool) *enCam
 	jugando := jugandoEn(campo, minuto)
 	k := elegirPonderado(r, len(jugando), func(i int) float64 {
 		j := jugando[i].j
-		if jugando[i].fuera || (roja && j.Posicion == modelo.Portero) {
+		if jugando[i].fuera || (roja && jugando[i].puesto == modelo.Portero) {
 			return 0
 		}
-		w := pesoTarjeta[j.Posicion] * float64(j.Atributos.Defensa+j.Atributos.Fisico) / 2
+		w := pesoTarjeta[jugando[i].puesto] * float64(j.Atributos.Defensa+j.Atributos.Fisico) / 2
 		if !roja && jugando[i].amonestado {
 			w *= pesoYaAmonestado
 		}

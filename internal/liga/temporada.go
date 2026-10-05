@@ -84,25 +84,44 @@ func (t *Temporada) JornadaActual() int { return len(t.Resultados) }
 // Terminada indica si ya se jugaron todas las jornadas.
 func (t *Temporada) Terminada() bool { return t.JornadaActual() >= len(t.Calendario) }
 
-// JugarJornada simula los partidos de la próxima jornada y devuelve sus
-// resultados. Devuelve ErrTemporadaTerminada si no quedan jornadas.
+// JugarJornada simula los partidos de la próxima jornada, con la alineación
+// automática de todos los equipos, y devuelve sus resultados. Devuelve
+// ErrTemporadaTerminada si no quedan jornadas.
 func (t *Temporada) JugarJornada(r *rand.Rand) ([]Resultado, error) {
+	return t.JugarJornadaCon(r, nil)
+}
+
+// JugarJornadaCon simula la próxima jornada. alineaciones da, por índice de
+// equipo, la alineación que ese equipo usa (válida para su plantilla); los equipos
+// que no aparecen eligen solos su formación y su once.
+func (t *Temporada) JugarJornadaCon(r *rand.Rand, alineaciones map[int]modelo.Alineacion) ([]Resultado, error) {
 	if t.Terminada() {
 		return nil, ErrTemporadaTerminada
 	}
 	jornada := t.Calendario[t.JornadaActual()]
 	resultados := make([]Resultado, 0, len(jornada))
 	for _, p := range jornada {
-		marcador := simulacion.Simular(r, t.Equipos[p.Local], t.Equipos[p.Visitante])
+		local, visitante := t.Equipos[p.Local], t.Equipos[p.Visitante]
+		res := simulacion.SimularConAlineaciones(r,
+			local, alineacionDe(local, p.Local, alineaciones),
+			visitante, alineacionDe(visitante, p.Visitante, alineaciones))
 		resultados = append(resultados, Resultado{
 			Partido:        p,
-			GolesLocal:     marcador.GolesLocal,
-			GolesVisitante: marcador.GolesVisitante,
-			Detalle:        marcador.Detalle,
+			GolesLocal:     res.GolesLocal,
+			GolesVisitante: res.GolesVisitante,
+			Detalle:        res.Detalle,
 		})
 	}
 	t.Resultados = append(t.Resultados, resultados)
 	return resultados, nil
+}
+
+// alineacionDe devuelve la alineación elegida del equipo, o la automática.
+func alineacionDe(e modelo.Equipo, indice int, elegidas map[int]modelo.Alineacion) modelo.Alineacion {
+	if al, ok := elegidas[indice]; ok {
+		return al
+	}
+	return simulacion.AlineacionAutomatica(e, simulacion.Criterios{})
 }
 
 // JugarTemporada juega todas las jornadas que falten.

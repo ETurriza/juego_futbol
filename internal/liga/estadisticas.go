@@ -40,19 +40,13 @@ type EstadisticaEquipo struct {
 // partidos sin detalle no cuentan. Devuelve un error si el detalle de algún
 // partido es incoherente.
 func (t *Temporada) Estadisticas() (map[int]modelo.Estadisticas, error) {
-	posicion := map[int]modelo.Posicion{}
-	for _, e := range t.Equipos {
-		for _, j := range e.Plantilla {
-			posicion[j.ID] = j.Posicion
-		}
-	}
 	total := map[int]modelo.Estadisticas{}
 	for n, jornada := range t.Resultados {
 		for k, res := range jornada {
 			if res.Detalle.Vacio() {
 				continue
 			}
-			parcial, err := estadisticasDePartido(res.Detalle, res.GolesLocal, res.GolesVisitante, posicion)
+			parcial, err := estadisticasDePartido(res.Detalle, res.GolesLocal, res.GolesVisitante)
 			if err != nil {
 				return nil, fmt.Errorf("jornada %d partido %d: %w", n+1, k+1, err)
 			}
@@ -65,8 +59,7 @@ func (t *Temporada) Estadisticas() (map[int]modelo.Estadisticas, error) {
 }
 
 // estadisticasDePartido calcula lo que hizo cada participante de un partido.
-func estadisticasDePartido(d modelo.DetallePartido, golesLocal, golesVisitante int,
-	posicion map[int]modelo.Posicion) (map[int]modelo.Estadisticas, error) {
+func estadisticasDePartido(d modelo.DetallePartido, golesLocal, golesVisitante int) (map[int]modelo.Estadisticas, error) {
 
 	partes, err := d.Participaciones()
 	if err != nil {
@@ -85,7 +78,7 @@ func estadisticasDePartido(d modelo.DetallePartido, golesLocal, golesVisitante i
 		if !p.Local {
 			propios, rivales = golesVisitante, golesLocal
 		}
-		pos := posicion[p.Jugador]
+		pos := p.Puesto // el puesto en que jugó, no su posición natural
 
 		e := modelo.Estadisticas{Partidos: 1, Minutos: p.Minutos()}
 		if p.Titular() {

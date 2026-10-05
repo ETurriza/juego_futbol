@@ -323,9 +323,31 @@ genera una línea de tiempo con los sucesos de cada partido. Se entrega en tres 
   navegación que vuelve a cada pantalla tal como estaba, y tu club marcado con
   `*`. `aplicacion` gana `EstadisticasDeEquipo`, `EstadisticaDeJugador` y
   `Trayectoria`. Una prueba verifica que ninguna pantalla pasa de 80 columnas.
-- **9c, alineación elegible:** formación y once titulares elegidos por el
-  usuario, sustituciones elegidas, y el efecto de jugar con diez hombres en el
-  marcador.
+- **9c, alineación, disponibilidad y cansancio** (se parte en tres PR):
+  - **9c-1, alineación:** seis formaciones (4-4-2, 4-3-3, 3-5-2, 4-5-1, 5-3-2,
+    3-4-3) con perfiles de ataque y defensa de efecto neto parecido (ninguna
+    domina a las demás: lo que decide es la plantilla); once y banquillo
+    elegidos por el usuario; **jugar fuera de posición** (el rendimiento en el
+    puesto sale de los atributos del jugador más una penalización de
+    familiaridad según la distancia entre líneas; un portero solo juega de
+    portero y un jugador de campo solo ahí en emergencia); alineación
+    automática para los rivales (y para el usuario si la pide); y el efecto de
+    las rojas en el marcador (diez hombres marcan menos y reciben más). La
+    selección automática es un servicio de dominio con parámetros del
+    entrenador, para que el modo jugador pueda reutilizarla (ahí decide la IA).
+  - **9c-2, disponibilidad y cansancio:** **sanciones** (una roja cuesta de 1 a
+    3 partidos; cada 5 amarillas, 1), **lesiones** (con probabilidad que crece
+    con la edad, el mal físico y el cansancio; de 1 a 8 jornadas) y **condición
+    física**: cada jugador tiene una condición que baja al jugar (más si su
+    físico es bajo o es veterano; esa es su "resistencia", derivada del
+    atributo físico) y se recupera descansando, y escala su rendimiento. Quien
+    no está disponible no puede alinearse; el juego lo sustituye y avisa.
+    Guardado v5.
+  - **9c-3, pantallas:** alineación (formación, puestos, banquillo y avisos de
+    sanción, lesión y cansancio), con pruebas E2E.
+  Limitación conocida: con un partido por jornada el cansancio pesa poco por sí
+  solo; gana importancia con más partidos (copas) y con el cansancio dentro del
+  partido en la fase 11.
 *Terminado cuando*: se puede cambiar la alineación, cambia el rendimiento del
 equipo y las estadísticas individuales y de equipos se acumulan, se ven y se
 guardan.
@@ -366,6 +388,9 @@ Al empezar una carrera se elige el modo. En el modo jugador controlas a un
 futbolista: sigues tus estadísticas, aspiras a premios individuales (goleador,
 mejor jugador) y colectivos, y negocias contratos; el técnico (la IA) decide la
 alineación, así que puedes no ser titular.
+Reutiliza la alineación automática, la disponibilidad y el cansancio de la fase
+9c: el entrenador (la IA) decide si juegas según tu nivel, tu condición y su
+tendencia a rotar.
 *Terminado cuando*: se juega una carrera completa como futbolista, con premios y
 estadísticas personales.
 

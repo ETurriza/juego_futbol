@@ -42,13 +42,22 @@ func equipoRealista(nombre string, idInicial, calidad int) modelo.Equipo {
 	return e
 }
 
-// jugarMuchos simula n partidos entre dos equipos realistas y devuelve los
-// resultados.
+// alineacion433 es la alineación de un 4-3-3 con los mejores jugadores de cada
+// línea.
+func alineacion433(e modelo.Equipo) modelo.Alineacion {
+	f := modelo.F433
+	return AlineacionAutomatica(e, Criterios{Formacion: &f})
+}
+
+// jugarMuchos simula n partidos entre dos equipos realistas, ambos en 4-3-3 (la
+// formación con que se calibraron los reparto de goles y tarjetas por posición), y
+// devuelve los resultados.
 func jugarMuchos(n int, semilla int64) (local, visitante modelo.Equipo, resultados []Resultado) {
 	local, visitante = equipoRealista("L", 1, 62), equipoRealista("V", 101, 62)
+	alL, alV := alineacion433(local), alineacion433(visitante)
 	r := rand.New(rand.NewSource(semilla))
 	for i := 0; i < n; i++ {
-		resultados = append(resultados, Simular(r, local, visitante))
+		resultados = append(resultados, SimularConAlineaciones(r, local, alL, visitante, alV))
 	}
 	return local, visitante, resultados
 }
@@ -103,20 +112,32 @@ func TestElDetalleEsCoherenteConElMarcador(t *testing.T) {
 	}
 }
 
-func TestLosTitularesSonElOnceEsperado(t *testing.T) {
-	local, _, resultados := jugarMuchos(50, 2)
+func TestLosTitularesSonElOnceDeLaFormacionJugada(t *testing.T) {
+	// Con la alineación automática (cada equipo elige su formación), el once
+	// tiene las líneas de la formación que se anota en el detalle.
+	local, visitante := equipoRealista("L", 1, 62), equipoRealista("V", 101, 62)
 	pos := map[int]modelo.Posicion{}
-	for _, j := range local.Plantilla {
-		pos[j.ID] = j.Posicion
-	}
-	for _, res := range resultados {
-		cuenta := map[modelo.Posicion]int{}
-		for _, id := range res.Detalle.TitularesLocal {
-			cuenta[pos[id]]++
+	for _, e := range []modelo.Equipo{local, visitante} {
+		for _, j := range e.Plantilla {
+			pos[j.ID] = j.Posicion
 		}
-		want := map[modelo.Posicion]int{modelo.Portero: 1, modelo.Defensa: 4, modelo.Mediocampista: 3, modelo.Delantero: 3}
-		if !reflect.DeepEqual(cuenta, want) {
-			t.Fatalf("titulares por posicion = %v, se esperaba %v", cuenta, want)
+	}
+	r := rand.New(rand.NewSource(2))
+	for i := 0; i < 50; i++ {
+		res := Simular(r, local, visitante)
+		for _, lado := range []struct {
+			f   modelo.Formacion
+			ids [modelo.TitularesPorEquipo]int
+		}{{res.Detalle.FormacionLocal, res.Detalle.TitularesLocal}, {res.Detalle.FormacionVisitante, res.Detalle.TitularesVisitante}} {
+			d, m, del := lado.f.Lineas()
+			cuenta := map[modelo.Posicion]int{}
+			for _, id := range lado.ids {
+				cuenta[pos[id]]++
+			}
+			want := map[modelo.Posicion]int{modelo.Portero: 1, modelo.Defensa: d, modelo.Mediocampista: m, modelo.Delantero: del}
+			if !reflect.DeepEqual(cuenta, want) {
+				t.Fatalf("formacion %v: titulares por posicion %v, se esperaba %v", lado.f, cuenta, want)
+			}
 		}
 	}
 }

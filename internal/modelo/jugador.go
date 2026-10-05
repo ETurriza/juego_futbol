@@ -93,6 +93,31 @@ func (j Jugador) Valoracion() int {
 	return j.Atributos.Media(j.Posicion)
 }
 
+// Familiaridad es la fracción de su rendimiento que conserva un jugador que juega
+// en un puesto distinto de su posición natural: 1 en su puesto, algo menos en una
+// línea contigua (defensa y medio, medio y delantero), menos aún si salta una
+// línea (defensa y delantero), y muy poco si es un portero fuera de la portería
+// o un jugador de campo en ella.
+func Familiaridad(natural, puesto Posicion) float64 {
+	if natural == puesto {
+		return 1
+	}
+	if natural == Portero || puesto == Portero {
+		return 0.5
+	}
+	if d := natural - puesto; d == 1 || d == -1 {
+		return 0.95
+	}
+	return 0.88
+}
+
+// ValoracionEn devuelve la valoración del jugador si juega en el puesto dado: la
+// que dan sus atributos con los pesos de ese puesto, por la familiaridad. En su
+// posición natural es igual a Valoracion.
+func (j Jugador) ValoracionEn(puesto Posicion) int {
+	return int(float64(j.Atributos.Media(puesto))*Familiaridad(j.Posicion, puesto) + 0.5)
+}
+
 // Validar comprueba que el jugador sea consistente.
 func (j Jugador) Validar() error {
 	if j.Nombre == "" {

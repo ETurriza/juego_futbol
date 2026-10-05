@@ -84,11 +84,26 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 	}
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO partidas (ranura, semilla, usuario, equipo_usuario, jornadas_jugadas, total_jornadas,
-		                       actualizada, temporada, proximo_id)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		                       actualizada, temporada, proximo_id, alineacion_manual, alineacion_formacion)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		ranura, g.Semilla, g.Usuario, resumen.Equipo, resumen.Jornada, resumen.TotalJornadas,
-		r.ahora().UnixMilli(), g.Numero, g.ProximoID); err != nil {
+		r.ahora().UnixMilli(), g.Numero, g.ProximoID, boolAEntero(g.AlineacionManual), int(g.Alineacion.Formacion)); err != nil {
 		return err
+	}
+	for puesto, id := range g.Alineacion.Titulares {
+		if id == 0 {
+			continue
+		}
+		if _, err := tx.ExecContext(ctx,
+			"INSERT INTO alineacion_titulares (ranura, puesto, jugador) VALUES (?, ?, ?)", ranura, puesto, id); err != nil {
+			return err
+		}
+	}
+	for orden, id := range g.Alineacion.Banquillo {
+		if _, err := tx.ExecContext(ctx,
+			"INSERT INTO alineacion_banquillo (ranura, orden, jugador) VALUES (?, ?, ?)", ranura, orden, id); err != nil {
+			return err
+		}
 	}
 	for _, h := range g.Historial {
 		if _, err := tx.ExecContext(ctx,
@@ -126,8 +141,9 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 	}
 
 	insResultado, err := tx.PrepareContext(ctx,
-		`INSERT INTO resultados (ranura, jornada, orden, local, visitante, goles_local, goles_visitante)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`)
+		`INSERT INTO resultados (ranura, jornada, orden, local, visitante, goles_local, goles_visitante,
+		                         formacion_local, formacion_visitante)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
@@ -135,7 +151,8 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 	for jornada, partidos := range g.Resultados {
 		for orden, p := range partidos {
 			if _, err := insResultado.ExecContext(ctx, ranura, jornada, orden,
-				p.Local, p.Visitante, p.GolesLocal, p.GolesVisitante); err != nil {
+				p.Local, p.Visitante, p.GolesLocal, p.GolesVisitante,
+				int(p.Detalle.FormacionLocal), int(p.Detalle.FormacionVisitante)); err != nil {
 				return err
 			}
 			if err := guardarDetalle(ctx, tx, ranura, jornada, orden, p.Detalle); err != nil {
@@ -204,10 +221,11 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 	defer tx.Rollback() //nolint:errcheck
 
 	var g aplicacion.Guardado
-	var jornadas int
+	var jornadas, manual, formacion int
 	err = tx.QueryRowContext(ctx,
-		"SELECT semilla, usuario, jornadas_jugadas, temporada, proximo_id FROM partidas WHERE ranura = ?", ranura).
-		Scan(&g.Semilla, &g.Usuario, &jornadas, &g.Numero, &g.ProximoID)
+		`SELECT semilla, usuario, jornadas_jugadas, temporada, proximo_id, alineacion_manual, alineacion_formacion
+		 FROM partidas WHERE ranura = ?`, ranura).
+		Scan(&g.Semilla, &g.Usuario, &jornadas, &g.Numero, &g.ProximoID, &manual, &formacion)
 	if errors.Is(err, sql.ErrNoRows) {
 		return aplicacion.Guardado{}, fmt.Errorf("%w: %q", aplicacion.ErrPartidaNoExiste, ranura)
 	}
@@ -215,6 +233,11 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 		return aplicacion.Guardado{}, err
 	}
 
+	g.AlineacionManual = manual == 1
+	g.Alineacion.Formacion = modelo.Formacion(formacion)
+	if err = cargarAlineacion(ctx, tx, ranura, &g.Alineacion); err != nil {
+		return aplicacion.Guardado{}, err
+	}
 	if g.Historial, err = cargarHistorial(ctx, tx, ranura, g.Numero-1); err != nil {
 		return aplicacion.Guardado{}, err
 	}
@@ -327,6 +350,51 @@ func cargarArchivo(ctx context.Context, tx *sql.Tx, ranura string) ([]aplicacion
 	return archivo, filas.Err()
 }
 
+func boolAEntero(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// cargarAlineacion completa los titulares y el banquillo de la alineación elegida.
+func cargarAlineacion(ctx context.Context, tx *sql.Tx, ranura string, al *modelo.Alineacion) error {
+	filas, err := tx.QueryContext(ctx, "SELECT puesto, jugador FROM alineacion_titulares WHERE ranura = ? ORDER BY puesto", ranura)
+	if err != nil {
+		return err
+	}
+	defer filas.Close()
+	for filas.Next() {
+		var puesto, jugador int
+		if err := filas.Scan(&puesto, &jugador); err != nil {
+			return err
+		}
+		if puesto < 0 || puesto >= modelo.TitularesPorEquipo {
+			return fmt.Errorf("datos corruptos en %q: puesto %d fuera de la alineacion", ranura, puesto)
+		}
+		al.Titulares[puesto] = jugador
+	}
+	if err := filas.Err(); err != nil {
+		return err
+	}
+	banca, err := tx.QueryContext(ctx, "SELECT orden, jugador FROM alineacion_banquillo WHERE ranura = ? ORDER BY orden", ranura)
+	if err != nil {
+		return err
+	}
+	defer banca.Close()
+	for banca.Next() {
+		var orden, jugador int
+		if err := banca.Scan(&orden, &jugador); err != nil {
+			return err
+		}
+		if orden != len(al.Banquillo) {
+			return fmt.Errorf("datos corruptos en %q: falta un suplente del banquillo", ranura)
+		}
+		al.Banquillo = append(al.Banquillo, jugador)
+	}
+	return banca.Err()
+}
+
 func cargarHistorial(ctx context.Context, tx *sql.Tx, ranura string, esperadas int) ([]aplicacion.ResumenTemporada, error) {
 	filas, err := tx.QueryContext(ctx,
 		`SELECT numero, campeon, puesto_usuario, puntos_usuario
@@ -409,7 +477,7 @@ func cargarEquipos(ctx context.Context, tx *sql.Tx, ranura string) ([]modelo.Equ
 
 func cargarResultados(ctx context.Context, tx *sql.Tx, ranura string, jornadas int) ([][]aplicacion.ResultadoGuardado, error) {
 	filas, err := tx.QueryContext(ctx,
-		`SELECT jornada, orden, local, visitante, goles_local, goles_visitante
+		`SELECT jornada, orden, local, visitante, goles_local, goles_visitante, formacion_local, formacion_visitante
 		 FROM resultados WHERE ranura = ? ORDER BY jornada, orden`, ranura)
 	if err != nil {
 		return nil, err
@@ -420,11 +488,12 @@ func cargarResultados(ctx context.Context, tx *sql.Tx, ranura string, jornadas i
 		resultados = make([][]aplicacion.ResultadoGuardado, jornadas)
 	}
 	for filas.Next() {
-		var jornada, orden int
+		var jornada, orden, formL, formV int
 		var p aplicacion.ResultadoGuardado
-		if err := filas.Scan(&jornada, &orden, &p.Local, &p.Visitante, &p.GolesLocal, &p.GolesVisitante); err != nil {
+		if err := filas.Scan(&jornada, &orden, &p.Local, &p.Visitante, &p.GolesLocal, &p.GolesVisitante, &formL, &formV); err != nil {
 			return nil, err
 		}
+		p.Detalle.FormacionLocal, p.Detalle.FormacionVisitante = modelo.Formacion(formL), modelo.Formacion(formV)
 		if jornada < 0 || jornada >= jornadas {
 			return nil, fmt.Errorf("datos corruptos en %q: resultado de la jornada %d, solo hay %d jugadas",
 				ranura, jornada+1, jornadas)
