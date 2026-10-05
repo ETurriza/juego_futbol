@@ -34,10 +34,11 @@ const (
 	titularesDelant   = 3
 )
 
-// Resultado es el marcador de un partido.
+// Resultado es el marcador de un partido y su detalle: alineaciones y sucesos.
 type Resultado struct {
 	GolesLocal     int
 	GolesVisitante int
+	Detalle        modelo.DetallePartido
 }
 
 // Simular juega un partido entre local y visitante y devuelve el marcador.
@@ -49,9 +50,12 @@ func Simular(r *rand.Rand, local, visitante modelo.Equipo) Resultado {
 	esperanzaL := golesBase * ventajaLocal * math.Pow(ataqueL/defensaV, exponenteFuerza)
 	esperanzaV := golesBase * math.Pow(ataqueV/defensaL, exponenteFuerza)
 
+	golesL := poisson(r, esperanzaL)
+	golesV := poisson(r, esperanzaV)
 	return Resultado{
-		GolesLocal:     poisson(r, esperanzaL),
-		GolesVisitante: poisson(r, esperanzaV),
+		GolesLocal:     golesL,
+		GolesVisitante: golesV,
+		Detalle:        generarDetalle(r, local, visitante, golesL, golesV),
 	}
 }
 

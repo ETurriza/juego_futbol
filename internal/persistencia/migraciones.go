@@ -71,6 +71,54 @@ var migraciones = []string{
 		puntos_usuario INTEGER NOT NULL,
 		PRIMARY KEY (ranura, numero)
 	);`,
+
+	// 3: estadísticas. El detalle de cada partido (alineaciones y sucesos) y el
+	// archivo de estadísticas por jugador de las temporadas terminadas. Los
+	// partidos guardados antes no tienen detalle y se leen como partidos sin él.
+	`CREATE TABLE alineaciones (
+		ranura  TEXT    NOT NULL,
+		jornada INTEGER NOT NULL,
+		orden   INTEGER NOT NULL,
+		local   INTEGER NOT NULL,
+		puesto  INTEGER NOT NULL,
+		jugador INTEGER NOT NULL,
+		PRIMARY KEY (ranura, jornada, orden, local, puesto),
+		FOREIGN KEY (ranura, jornada, orden) REFERENCES resultados(ranura, jornada, orden) ON DELETE CASCADE
+	);
+	CREATE TABLE eventos (
+		ranura  TEXT    NOT NULL,
+		jornada INTEGER NOT NULL,
+		orden   INTEGER NOT NULL,
+		indice  INTEGER NOT NULL,
+		minuto  INTEGER NOT NULL,
+		tipo    INTEGER NOT NULL,
+		local   INTEGER NOT NULL,
+		jugador INTEGER NOT NULL,
+		otro    INTEGER NOT NULL,
+		PRIMARY KEY (ranura, jornada, orden, indice),
+		FOREIGN KEY (ranura, jornada, orden) REFERENCES resultados(ranura, jornada, orden) ON DELETE CASCADE
+	);
+	CREATE TABLE estadisticas_temporada (
+		ranura          TEXT    NOT NULL REFERENCES partidas(ranura) ON DELETE CASCADE,
+		orden           INTEGER NOT NULL,
+		temporada       INTEGER NOT NULL,
+		jugador         INTEGER NOT NULL,
+		nombre          TEXT    NOT NULL,
+		equipo          TEXT    NOT NULL,
+		posicion        INTEGER NOT NULL,
+		edad            INTEGER NOT NULL,
+		partidos        INTEGER NOT NULL,
+		titularidades   INTEGER NOT NULL,
+		minutos         INTEGER NOT NULL,
+		goles           INTEGER NOT NULL,
+		asistencias     INTEGER NOT NULL,
+		amarillas       INTEGER NOT NULL,
+		rojas           INTEGER NOT NULL,
+		imbatidas       INTEGER NOT NULL,
+		encajados       INTEGER NOT NULL,
+		suma_valoracion INTEGER NOT NULL,
+		PRIMARY KEY (ranura, orden)
+	);`,
 }
 
 // migrar lleva la base al esquema más reciente. Cada migración corre en su

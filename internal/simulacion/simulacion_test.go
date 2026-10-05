@@ -41,7 +41,7 @@ func TestSimularReproducible(t *testing.T) {
 	for semilla := int64(1); semilla <= 20; semilla++ {
 		r1 := Simular(nuevoRand(semilla), a, b)
 		r2 := Simular(nuevoRand(semilla), a, b)
-		if r1 != r2 {
+		if !reflect.DeepEqual(r1, r2) {
 			t.Fatalf("semilla %d: %v != %v", semilla, r1, r2)
 		}
 	}

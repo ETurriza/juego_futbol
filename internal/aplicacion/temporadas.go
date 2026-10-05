@@ -38,13 +38,17 @@ type CambiosTemporada struct {
 // SiguienteTemporada cierra la temporada terminada y empieza la siguiente en el
 // mismo club: guarda su resumen en el historial, hace envejecer a todos los
 // jugadores de la liga, retira a los veteranos, repone con juveniles y arma un
-// calendario nuevo. Es atómica: si falla, la carrera queda como estaba.
+// calendario nuevo. Antes archiva las estadísticas de la temporada que termina. Es atómica: si falla, la carrera queda como estaba.
 func (c *Carrera) SiguienteTemporada() (CambiosTemporada, error) {
 	if !c.Terminada() {
 		return CambiosTemporada{}, ErrTemporadaEnCurso
 	}
 
 	resumen := c.resumenTemporada()
+	archivo, err := c.estadisticasParaArchivar()
+	if err != nil {
+		return CambiosTemporada{}, err
+	}
 	r := rand.New(rand.NewSource(semillaEvolucion(c.Semilla, c.Numero)))
 	proximoID := c.ProximoID
 
@@ -65,6 +69,7 @@ func (c *Carrera) SiguienteTemporada() (CambiosTemporada, error) {
 		return CambiosTemporada{}, err
 	}
 	c.Historial = append(c.Historial, resumen)
+	c.Archivo = append(c.Archivo, archivo...)
 	c.Temporada = temporada
 	c.Numero++
 	c.ProximoID = proximoID
