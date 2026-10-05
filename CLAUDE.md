@@ -10,8 +10,11 @@ Módulo: `github.com/ETurriza/juego_futbol`.
 
 Todo el código vive en `internal/`, con nombres en español sin acentos:
 `modelo`, `generador`, `simulacion`, `liga`, `aplicacion`, `menus`,
-`persistencia`, `mercado`, `partido`, `red`.
+`persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
+la prueba que verifica las reglas de dependencias de abajo.
 
+Al crear un paquete nuevo hay que agregarlo al mapa `permitidos` de
+`internal/arquitectura/arquitectura_test.go`; si no, `go test ./...` falla.
 Cada paquete se crea solo cuando llega su fase (ver `docs/PLAN.md`). No crear
 carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 
