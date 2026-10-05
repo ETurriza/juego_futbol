@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/ETurriza/juego_futbol/internal/modelo"
+	"github.com/ETurriza/juego_futbol/internal/progresion"
 )
 
 // composicion es la distribución de una plantilla de 22 jugadores.
@@ -24,7 +25,7 @@ const TamanoPlantilla = 22
 // perfil desplaza cada atributo respecto a la calidad base del jugador según
 // su posición.
 var perfil = map[modelo.Posicion]modelo.Atributos{
-	modelo.Portero:       {Ritmo: -15, Tiro: -35, Pase: -10, Regate: -30, Defensa: -10, Fisico: 0, Reflejos: 25},
+	modelo.Portero:       {Ritmo: -15, Tiro: -35, Pase: -10, Regate: -30, Defensa: -10, Fisico: 0, Reflejos: 16},
 	modelo.Defensa:       {Ritmo: 0, Tiro: -20, Pase: -5, Regate: -15, Defensa: 20, Fisico: 10, Reflejos: -50},
 	modelo.Mediocampista: {Ritmo: 0, Tiro: 0, Pase: 15, Regate: 10, Defensa: -5, Fisico: 0, Reflejos: -50},
 	modelo.Delantero:     {Ritmo: 10, Tiro: 20, Pase: 0, Regate: 10, Defensa: -25, Fisico: 0, Reflejos: -50},
@@ -72,15 +73,24 @@ func atributosDeCalidad(r *rand.Rand, p modelo.Posicion, calidad int) modelo.Atr
 	}
 }
 
-// Jugador genera un jugador con la ID y la posición dadas.
+// Jugador genera un jugador de una edad entre 17 y 36 años (hasta 39 los porteros). Se crea como un
+// juvenil de 16 y se le hace envejecer con la propia progresión, de modo que la
+// calidad de cada edad es la que dejaría la carrera de un jugador de la liga: la
+// liga inicial se parece a la que habrá tras muchas temporadas.
 func Jugador(r *rand.Rand, id int, p modelo.Posicion) modelo.Jugador {
-	return modelo.Jugador{
-		ID:        id,
-		Nombre:    NombreJugador(r),
-		Edad:      17 + r.Intn(20), // 17 a 36
-		Posicion:  p,
-		Atributos: Atributos(r, p),
+	// Los porteros juegan DesfasePortero años más, así que su rango de edades se
+	// alarga: la liga inicial tiene la misma mezcla de edades que la que resulta
+	// tras muchas temporadas.
+	rango := 20 // 17 a 36
+	if p == modelo.Portero {
+		rango += progresion.DesfasePortero // 17 a 39
 	}
+	edad := 17 + r.Intn(rango)
+	j := nuevoJuvenil(r, id, p, EdadJuvenilMin)
+	for j.Edad < edad {
+		j = progresion.Envejecer(r, j)
+	}
+	return j
 }
 
 // Equipo genera una plantilla de TamanoPlantilla jugadores con IDs
@@ -109,7 +119,7 @@ func Equipo(r *rand.Rand, nombre string, idInicial int) modelo.Equipo {
 // Calidad base de los juveniles: bastante por debajo de la de un jugador
 // hecho, porque la progresión por edad los hace crecer varios años seguidos.
 const (
-	juvenilCalidadMedia = 42.0
+	juvenilCalidadMedia = 40.0
 	juvenilCalidadDesv  = 5.0
 	// Edad de un juvenil: de EdadJuvenilMin a EdadJuvenilMax.
 	EdadJuvenilMin = 16
@@ -117,13 +127,24 @@ const (
 )
 
 // Juvenil genera un jugador de cantera, de EdadJuvenilMin a EdadJuvenilMax
-// años, con la ID y la posición dadas.
+// años, con la ID y la posición dadas. Como cualquier jugador, nace con 16 años y
+// crece con la progresión: uno de 19 ya ha pasado tres años de crecimiento.
 func Juvenil(r *rand.Rand, id int, p modelo.Posicion) modelo.Jugador {
+	edad := EdadJuvenilMin + r.Intn(EdadJuvenilMax-EdadJuvenilMin+1)
+	j := nuevoJuvenil(r, id, p, EdadJuvenilMin)
+	for j.Edad < edad {
+		j = progresion.Envejecer(r, j)
+	}
+	return j
+}
+
+// nuevoJuvenil crea un jugador de la edad dada con la calidad de un juvenil.
+func nuevoJuvenil(r *rand.Rand, id int, p modelo.Posicion, edad int) modelo.Jugador {
 	calidad := int(math.Round(r.NormFloat64()*juvenilCalidadDesv + juvenilCalidadMedia))
 	return modelo.Jugador{
 		ID:        id,
 		Nombre:    NombreJugador(r),
-		Edad:      EdadJuvenilMin + r.Intn(EdadJuvenilMax-EdadJuvenilMin+1),
+		Edad:      edad,
 		Posicion:  p,
 		Atributos: atributosDeCalidad(r, p, calidad),
 	}

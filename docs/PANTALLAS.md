@@ -15,8 +15,8 @@ En las filas con cursor, `>` marca la seleccionada y `*` las de tu club.
 ```
 JUEGO DE FÚTBOL · Modo carrera
 
-Deportivo Valmora    Temporada 4 · Jornada 11 / 18
-Valoración del equipo: 83
+Estrella Altamira del Sur    Temporada 4 · Jornada 11 / 18
+Valoración del equipo: 76
 
 > Avanzar jornada
   Tabla de posiciones
@@ -33,11 +33,11 @@ Valoración del equipo: 83
 ```
 JORNADA 12 / 18 · Temporada 4
 
-> Deportivo Valmora           0 - 0   Club Brisanda
-  Unión Olivarejo             1 - 2   Estrella Olivarejo
-  Deportivo Embalse Nuevo     1 - 4   Academia Castelmar
-  Academia Lomaverde          0 - 2   Academia Riobravo
-  Academia Altamira del Sur   3 - 1   Estrella Salinera
+  Unión Fontalva              0 - 0   Club Brisanda
+  Deportivo Nuevaluna         1 - 2   Estrella Salinera
+> Unión Altamira del Sur      1 - 3   Estrella Altamira del Sur
+  Academia Salinera           0 - 1   Juventud Riobravo
+  Juventud Altamira del Sur   2 - 3   Deportivo Hondaluz
 
 enter continuar
 ```
@@ -48,16 +48,16 @@ enter continuar
 TABLA · Temporada 4 · Jornada 11 / 18
 
     #  Equipo                      PJ   G   E   P   GF   GC   DG  Pts
->   1  Deportivo Valmora           11   6   4   1   17    9   +8   22
-    2  Academia Castelmar          11   6   3   2   18    7  +11   21
-    3  Academia Altamira del Sur   11   5   5   1   20    8  +12   20
-    4  Estrella Olivarejo          11   6   2   3   15   13   +2   20
-    5  Estrella Salinera           11   5   3   3   11   11   +0   18
-    6  Deportivo Embalse Nuevo     11   5   0   6    7   13   -6   15
-    7  Club Brisanda               11   4   2   5   14   17   -3   14
-    8  Academia Lomaverde          11   3   1   7    9   15   -6   10
-    9  Academia Riobravo           11   2   2   7   10   18   -8    8
-   10  Unión Olivarejo             11   2   0   9    9   19  -10    6
+    1  Juventud Altamira del Sur   11   7   3   1   20    8  +12   24
+    2  Unión Fontalva              11   7   1   3   15   13   +2   22
+    3  Deportivo Hondaluz          11   6   2   3   15    9   +6   20
+>   4  Estrella Altamira del Sur   11   5   2   4   13   10   +3   17
+    5  Estrella Salinera           11   5   2   4   10   11   -1   17
+    6  Unión Altamira del Sur      11   5   1   5   12   13   -1   16
+    7  Club Brisanda               11   4   2   5   15   17   -2   14
+    8  Academia Salinera           11   4   2   5    5    7   -2   14
+    9  Juventud Riobravo           11   2   1   8   11   17   -6    7
+   10  Deportivo Nuevaluna         11   2   0   9    7   18  -11    6
 
 esc volver
 ```
@@ -65,31 +65,31 @@ esc volver
 ## Plantilla: atributos
 
 ```
-PLANTILLA · Deportivo Valmora
+PLANTILLA · Estrella Altamira del Sur
 
   Posición       Nombre                  Ed  Val  RIT TIR PAS REG DEF FIS REF
-  Portero        Gervasio Quintaleo      20   87   58  37  69  45  64  76  99
-  Portero        Zenel Garmendo          29   72   44  33  50  37  47  62  84
-  Defensa        Anselmo Orbaneja        29   81   73  50  68  54  98  76  15
-  Defensa        Marvel Zaldumar         24   81   68  49  66  51  94  85  19
-  Defensa        Nolven Aguirel          30   77   69  50  58  55  93  75  17
-  Defensa        Kaelo Calderan          22   76   68  45  59  57  89  76   7
-  Defensa        Daveo Escalona          30   75   60  51  58  60  91  74  16
-  Defensa        Baltor Pedrosel         32   66   57  37  46  36  80  69   7
-  Defensa        Tavio Dunavar           35   51   39  25  47  29  66  46  10
-  Mediocampista  Mendo Olmedrar          21   93   84  85  99  99  84  87  16
-  Mediocampista  Florian Abrelda         26   89   83  83  97  88  85  79  17
-  Mediocampista  Corvino Jarvale         28   78   73  64  88  83  73  68   8
-  Mediocampista  Elmiro Cordival         24   77   71  72  83  82  67  65   9
-  Mediocampista  Quirino Norvalde        33   72   59  64  80  77  63  65  20
-  Mediocampista  Orlandi Urdangal        27   67   62  63  76  65  55  61   4
-  Mediocampista  Lorvin Norvalde         24   64   55  56  76  67  49  52   1
-  Delantero      Anselmo Fuentalba       21   92   91  99  83  97  54  91  23
-  Delantero      Elmiro Nebreda          28   81   83  95  71  78  49  63  21
-  Delantero      Quirino Valmeron        26   72   70  82  62  79  34  58  12
-  Delantero      Galdo Garmendo          29   72   70  83  59  74  35  67  13
-  Delantero      Lisandor Yrigaldo       33   71   75  80  69  69  39  58  13
-  Delantero      Valdor Cordival         19   63   61  81  47  56  25  49   1
+  Portero        Mendo Cordival          30   79   64  52  78  45  72  74  84
+  Portero        Fabrel Landrosa         30   69   48  36  64  41  48  68  78
+  Defensa        Wenceo Zaldumar         34   79   66  50  72  59  94  74   1
+  Defensa        Hilaro Bastaro          34   78   73  61  76  66  85  76   1
+  Defensa        Ulmar Hontoria          26   76   74  58  71  55  81  79   1
+  Defensa        Corvino Nebreda         31   70   61  42  69  54  77  74   1
+  Defensa        Yeraldo Quintaleo       32   64   54  66  56  57  80  50   1
+  Defensa        Fabrel Jurado           37   57   43  50  52  65  67  53   1
+  Defensa        Cedrio Abrelda          37   53   35  29  38  46  73  45   1
+  Mediocampista  Lorvin Dunavar          25   79   68  72  85  87  68  71   1
+  Mediocampista  Kaelo Dunavar           30   79   68  74  86  78  76  81   1
+  Mediocampista  Dorvan Orbaneja         32   77   70  68  84  80  78  66   1
+  Mediocampista  Galdo Abrelda           25   74   71  73  79  74  58  79   1
+  Mediocampista  Marvel Dunavar          25   72   65  68  77  75  63  73   1
+  Mediocampista  Zenel Rivasel           37   64   55  57  72  67  71  46   1
+  Mediocampista  Yeraldo Cordival        20   62   56  49  65  75  52  59   1
+  Delantero      Hemiro Jurado           25   73   75  76  73  74  48  68   1
+  Delantero      Quirino Zaldumar        33   68   55  85  73  67  42  49   1
+  Delantero      Valdor Quintaleo        33   66   53  70  70  76  46  63   1
+  Delantero      Dorvan Nebreda          36   62   49  77  52  73  34  37   1
+  Delantero      Hemiro Yrigaldo         20   57   55  69  46  56  22  53   1
+  Delantero      Elmiro Montecal         18   47   51  54  42  44  10  47   1
 
 tab estadísticas · esc volver
 ```
@@ -97,31 +97,31 @@ tab estadísticas · esc volver
 ## Plantilla: estadísticas (tab)
 
 ```
-PLANTILLA · Deportivo Valmora · estadísticas
+PLANTILLA · Estrella Altamira del Sur · estadísticas
 
   Posición      Jugador                 PJ Tit   Min   G   A  Am  Ro Imb  Val
-  Portero       Gervasio Quintaleo      11  11   990   0   0   0   0   5  6.1
-  Portero       Zenel Garmendo           0   0     0   0   0   0   0   0    -
-  Defensa       Anselmo Orbaneja        11  11   904   0   0   3   0   3  6.0
-  Defensa       Marvel Zaldumar         11  11   940   0   0   3   1   4  5.9
-  Defensa       Nolven Aguirel          11  11   887   0   2   2   0   4  6.3
-  Defensa       Kaelo Calderan          11  11   933   0   0   1   0   5  6.2
-  Defensa       Daveo Escalona           8   0   172   0   0   0   0   0  6.0
-  Defensa       Baltor Pedrosel          5   0   147   0   0   1   0   0  5.9
-  Defensa       Tavio Dunavar            5   0    73   0   0   0   0   0  6.0
-  Mediocampista Mendo Olmedrar          11  11   910   3   3   2   0   0  6.5
-  Mediocampista Florian Abrelda         11  11   779   3   2   1   0   0  6.5
-  Mediocampista Corvino Jarvale         11  11   797   1   1   1   0   0  6.2
-  Mediocampista Elmiro Cordival          4   0    88   0   0   1   0   0  6.0
-  Mediocampista Quirino Norvalde         5   0   139   0   1   1   0   0  6.1
-  Mediocampista Orlandi Urdangal         6   0   176   1   0   0   0   0  6.1
-  Mediocampista Lorvin Norvalde          3   0    58   0   1   0   0   0  6.1
-  Delantero     Anselmo Fuentalba       11  11   953   3   3   2   0   0  6.5
-  Delantero     Elmiro Nebreda          11  11   779   3   1   0   0   0  6.5
-  Delantero     Quirino Valmeron        11  11   857   3   1   1   0   0  6.4
-  Delantero     Galdo Garmendo           5   0   115   0   0   0   0   0  6.1
-  Delantero     Lisandor Yrigaldo        3   0    81   0   0   0   0   0  6.0
-  Delantero     Valdor Cordival          3   0   105   0   0   0   0   0  6.1
+  Portero       Mendo Cordival          11  11   990   0   0   0   0   3  5.9
+  Portero       Fabrel Landrosa          0   0     0   0   0   0   0   0    -
+  Defensa       Wenceo Zaldumar         11  11   886   0   1   1   0   3  6.0
+  Defensa       Hilaro Bastaro          11  11   867   0   0   1   0   2  5.9
+  Defensa       Ulmar Hontoria          11  11   859   0   1   1   0   2  6.0
+  Defensa       Corvino Nebreda         11  11   883   0   0   2   0   3  5.9
+  Defensa       Yeraldo Quintaleo        7   0   137   0   0   0   0   0  6.0
+  Defensa       Fabrel Jurado            4   0    67   0   0   1   0   0  6.0
+  Defensa       Cedrio Abrelda           7   0   196   0   0   1   0   0  5.9
+  Mediocampista Lorvin Dunavar          11  11   928   4   2   2   0   0  6.4
+  Mediocampista Kaelo Dunavar           11  11   843   1   0   3   0   0  6.0
+  Mediocampista Dorvan Orbaneja         11  11   892   3   3   3   0   0  6.4
+  Mediocampista Galdo Abrelda            3   0    64   0   0   0   0   0  6.1
+  Mediocampista Marvel Dunavar           2   0    64   1   0   0   0   0  6.5
+  Mediocampista Zenel Rivasel            3   0   107   0   0   1   0   0  5.9
+  Mediocampista Yeraldo Cordival         3   0    66   0   0   1   0   0  5.9
+  Delantero     Hemiro Jurado           11  11   850   1   0   0   0   0  6.1
+  Delantero     Quirino Zaldumar        11  11   794   0   0   0   0   0  6.0
+  Delantero     Valdor Quintaleo        11  11   814   1   0   1   0   0  6.1
+  Delantero     Dorvan Nebreda           4   0   110   0   0   0   0   0  6.0
+  Delantero     Hemiro Yrigaldo          9   0   269   1   0   0   0   0  6.1
+  Delantero     Elmiro Montecal          7   0   204   1   0   0   0   0  6.1
 
 tab atributos · esc volver
 ```
@@ -129,12 +129,12 @@ tab atributos · esc volver
 ## Historial de temporadas
 
 ```
-HISTORIAL · Deportivo Valmora
+HISTORIAL · Estrella Altamira del Sur
 
   Temp  Campeón                     Tu puesto   Pts
-     1  Academia Altamira del Sur     9 de 10    19
-     2  Academia Altamira del Sur     6 de 10    23
-     3  Academia Lomaverde            2 de 10    32
+     1  Deportivo Hondaluz            9 de 10    20
+     2  Juventud Altamira del Sur     5 de 10    24
+     3  Academia Salinera             4 de 10    26
 
 esc volver
 ```
@@ -162,31 +162,31 @@ ESTADÍSTICAS · Temporada 4 · Jornada 11 / 18
 GOLEADORES · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ Goles Asist   Min
->  1  Pelayo Abrelda         Estrella Salinera          11     6     0   801
-   2  Hilaro Valmeron        Academia Lomaverde         11     5     0   810
-   3  Nolven Quintaleo       Academia Castelmar         11     4     3   951
-   4  Rodvan Hontoria        Academia Altamira del Sur  11     4     0   858
-   5  Rodvan Calderan        Academia Altamira del Sur  11     4     0   883
-   6  Zenel Rivasel          Academia Altamira del Sur  11     3     3   768
-*  7  Mendo Olmedrar         Deportivo Valmora          11     3     3   910
-   8  Ivaro Aguirel          Academia Castelmar         11     3     3   912
-*  9  Anselmo Fuentalba      Deportivo Valmora          11     3     3   953
-* 10  Florian Abrelda        Deportivo Valmora          11     3     2   779
-  11  Pelayo Hontoria        Estrella Olivarejo         11     3     2   878
-  12  Galdo Dunavar          Club Brisanda              11     3     2   948
-* 13  Elmiro Nebreda         Deportivo Valmora          11     3     1   779
-  14  Quirino Olmedrar       Estrella Olivarejo         11     3     1   784
-  15  Cedrio Illanes         Academia Castelmar         11     3     1   829
-  16  Hemiro Bocanegro       Academia Castelmar         11     3     1   851
-* 17  Quirino Valmeron       Deportivo Valmora          11     3     1   857
-  18  Wenceo Landrosa        Academia Riobravo          11     3     0   790
-  19  Xandro Valmeron        Unión Olivarejo            11     3     0   801
-  20  Gervasio Jarvale       Club Brisanda              11     3     0   916
-  21  Yeraldo Landrosa       Academia Riobravo          11     2     4   791
-  22  Joldan Yrigaldo        Estrella Olivarejo         11     2     3   911
-  23  Xandro Fuentalba       Club Brisanda              11     2     2   836
-  24  Yeraldo Quintaleo      Academia Altamira del Sur  11     2     2   943
-  25  Quirino Cordival       Academia Lomaverde         11     2     2   973
+>  1  Dorvan Landrosa        Deportivo Hondaluz         11     5     0   857
+   2  Lisandor Illanes       Juventud Altamira del Sur  11     4     2   897
+*  3  Lorvin Dunavar         Estrella Altamira del Sur  11     4     2   928
+   4  Selmo Bastaro          Deportivo Hondaluz         11     4     1   957
+   5  Tavio Orbaneja         Unión Fontalva             11     4     0   830
+*  6  Dorvan Orbaneja        Estrella Altamira del Sur  11     3     3   892
+   7  Kaelo Zaldumar         Unión Altamira del Sur     11     3     3   928
+   8  Zenel Jarvale          Juventud Altamira del Sur  11     3     2   769
+   9  Florian Bocanegro      Unión Fontalva             11     3     2   898
+  10  Xandro Bastaro         Unión Fontalva             11     3     2   915
+  11  Lorvin Duelmo          Club Brisanda              11     3     2   969
+  12  Ivaro Urdangal         Unión Fontalva             11     3     1   865
+  13  Orlandi Quintaleo      Club Brisanda              11     3     1   874
+  14  Lorvin Lacerna         Estrella Salinera          11     3     0   779
+  15  Marvel Norvalde        Juventud Altamira del Sur  11     3     0   906
+  16  Lisandor Garmendo      Juventud Altamira del Sur  11     3     0   931
+  17  Dorvan Herbasco        Club Brisanda              11     2     3   734
+  18  Nervio Bocanegro       Deportivo Nuevaluna        11     2     2   920
+  19  Baltor Pardovan        Unión Altamira del Sur     11     2     1   707
+  20  Hemiro Pedrosel        Unión Altamira del Sur     11     2     1   811
+  21  Wenceo Abrelda         Club Brisanda              11     2     1   905
+  22  Galdo Montecal         Estrella Salinera          11     2     1   959
+  23  Lorvin Abrelda         Juventud Riobravo           5     2     0   148
+  24  Florian Olmedrar       Deportivo Hondaluz          6     2     0   174
+  25  Eskardo Olmedrar       Juventud Altamira del Sur  11     2     0   783
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver
 ```
@@ -197,31 +197,31 @@ GOLEADORES · Temporada 4 · Jornada 11 / 18
 ASISTENTES · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ Asist Goles   Min
->  1  Cedrio Hontoria        Club Brisanda              11     6     1   914
-   2  Fabrel Korvena         Unión Olivarejo            11     5     0   896
-   3  Yeraldo Landrosa       Academia Riobravo          11     4     2   791
-   4  Nolven Quintaleo       Academia Castelmar         11     3     4   951
-   5  Zenel Rivasel          Academia Altamira del Sur  11     3     3   768
-*  6  Mendo Olmedrar         Deportivo Valmora          11     3     3   910
-   7  Ivaro Aguirel          Academia Castelmar         11     3     3   912
-*  8  Anselmo Fuentalba      Deportivo Valmora          11     3     3   953
-   9  Joldan Yrigaldo        Estrella Olivarejo         11     3     2   911
-  10  Ulmar Frondosa         Estrella Salinera          11     3     0   750
-* 11  Florian Abrelda        Deportivo Valmora          11     2     3   779
-  12  Pelayo Hontoria        Estrella Olivarejo         11     2     3   878
-  13  Galdo Dunavar          Club Brisanda              11     2     3   948
-  14  Xandro Fuentalba       Club Brisanda              11     2     2   836
-  15  Yeraldo Quintaleo      Academia Altamira del Sur  11     2     2   943
-  16  Quirino Cordival       Academia Lomaverde         11     2     2   973
-  17  Lisandor Hontoria      Estrella Salinera          11     2     1   823
-  18  Ivaro Norvalde         Academia Altamira del Sur  11     2     1   826
-  19  Ulmar Jarvale          Estrella Salinera          11     2     1   836
-  20  Wenceo Torvelo         Estrella Olivarejo         11     2     1   893
-  21  Zenel Duelmo           Academia Altamira del Sur  11     2     1   956
-* 22  Nolven Aguirel         Deportivo Valmora          11     2     0   887
-  23  Quirino Escalona       Academia Lomaverde         11     2     0   962
-  24  Tavio Duelmo           Academia Castelmar         11     2     0   967
-* 25  Elmiro Nebreda         Deportivo Valmora          11     1     3   779
+>  1  Dorvan Orbaneja        Estrella Altamira del Sur  11     3     3   892
+   2  Kaelo Zaldumar         Unión Altamira del Sur     11     3     3   928
+   3  Dorvan Herbasco        Club Brisanda              11     3     2   734
+   4  Lisandor Bastaro       Deportivo Hondaluz         11     3     1   797
+   5  Wenceo Korvena         Juventud Altamira del Sur  11     3     1   846
+   6  Mendo Fuentalba        Estrella Salinera          11     3     1   861
+   7  Ivaro Cordival         Juventud Riobravo          11     3     0   789
+   8  Anselmo Rivasel        Deportivo Nuevaluna        11     3     0   824
+   9  Galdo Lacerna          Unión Fontalva             11     3     0   923
+  10  Lisandor Illanes       Juventud Altamira del Sur  11     2     4   897
+* 11  Lorvin Dunavar         Estrella Altamira del Sur  11     2     4   928
+  12  Zenel Jarvale          Juventud Altamira del Sur  11     2     3   769
+  13  Florian Bocanegro      Unión Fontalva             11     2     3   898
+  14  Xandro Bastaro         Unión Fontalva             11     2     3   915
+  15  Lorvin Duelmo          Club Brisanda              11     2     3   969
+  16  Nervio Bocanegro       Deportivo Nuevaluna        11     2     2   920
+  17  Belron Bocanegro       Club Brisanda              11     2     1   894
+  18  Belron Duelmo          Deportivo Hondaluz         11     2     0   789
+  19  Isidoro Roblemar       Juventud Riobravo          11     2     0   852
+  20  Selmo Bastaro          Deportivo Hondaluz         11     1     4   957
+  21  Ivaro Urdangal         Unión Fontalva             11     1     3   865
+  22  Orlandi Quintaleo      Club Brisanda              11     1     3   874
+  23  Baltor Pardovan        Unión Altamira del Sur     11     1     2   707
+  24  Hemiro Pedrosel        Unión Altamira del Sur     11     1     2   811
+  25  Wenceo Abrelda         Club Brisanda              11     1     2   905
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver
 ```
@@ -232,31 +232,31 @@ ASISTENTES · Temporada 4 · Jornada 11 / 18
 TARJETAS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ  Amar  Roja   Pts
->  1  Fabrel Korvena         Unión Olivarejo            11     4     1     7
-   2  Quirino Korvena        Academia Lomaverde         11     4     1     7
-   3  Hemiro Bastaro         Unión Olivarejo            11     4     1     7
-   4  Lorvin Korvena         Academia Riobravo          11     4     1     7
-   5  Mendo Maldovar         Estrella Olivarejo         11     3     1     6
-*  6  Marvel Zaldumar        Deportivo Valmora          11     3     1     6
-   7  Baltor Montecal        Club Brisanda              11     2     1     5
-   8  Mendo Estoral          Estrella Salinera          11     2     1     5
-   9  Rodvan Calderan        Deportivo Embalse Nuevo    11     2     1     5
-  10  Xandro Zaldumar        Estrella Salinera          11     5     0     5
-  11  Quirino Escalona       Academia Lomaverde         11     5     0     5
-  12  Kervo Pardovan         Estrella Salinera           3     1     1     4
-  13  Yeraldo Sandoral       Unión Olivarejo            11     4     0     4
-  14  Ivaro Aguirel          Academia Castelmar         11     4     0     4
-  15  Zenel Duelmo           Academia Altamira del Sur  11     4     0     4
-  16  Mendo Roblemar         Academia Altamira del Sur  11     4     0     4
-  17  Isidoro Quintaleo      Deportivo Embalse Nuevo     6     0     1     3
-  18  Dorvan Fuentalba       Academia Riobravo          11     0     1     3
-  19  Xandro Valmeron        Unión Olivarejo            11     3     0     3
-  20  Ivaro Korvena          Academia Castelmar         11     3     0     3
-  21  Ivaro Hontoria         Unión Olivarejo            11     3     0     3
-  22  Anselmo Bocanegro      Club Brisanda              11     3     0     3
-  23  Xandro Fuentalba       Club Brisanda              11     3     0     3
-  24  Xandro Jarvale         Academia Altamira del Sur  11     3     0     3
-  25  Rodvan Hontoria        Academia Altamira del Sur  11     3     0     3
+>  1  Galdo Montecal         Estrella Salinera          11     8     1    11
+   2  Eskardo Norvalde       Academia Salinera          11     6     1     9
+   3  Xandro Gallardel       Unión Fontalva             11     4     1     7
+   4  Arlen Sandoral         Deportivo Nuevaluna        11     3     1     6
+   5  Eskardo Nebreda        Academia Salinera          11     3     1     6
+   6  Belron Duelmo          Deportivo Hondaluz         11     2     1     5
+   7  Tavio Orbaneja         Unión Fontalva             11     2     1     5
+   8  Valdor Rivasel         Juventud Riobravo          11     2     1     5
+   9  Ulmar Hontoria         Deportivo Nuevaluna        11     5     0     5
+  10  Joldan Landrosa        Juventud Riobravo          11     1     1     4
+  11  Ivaro Garmendo         Estrella Salinera          11     1     1     4
+  12  Tavio Torvelo          Deportivo Nuevaluna        11     1     1     4
+  13  Joldan Herbasco        Unión Fontalva             11     4     0     4
+  14  Tavio Zaldumar         Juventud Altamira del Sur  11     4     0     4
+  15  Corvino Bastaro        Academia Salinera          11     4     0     4
+  16  Zenel Estoral          Unión Fontalva             11     4     0     4
+  17  Ulmar Duelmo           Deportivo Hondaluz         11     4     0     4
+  18  Joldan Frondosa        Estrella Salinera          11     4     0     4
+  19  Nervio Rivasel         Deportivo Nuevaluna         3     0     1     3
+  20  Eskardo Frondosa       Academia Salinera          11     3     0     3
+* 21  Kaelo Dunavar          Estrella Altamira del Sur  11     3     0     3
+  22  Wenceo Korvena         Juventud Altamira del Sur  11     3     0     3
+  23  Ivaro Pedrosel         Deportivo Hondaluz         11     3     0     3
+  24  Isidoro Dunavar        Juventud Riobravo          11     3     0     3
+  25  Anselmo Hontoria       Club Brisanda              11     3     0     3
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver
 ```
@@ -267,16 +267,16 @@ TARJETAS · Temporada 4 · Jornada 11 / 18
 PORTEROS · PORTERÍAS IMBATIDAS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Imb   Enc
->  1  Yeraldo Yrigaldo       Academia Castelmar         11     6     7
-   2  Nolven Gallardel       Estrella Salinera          11     6    11
-   3  Hilaro Irueta          Academia Altamira del Sur  11     5     8
-*  4  Gervasio Quintaleo     Deportivo Valmora          11     5     9
-   5  Rodvan Calderan        Deportivo Embalse Nuevo    11     3    12
-   6  Dorvan Illanes         Estrella Olivarejo         11     3    13
-   7  Nervio Orbaneja        Academia Lomaverde         11     3    15
-   8  Joldan Fuentalba       Club Brisanda              11     2    17
-   9  Hilaro Torvelo         Unión Olivarejo            11     2    19
-  10  Lisandor Torvelo       Academia Riobravo          11     1    18
+>  1  Nolven Jarvale         Academia Salinera          11     6     7
+   2  Joldan Dunavar         Juventud Altamira del Sur  11     5     8
+   3  Isidoro Montecal       Deportivo Hondaluz         11     5     9
+   4  Eskardo Cordival       Estrella Salinera          11     5    11
+   5  Kervo Illanes          Unión Fontalva             11     4    13
+   6  Lisandor Montecal      Unión Altamira del Sur     11     4    13
+*  7  Mendo Cordival         Estrella Altamira del Sur  11     3    10
+   8  Anselmo Urdangal       Club Brisanda              11     1    17
+   9  Orlandi Jarvale        Juventud Riobravo          11     1    17
+  10  Gervasio Roblemar      Deportivo Nuevaluna        11     1    18
 
 ↑/↓ mover · enter ver ficha · * tu club · esc volver
 ```
@@ -287,16 +287,16 @@ PORTEROS · PORTERÍAS IMBATIDAS · Temporada 4 · Jornada 11 / 18
 PORTEROS · MENOS GOLES ENCAJADOS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Enc Enc/PJ
->  1  Yeraldo Yrigaldo       Academia Castelmar         11     7   0.64
-   2  Hilaro Irueta          Academia Altamira del Sur  11     8   0.73
-*  3  Gervasio Quintaleo     Deportivo Valmora          11     9   0.82
-   4  Nolven Gallardel       Estrella Salinera          11    11   1.00
-   5  Rodvan Calderan        Deportivo Embalse Nuevo    11    12   1.09
-   6  Dorvan Illanes         Estrella Olivarejo         11    13   1.18
-   7  Nervio Orbaneja        Academia Lomaverde         11    15   1.36
-   8  Joldan Fuentalba       Club Brisanda              11    17   1.55
-   9  Lisandor Torvelo       Academia Riobravo          11    18   1.64
-  10  Hilaro Torvelo         Unión Olivarejo            11    19   1.73
+>  1  Nolven Jarvale         Academia Salinera          11     7   0.64
+   2  Joldan Dunavar         Juventud Altamira del Sur  11     8   0.73
+   3  Isidoro Montecal       Deportivo Hondaluz         11     9   0.82
+*  4  Mendo Cordival         Estrella Altamira del Sur  11    10   0.91
+   5  Eskardo Cordival       Estrella Salinera          11    11   1.00
+   6  Kervo Illanes          Unión Fontalva             11    13   1.18
+   7  Lisandor Montecal      Unión Altamira del Sur     11    13   1.18
+   8  Anselmo Urdangal       Club Brisanda              11    17   1.55
+   9  Orlandi Jarvale        Juventud Riobravo          11    17   1.55
+  10  Gervasio Roblemar      Deportivo Nuevaluna        11    18   1.64
 
 ↑/↓ mover · enter ver ficha · * tu club · esc volver
 ```
@@ -307,31 +307,31 @@ PORTEROS · MENOS GOLES ENCAJADOS · Temporada 4 · Jornada 11 / 18
 MEJORES VALORACIONES · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Val Goles Asist
->  1  Nolven Quintaleo       Academia Castelmar         11   6.6     4     3
-   2  Pelayo Abrelda         Estrella Salinera          11   6.6     6     0
-*  3  Anselmo Fuentalba      Deportivo Valmora          11   6.5     3     3
-*  4  Mendo Olmedrar         Deportivo Valmora          11   6.5     3     3
-   5  Isidoro Jurado         Academia Castelmar         11   6.5     2     1
-*  6  Florian Abrelda        Deportivo Valmora          11   6.5     3     2
-   7  Zenel Rivasel          Academia Altamira del Sur  11   6.5     3     3
-*  8  Elmiro Nebreda         Deportivo Valmora          11   6.5     3     1
-   9  Hemiro Bocanegro       Academia Castelmar         11   6.4     3     1
-  10  Rodvan Calderan        Academia Altamira del Sur  11   6.4     4     0
-  11  Ivaro Aguirel          Academia Castelmar         11   6.4     3     3
-  12  Cedrio Illanes         Academia Castelmar         11   6.4     3     1
-* 13  Quirino Valmeron       Deportivo Valmora          11   6.4     3     1
-  14  Pelayo Hontoria        Estrella Olivarejo         11   6.4     3     2
-  15  Quirino Olmedrar       Estrella Olivarejo         11   6.4     3     1
-  16  Hilaro Valmeron        Academia Lomaverde         11   6.4     5     0
-  17  Joldan Yrigaldo        Estrella Olivarejo         11   6.4     2     3
-  18  Yeraldo Quintaleo      Academia Altamira del Sur  11   6.4     2     2
-  19  Cedrio Hontoria        Club Brisanda              11   6.4     1     6
-  20  Rodvan Hontoria        Academia Altamira del Sur  11   6.4     4     0
-  21  Tavio Duelmo           Academia Castelmar         11   6.3     0     2
-  22  Ivaro Norvalde         Academia Altamira del Sur  11   6.3     1     2
-  23  Kaelo Gallardel        Academia Castelmar         11   6.3     2     0
-  24  Galdo Dunavar          Club Brisanda              11   6.3     3     2
-  25  Cedrio Quintaleo       Academia Castelmar         11   6.3     0     0
+>  1  Lisandor Illanes       Juventud Altamira del Sur  11   6.6     4     2
+   2  Dorvan Landrosa        Deportivo Hondaluz         11   6.5     5     0
+   3  Selmo Bastaro          Deportivo Hondaluz         11   6.5     4     1
+   4  Zenel Jarvale          Juventud Altamira del Sur  11   6.5     3     2
+   5  Florian Bocanegro      Unión Fontalva             11   6.4     3     2
+*  6  Lorvin Dunavar         Estrella Altamira del Sur  11   6.4     4     2
+   7  Xandro Bastaro         Unión Fontalva             11   6.4     3     2
+   8  Ivaro Urdangal         Unión Fontalva             11   6.4     3     1
+   9  Marvel Norvalde        Juventud Altamira del Sur  11   6.4     3     0
+  10  Lisandor Garmendo      Juventud Altamira del Sur  11   6.4     3     0
+  11  Kaelo Zaldumar         Unión Altamira del Sur     11   6.4     3     3
+  12  Wenceo Korvena         Juventud Altamira del Sur  11   6.4     1     3
+* 13  Dorvan Orbaneja        Estrella Altamira del Sur  11   6.4     3     3
+  14  Tavio Orbaneja         Unión Fontalva             11   6.3     4     0
+  15  Lisandor Bastaro       Deportivo Hondaluz         11   6.3     1     3
+  16  Dorvan Herbasco        Club Brisanda              11   6.3     2     3
+  17  Lorvin Duelmo          Club Brisanda              11   6.3     3     2
+  18  Eskardo Olmedrar       Juventud Altamira del Sur  11   6.3     2     0
+  19  Mendo Fuentalba        Estrella Salinera          11   6.3     1     3
+  20  Lorvin Lacerna         Estrella Salinera          11   6.3     3     0
+  21  Lorvin Abrelda         Juventud Riobravo           5   6.3     2     0
+  22  Florian Olmedrar       Deportivo Hondaluz          6   6.2     2     0
+  23  Orlandi Quintaleo      Club Brisanda              11   6.2     3     1
+  24  Galdo Lacerna          Unión Fontalva             11   6.2     0     3
+  25  Baltor Pardovan        Unión Altamira del Sur     11   6.2     2     1
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver
 ```
@@ -342,16 +342,16 @@ MEJORES VALORACIONES · Temporada 4 · Jornada 11 / 18
 EQUIPOS · Temporada 4 · Jornada 11 / 18
 
    #  Equipo                    PJ  GF  GC Imb SM  Am Ro  Goleador
->  1  Deportivo Valmora         11  17   9   5  3  19  1  Anselmo Fuentalba (3)
-   2  Academia Castelmar        11  18   7   6  4  16  0  Nolven Quintaleo (4)
-   3  Academia Altamira del Sur 11  20   8   5  2  27  0  Rodvan Calderan (4)
-   4  Estrella Olivarejo        11  15  13   3  1  15  1  Pelayo Hontoria (3)
-   5  Estrella Salinera         11  11  11   6  2  22  2  Pelayo Abrelda (6)
-   6  Deportivo Embalse Nuevo   11   7  13   3  6  17  2  Baltor Sandoral (2)
-   7  Club Brisanda             11  14  17   2  2  18  1  Galdo Dunavar (3)
-   8  Academia Lomaverde        11   9  15   3  5  18  1  Hilaro Valmeron (5)
-   9  Academia Riobravo         11  10  18   1  5  19  2  Wenceo Landrosa (3)
-  10  Unión Olivarejo           11   9  19   2  6  25  2  Xandro Valmeron (3)
+>  1  Juventud Altamira del Sur 11  20   8   5  2  22  0  Lisandor Illanes (4)
+   2  Unión Fontalva            11  15  13   4  1  27  2  Tavio Orbaneja (4)
+   3  Deportivo Hondaluz        11  15   9   5  3  19  1  Dorvan Landrosa (5)
+*  4  Estrella Altamira del Sur 11  13  10   3  4  18  0  Lorvin Dunavar (4)
+   5  Estrella Salinera         11  10  11   5  3  21  2  Lorvin Lacerna (3)
+   6  Unión Altamira del Sur    11  12  13   4  3  12  0  Kaelo Zaldumar (3)
+   7  Club Brisanda             11  15  17   1  3  19  0  Lorvin Duelmo (3)
+   8  Academia Salinera         11   5   7   6  6  22  2  Galdo Montecal (2)
+   9  Juventud Riobravo         11  11  17   1  4  18  2  Joldan Landrosa (2)
+  10  Deportivo Nuevaluna       11   7  18   1  6  24  3  Nervio Bocanegro (2)
 
 ↑/↓ mover · enter plantilla · tab goleador/asistente · * tu club · esc volver
 ```
@@ -362,16 +362,16 @@ EQUIPOS · Temporada 4 · Jornada 11 / 18
 EQUIPOS · Temporada 4 · Jornada 11 / 18
 
    #  Equipo                    PJ  GF  GC Imb SM  Am Ro  Asistente
->  1  Deportivo Valmora         11  17   9   5  3  19  1  Anselmo Fuentalba (3)
-   2  Academia Castelmar        11  18   7   6  4  16  0  Ivaro Aguirel (3)
-   3  Academia Altamira del Sur 11  20   8   5  2  27  0  Zenel Rivasel (3)
-   4  Estrella Olivarejo        11  15  13   3  1  15  1  Joldan Yrigaldo (3)
-   5  Estrella Salinera         11  11  11   6  2  22  2  Ulmar Frondosa (3)
-   6  Deportivo Embalse Nuevo   11   7  13   3  6  17  2  Baltor Sandoral (1)
-   7  Club Brisanda             11  14  17   2  2  18  1  Cedrio Hontoria (6)
-   8  Academia Lomaverde        11   9  15   3  5  18  1  Quirino Cordival (2)
-   9  Academia Riobravo         11  10  18   1  5  19  2  Yeraldo Landrosa (4)
-  10  Unión Olivarejo           11   9  19   2  6  25  2  Fabrel Korvena (5)
+>  1  Juventud Altamira del Sur 11  20   8   5  2  22  0  Wenceo Korvena (3)
+   2  Unión Fontalva            11  15  13   4  1  27  2  Galdo Lacerna (3)
+   3  Deportivo Hondaluz        11  15   9   5  3  19  1  Lisandor Bastaro (3)
+*  4  Estrella Altamira del Sur 11  13  10   3  4  18  0  Dorvan Orbaneja (3)
+   5  Estrella Salinera         11  10  11   5  3  21  2  Mendo Fuentalba (3)
+   6  Unión Altamira del Sur    11  12  13   4  3  12  0  Kaelo Zaldumar (3)
+   7  Club Brisanda             11  15  17   1  3  19  0  Dorvan Herbasco (3)
+   8  Academia Salinera         11   5   7   6  6  22  2  Fabrel Garmendo (1)
+   9  Juventud Riobravo         11  11  17   1  4  18  2  Ivaro Cordival (3)
+  10  Deportivo Nuevaluna       11   7  18   1  6  24  3  Anselmo Rivasel (3)
 
 ↑/↓ mover · enter plantilla · tab goleador/asistente · * tu club · esc volver
 ```
@@ -379,31 +379,31 @@ EQUIPOS · Temporada 4 · Jornada 11 / 18
 ## Plantilla de un equipo con estadísticas
 
 ```
-ACADEMIA CASTELMAR · estadísticas
+UNIÓN FONTALVA · estadísticas
 
   Posición      Jugador                 PJ Tit   Min   G   A  Am  Ro Imb  Val
-> Portero       Yeraldo Yrigaldo        11  11   990   0   0   0   0   6  6.2
-  Portero       Tavio Garmendo           0   0     0   0   0   0   0   0    -
-  Defensa       Tavio Duelmo            11  11   967   0   2   1   0   6  6.3
-  Defensa       Cedrio Quintaleo        11  11   874   0   0   0   0   6  6.3
-  Defensa       Ivaro Korvena           11  11   814   0   1   3   0   5  6.2
-  Defensa       Isidoro Jurado          11  11   911   2   1   0   0   6  6.5
-  Defensa       Hemiro Valmeron          5   0   102   0   0   0   0   0  6.0
-  Defensa       Daveo Irueta             7   0   122   0   0   0   0   0  6.0
-  Defensa       Eskardo Estoral          7   0   204   0   0   1   0   0  6.0
-  Mediocampista Hilaro Gallardel        11  11   779   1   0   2   0   0  6.1
-  Mediocampista Ivaro Aguirel           11  11   912   3   3   4   0   0  6.4
-  Mediocampista Nolven Quintaleo        11  11   951   4   3   2   0   0  6.6
-  Mediocampista Belron Escalona          5   0    87   0   0   0   0   0  6.0
-  Mediocampista Kaelo Lacerna            3   0    87   0   0   0   0   0  6.1
-  Mediocampista Pelayo Landrosa          6   0   153   0   0   2   0   0  5.9
-  Mediocampista Mendo Herbasco           2   0    34   0   0   0   0   0  6.0
-  Delantero     Cedrio Illanes          11  11   829   3   1   0   0   0  6.4
-  Delantero     Hemiro Bocanegro        11  11   851   3   1   0   0   0  6.4
-  Delantero     Kaelo Gallardel         11  11   862   2   0   1   0   0  6.3
-  Delantero     Galdo Escalona           4   0   128   0   0   0   0   0  6.0
-  Delantero     Galdo Landrosa           7   0   146   0   0   0   0   0  6.0
-  Delantero     Nolven Olmedrar          3   0    87   0   0   0   0   0  6.0
+> Portero       Kervo Illanes           11  11   990   0   0   0   0   4  5.9
+  Portero       Arlen Fuentalba          0   0     0   0   0   0   0   0    -
+  Defensa       Fabrel Frondosa         11  11   901   0   0   2   0   3  6.0
+  Defensa       Xandro Gallardel        11  11   865   0   1   4   1   2  5.8
+  Defensa       Zenel Estoral           11  11   880   0   1   4   0   4  6.1
+  Defensa       Joldan Herbasco         11  11   833   0   0   4   0   3  5.9
+  Defensa       Nolven Orbaneja          5   0   144   0   0   0   0   0  5.9
+  Defensa       Elmiro Norvalde          8   0   208   0   0   2   0   0  5.9
+  Defensa       Kaelo Torvelo            7   0   149   0   0   0   0   0  6.0
+  Mediocampista Galdo Lacerna           11  11   923   0   3   2   0   0  6.2
+  Mediocampista Xandro Bastaro          11  11   915   3   2   2   0   0  6.4
+  Mediocampista Nervio Rivasel          11  11   744   0   1   1   0   0  6.1
+  Mediocampista Florian Quintaleo        4   0   101   0   1   1   0   0  6.0
+  Mediocampista Kervo Garmendo           3   0    48   0   0   0   0   0  6.0
+  Mediocampista Tavio Sandoral           8   0   215   1   0   1   0   0  6.1
+  Mediocampista Hemiro Dunavar           1   0    28   0   0   0   0   0  6.1
+  Delantero     Florian Bocanegro       11  11   898   3   2   2   0   0  6.4
+  Delantero     Ivaro Urdangal          11  11   865   3   1   0   0   0  6.4
+  Delantero     Tavio Orbaneja          11  11   830   4   0   2   1   0  6.3
+  Delantero     Baltor Lacerna           4   0   106   0   0   0   0   0  6.0
+  Delantero     Nervio Garmendo          5   0   106   0   0   0   0   0  6.0
+  Delantero     Nervio Calderan          4   0    75   1   0   0   0   0  6.0
 
 ↑/↓ mover · enter ver ficha · esc volver
 ```
@@ -411,20 +411,20 @@ ACADEMIA CASTELMAR · estadísticas
 ## Ficha de un portero
 
 ```
-FICHA · Gervasio Quintaleo
-Deportivo Valmora · Portero · 20 años · Valoración 87
-RIT 58  TIR 37  PAS 69  REG 45  DEF 64  FIS 76  REF 99
+FICHA · Mendo Cordival
+Estrella Altamira del Sur · Portero · 30 años · Valoración 79
+RIT 64  TIR 52  PAS 78  REG 45  DEF 72  FIS 74  REF 84
 
 Temporada 4 (en curso)
-  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 5 · Enc 9 · Val 6.1
+  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 3 · Enc 10 · Val 5.9
 
 Trayectoria
   Temp  Club                       PJ   Min   G   A  Am  Ro Imb  Val
-     1  Deportivo Valmora          18  1620   0   0   0   0   3  5.6
-     2  Deportivo Valmora          18  1620   0   0   0   0   6  5.8
-     3  Deportivo Valmora          18  1620   0   0   1   0   5  5.9
+     1  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.6
+     2  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.7
+     3  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.8
 
-Carrera: 65 partidos · 0 goles · 0 asistencias · 1 amarillas · 0 rojas
+Carrera: 65 partidos · 0 goles · 0 asistencias · 0 amarillas · 0 rojas
 
 esc volver
 ```
@@ -432,19 +432,18 @@ esc volver
 ## Ficha de un delantero
 
 ```
-FICHA · Valdor Cordival
-Deportivo Valmora · Delantero · 19 años · Valoración 63
-RIT 61  TIR 81  PAS 47  REG 56  DEF 25  FIS 49  REF 1
+FICHA · Elmiro Montecal
+Estrella Altamira del Sur · Delantero · 18 años · Valoración 47
+RIT 51  TIR 54  PAS 42  REG 44  DEF 10  FIS 47  REF 1
 
 Temporada 4 (en curso)
-  PJ 3 · Tit 0 · Min 105 · G 0 · A 0 · Am 0 · Ro 0 · Imb 0 · Val 6.1
+  PJ 7 · Tit 0 · Min 204 · G 1 · A 0 · Am 0 · Ro 0 · Imb 0 · Val 6.1
 
 Trayectoria
   Temp  Club                       PJ   Min   G   A  Am  Ro Imb  Val
-     2  Deportivo Valmora           5   100   0   0   0   0   0  6.0
-     3  Deportivo Valmora           9   252   1   1   1   0   0  6.1
+     3  Estrella Altamira del Sur   8   204   0   0   0   0   0  6.0
 
-Carrera: 17 partidos · 1 goles · 1 asistencias · 1 amarillas · 0 rojas
+Carrera: 15 partidos · 1 goles · 0 asistencias · 0 amarillas · 0 rojas
 
 esc volver
 ```
@@ -454,8 +453,8 @@ esc volver
 ```
 TEMPORADA 1 TERMINADA
 
-Campeón: Unión Embalse Nuevo
-Tu equipo: Club Pinarel, puesto 2 de 10, 34 puntos
+Campeón: Juventud Brisanda
+Tu equipo: Juventud Sanvedra, puesto 10 de 10, 17 puntos
 
 > Siguiente temporada
   Ver tabla final
@@ -470,15 +469,15 @@ Tu equipo: Club Pinarel, puesto 2 de 10, 34 puntos
 ## Inicio de temporada
 
 ```
-TEMPORADA 2 · Club Pinarel
+TEMPORADA 2 · Juventud Sanvedra
 
-Valoración del equipo: 79 → 79
+Valoración del equipo: 75 → 76
 
 Nadie se retira este año.
 
 No llega nadie de la cantera.
 
-En toda la liga: 5 retiros y 5 juveniles.
+En toda la liga: 9 retiros y 9 juveniles.
 
 enter continuar
 ```
@@ -489,7 +488,7 @@ enter continuar
 NUEVA CARRERA
 
 Esto empieza una carrera nueva y pierdes la actual
-(Temporada 2 con Club Pinarel). Aún no hay guardado automático.
+(Temporada 2 con Juventud Sanvedra). Aún no hay guardado automático.
 ¿Seguro?
 
 > No, volver

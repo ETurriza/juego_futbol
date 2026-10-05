@@ -1,9 +1,9 @@
 JORNADA 12 / 18 · Temporada 4
 
-> Deportivo Valmora           0 - 0   Club Brisanda
-  Unión Olivarejo             1 - 2   Estrella Olivarejo
-  Deportivo Embalse Nuevo     1 - 4   Academia Castelmar
-  Academia Lomaverde          0 - 2   Academia Riobravo
-  Academia Altamira del Sur   3 - 1   Estrella Salinera
+  Unión Fontalva              0 - 0   Club Brisanda
+  Deportivo Nuevaluna         1 - 2   Estrella Salinera
+> Unión Altamira del Sur      1 - 3   Estrella Altamira del Sur
+  Academia Salinera           0 - 1   Juventud Riobravo
+  Juventud Altamira del Sur   2 - 3   Deportivo Hondaluz
 
 enter continuar

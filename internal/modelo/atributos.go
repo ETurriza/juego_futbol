@@ -22,7 +22,7 @@ type Atributos struct {
 
 // pesos de cada atributo por posición; cada fila suma 100.
 var pesos = map[Posicion]Atributos{
-	Portero:       {Ritmo: 5, Tiro: 0, Pase: 10, Regate: 0, Defensa: 10, Fisico: 15, Reflejos: 60},
+	Portero:       {Ritmo: 5, Tiro: 0, Pase: 10, Regate: 0, Defensa: 15, Fisico: 20, Reflejos: 50},
 	Defensa:       {Ritmo: 15, Tiro: 5, Pase: 10, Regate: 5, Defensa: 40, Fisico: 25, Reflejos: 0},
 	Mediocampista: {Ritmo: 10, Tiro: 15, Pase: 35, Regate: 20, Defensa: 10, Fisico: 10, Reflejos: 0},
 	Delantero:     {Ritmo: 20, Tiro: 35, Pase: 10, Regate: 20, Defensa: 5, Fisico: 10, Reflejos: 0},

@@ -103,9 +103,11 @@ func TestCurvaPorEdadSigueLaTabla(t *testing.T) {
 	const n, tolerancia = 6000, 0.35
 	for _, p := range []modelo.Posicion{modelo.Mediocampista, modelo.Portero} {
 		for edad := 16; edad <= 42; edad++ {
-			esperadoT, esperadoF := CambioMedio(edad, p)
+			tabT, tabF := CambioMedio(edad, p)
+			esperadoT, esperadoF := conTecho(tabT, 70), conTecho(tabF, 70)
 			if e := edadEfectiva(modelo.Jugador{Edad: edad, Posicion: p}); e >= granAnoDesde && e <= granAnoHasta {
-				esperadoT += probGranAno * bonoGranAno
+				// Con probabilidad probGranAno el cambio técnico suma el bono.
+				esperadoT = (1-probGranAno)*conTecho(tabT, 70) + probGranAno*conTecho(tabT+bonoGranAno, 70)
 			}
 			// Evita los extremos donde el límite 1-99 sesga el promedio.
 			obsT, obsF := cambioObservado(edad, p, n)
@@ -115,6 +117,66 @@ func TestCurvaPorEdadSigueLaTabla(t *testing.T) {
 			}
 		}
 	}
+}
+
+// conTecho aplica los rendimientos decrecientes a un cambio medio: solo el
+// crecimiento se frena, según lo cerca del tope que esté el valor.
+func conTecho(cambio float64, valor int) float64 {
+	if cambio > 0 {
+		return cambio * factorCrecimiento(valor)
+	}
+	return cambio
+}
+
+func TestRendimientosDecrecientes(t *testing.T) {
+	// El factor baja a medida que el valor sube, sin pasar de 1 ni bajar de factorMinimo.
+	anterior := 2.0
+	for v := modelo.AtributoMin; v <= modelo.AtributoMax; v++ {
+		f := factorCrecimiento(v)
+		if f > anterior || f > 1 || f < factorMinimo {
+			t.Fatalf("factor(%d) = %.3f (anterior %.3f)", v, f, anterior)
+		}
+		anterior = f
+	}
+	if factorCrecimiento(40) != 1 || factorCrecimiento(int(techoAtributo-amplitudTecho)) != 1 {
+		t.Error("lejos del tope el crecimiento deberia ser el normal")
+	}
+	if factorCrecimiento(int(techoAtributo)) != factorMinimo || factorCrecimiento(99) != factorMinimo {
+		t.Error("en el tope el crecimiento deberia ser el minimo")
+	}
+
+	// Un joven con un atributo muy alto crece bastante menos que uno con uno medio.
+	creceMedio, creceAlto := cambioConValor(18, 60), cambioConValor(18, 90)
+	if creceAlto >= creceMedio/2 {
+		t.Errorf("a los 18, un atributo de 90 crece %.2f y uno de 60 crece %.2f: deberia frenarse mucho", creceAlto, creceMedio)
+	}
+	// La caída por edad, en cambio, no se frena: un veterano baja igual con 90 que con 60.
+	caeMedio, caeAlto := cambioConValor(36, 60), cambioConValor(36, 90)
+	if d := caeAlto - caeMedio; d > 0.6 || d < -0.6 {
+		t.Errorf("a los 36, el cambio con 90 (%.2f) y con 60 (%.2f) deberia ser parecido", caeAlto, caeMedio)
+	}
+	// Nadie supera 99 ni baja de 1, por mucho que crezca.
+	j := jugador(16, modelo.Delantero, 95, 95)
+	r := nuevoRand(2)
+	for i := 0; i < 8; i++ {
+		j = Envejecer(r, j)
+		if err := j.Atributos.Validar(); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// cambioConValor es el cambio medio del pase de un jugador de campo de la edad
+// dada que lo tiene en el valor dado.
+func cambioConValor(edad, valor int) float64 {
+	r := nuevoRand(int64(edad*1000 + valor))
+	const n = 6000
+	suma := 0.0
+	for i := 0; i < n; i++ {
+		nuevo := Envejecer(r, jugador(edad, modelo.Mediocampista, valor, valor))
+		suma += float64(nuevo.Atributos.Pase - valor)
+	}
+	return suma / n
 }
 
 func TestLaMesetaTecnicaDuraMasQueLaFisica(t *testing.T) {

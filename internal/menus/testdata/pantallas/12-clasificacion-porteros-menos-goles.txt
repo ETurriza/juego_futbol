@@ -1,15 +1,15 @@
 PORTEROS · MENOS GOLES ENCAJADOS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Enc Enc/PJ
->  1  Yeraldo Yrigaldo       Academia Castelmar         11     7   0.64
-   2  Hilaro Irueta          Academia Altamira del Sur  11     8   0.73
-*  3  Gervasio Quintaleo     Deportivo Valmora          11     9   0.82
-   4  Nolven Gallardel       Estrella Salinera          11    11   1.00
-   5  Rodvan Calderan        Deportivo Embalse Nuevo    11    12   1.09
-   6  Dorvan Illanes         Estrella Olivarejo         11    13   1.18
-   7  Nervio Orbaneja        Academia Lomaverde         11    15   1.36
-   8  Joldan Fuentalba       Club Brisanda              11    17   1.55
-   9  Lisandor Torvelo       Academia Riobravo          11    18   1.64
-  10  Hilaro Torvelo         Unión Olivarejo            11    19   1.73
+>  1  Nolven Jarvale         Academia Salinera          11     7   0.64
+   2  Joldan Dunavar         Juventud Altamira del Sur  11     8   0.73
+   3  Isidoro Montecal       Deportivo Hondaluz         11     9   0.82
+*  4  Mendo Cordival         Estrella Altamira del Sur  11    10   0.91
+   5  Eskardo Cordival       Estrella Salinera          11    11   1.00
+   6  Kervo Illanes          Unión Fontalva             11    13   1.18
+   7  Lisandor Montecal      Unión Altamira del Sur     11    13   1.18
+   8  Anselmo Urdangal       Club Brisanda              11    17   1.55
+   9  Orlandi Jarvale        Juventud Riobravo          11    17   1.55
+  10  Gervasio Roblemar      Deportivo Nuevaluna        11    18   1.64
 
 ↑/↓ mover · enter ver ficha · * tu club · esc volver

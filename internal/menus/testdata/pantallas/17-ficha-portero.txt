@@ -1,16 +1,16 @@
-FICHA · Gervasio Quintaleo
-Deportivo Valmora · Portero · 20 años · Valoración 87
-RIT 58  TIR 37  PAS 69  REG 45  DEF 64  FIS 76  REF 99
+FICHA · Mendo Cordival
+Estrella Altamira del Sur · Portero · 30 años · Valoración 79
+RIT 64  TIR 52  PAS 78  REG 45  DEF 72  FIS 74  REF 84
 
 Temporada 4 (en curso)
-  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 5 · Enc 9 · Val 6.1
+  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 3 · Enc 10 · Val 5.9
 
 Trayectoria
   Temp  Club                       PJ   Min   G   A  Am  Ro Imb  Val
-     1  Deportivo Valmora          18  1620   0   0   0   0   3  5.6
-     2  Deportivo Valmora          18  1620   0   0   0   0   6  5.8
-     3  Deportivo Valmora          18  1620   0   0   1   0   5  5.9
+     1  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.6
+     2  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.7
+     3  Estrella Altamira del Sur  18  1620   0   0   0   0   5  5.8
 
-Carrera: 65 partidos · 0 goles · 0 asistencias · 1 amarillas · 0 rojas
+Carrera: 65 partidos · 0 goles · 0 asistencias · 0 amarillas · 0 rojas
 
 esc volver

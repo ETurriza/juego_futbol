@@ -18,7 +18,7 @@ const prefijoModulo = "github.com/ETurriza/juego_futbol/internal/"
 // nuevo debe agregarse aquí al crearse.
 var permitidos = map[string][]string{
 	"modelo":       {},
-	"generador":    {"modelo"},
+	"generador":    {"modelo", "progresion"},
 	"simulacion":   {"modelo", "liga", "mercado"},
 	"liga":         {"modelo", "simulacion", "mercado"},
 	"mercado":      {"modelo", "simulacion", "liga"},
