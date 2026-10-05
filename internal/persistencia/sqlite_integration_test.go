@@ -830,3 +830,76 @@ func TestElTalentoViajaPorLaBaseDeDatos(t *testing.T) {
 		}
 	}
 }
+
+func TestLaAlineacionYLasFormacionesViajanPorLaBaseDeDatos(t *testing.T) {
+	ctx := context.Background()
+	r := abrirTemporal(t)
+	c, _ := aplicacion.NuevaCarrera(31, 10)
+	f := modelo.F352
+	if err := c.ElegirAlineacion(c.AlineacionAutomatica(&f)); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 5; i++ {
+		c.AvanzarJornada()
+	}
+	if err := aplicacion.GuardarCarrera(ctx, r, "a", c); err != nil {
+		t.Fatal(err)
+	}
+	cargada, err := aplicacion.CargarCarrera(ctx, r, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(c.Exportar(), cargada.Exportar()) {
+		t.Error("la carrera cargada no es identica a la guardada")
+	}
+	al, manual := cargada.AlineacionVigente()
+	if !manual || al.Formacion != modelo.F352 || !reflect.DeepEqual(al, c.Alineacion) {
+		t.Errorf("la alineacion elegida no se recupero: %v (manual=%v)", al, manual)
+	}
+
+	// Las formaciones distintas del 4-3-3 de cada partido se guardan y se recuperan.
+	var distintas int
+	if err := r.db.QueryRow(`SELECT COUNT(*) FROM resultados WHERE ranura = 'a'
+	                         AND (formacion_local <> 0 OR formacion_visitante <> 0)`).Scan(&distintas); err != nil {
+		t.Fatal(err)
+	}
+	if distintas == 0 {
+		t.Error("deberia haber partidos guardados con una formacion distinta del 4-3-3")
+	}
+
+	// Volver a la automatica borra la alineacion elegida de la base de datos.
+	cargada.UsarAlineacionAutomatica()
+	if err := aplicacion.GuardarCarrera(ctx, r, "a", cargada); err != nil {
+		t.Fatal(err)
+	}
+	var filas int
+	if err := r.db.QueryRow(`SELECT (SELECT COUNT(*) FROM alineacion_titulares WHERE ranura = 'a')
+	                              + (SELECT COUNT(*) FROM alineacion_banquillo WHERE ranura = 'a')`).Scan(&filas); err != nil {
+		t.Fatal(err)
+	}
+	if filas != 0 {
+		t.Errorf("quedaron %d filas de una alineacion descartada", filas)
+	}
+	otra, err := aplicacion.CargarCarrera(ctx, r, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, manual := otra.AlineacionVigente(); manual {
+		t.Error("tras descartarla no deberia haber alineacion elegida")
+	}
+
+	// Borrar la partida elimina tambien las tablas de la alineacion.
+	if err := aplicacion.GuardarCarrera(ctx, r, "a", c); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Borrar(ctx, "a"); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.db.QueryRow(`SELECT (SELECT COUNT(*) FROM alineacion_titulares)
+	                              + (SELECT COUNT(*) FROM alineacion_banquillo)`).Scan(&filas); err != nil {
+		t.Fatal(err)
+	}
+	if filas != 0 {
+		t.Errorf("quedaron %d filas de alineacion huerfanas tras borrar", filas)
+	}
+}

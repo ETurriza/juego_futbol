@@ -23,16 +23,6 @@ func posicionDePrueba(id int) modelo.Posicion {
 	return modelo.Delantero
 }
 
-func mapaDePosiciones() map[int]modelo.Posicion {
-	m := map[int]modelo.Posicion{}
-	for _, base := range []int{0, 100} {
-		for i := 1; i <= 14; i++ {
-			m[base+i] = posicionDePrueba(base + i)
-		}
-	}
-	return m
-}
-
 // detalleDePrueba tiene los titulares 1 a 11 (local) y 101 a 111 (visitante).
 func detalleDePrueba(eventos ...modelo.Evento) modelo.DetallePartido {
 	var d modelo.DetallePartido
@@ -54,7 +44,7 @@ func TestEstadisticasDeUnPartidoConResultadoYSucesos(t *testing.T) {
 		modelo.Evento{Minuto: 80, Tipo: modelo.Roja, Local: false, Jugador: 103},
 	)
 	// El marcador 2-1 incluye un gol local mas (minuto 10 y 70) y uno visitante.
-	est, err := estadisticasDePartido(d, 2, 1, mapaDePosiciones())
+	est, err := estadisticasDePartido(d, 2, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +78,7 @@ func TestPorteriaImbatidaSoloConSesentaMinutos(t *testing.T) {
 		modelo.Evento{Minuto: 50, Tipo: modelo.Sustitucion, Local: true, Jugador: 4, Otro: 13},
 		modelo.Evento{Minuto: 70, Tipo: modelo.Sustitucion, Local: true, Jugador: 5, Otro: 14},
 	)
-	est, err := estadisticasDePartido(d, 1, 0, mapaDePosiciones())
+	est, err := estadisticasDePartido(d, 1, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +116,7 @@ func TestLaValoracionDeUnPartidoQuedaEntre1y10(t *testing.T) {
 	for m := 20; m <= 30; m++ {
 		eventos = append(eventos, modelo.Evento{Minuto: m, Tipo: modelo.Gol, Local: false, Jugador: 111})
 	}
-	est, err := estadisticasDePartido(detalleDePrueba(eventos...), 12, 11, mapaDePosiciones())
+	est, err := estadisticasDePartido(detalleDePrueba(eventos...), 12, 11)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,7 +131,7 @@ func TestLaValoracionDeUnPartidoQuedaEntre1y10(t *testing.T) {
 	for m := 1; m <= 20; m++ {
 		recibe = append(recibe, modelo.Evento{Minuto: m, Tipo: modelo.Gol, Local: false, Jugador: 111})
 	}
-	est, _ = estadisticasDePartido(detalleDePrueba(recibe...), 0, 20, mapaDePosiciones())
+	est, _ = estadisticasDePartido(detalleDePrueba(recibe...), 0, 20)
 	if got := est[101+0].SumaValoracion; got < valoracionMin {
 		t.Errorf("la valoracion no puede bajar de %d: %d", valoracionMin, got)
 	}
@@ -152,14 +142,14 @@ func TestLaValoracionDeUnPartidoQuedaEntre1y10(t *testing.T) {
 
 func TestEstadisticasRechazaUnDetalleQueNoCuadra(t *testing.T) {
 	buen := detalleDePrueba(modelo.Evento{Minuto: 10, Tipo: modelo.Gol, Local: true, Jugador: 9})
-	if _, err := estadisticasDePartido(buen, 1, 0, mapaDePosiciones()); err != nil {
+	if _, err := estadisticasDePartido(buen, 1, 0); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := estadisticasDePartido(buen, 2, 0, mapaDePosiciones()); err == nil || !strings.Contains(err.Error(), "marcador") {
+	if _, err := estadisticasDePartido(buen, 2, 0); err == nil || !strings.Contains(err.Error(), "marcador") {
 		t.Errorf("un marcador distinto de los sucesos deberia dar error: %v", err)
 	}
 	mal := detalleDePrueba(modelo.Evento{Minuto: 10, Tipo: modelo.Gol, Local: true, Jugador: 999})
-	if _, err := estadisticasDePartido(mal, 1, 0, mapaDePosiciones()); err == nil {
+	if _, err := estadisticasDePartido(mal, 1, 0); err == nil {
 		t.Error("un goleador que no participa deberia dar error")
 	}
 }

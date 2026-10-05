@@ -3,6 +3,7 @@ package simulacion
 import (
 	"math"
 	"math/rand"
+	"sort"
 
 	"github.com/ETurriza/juego_futbol/internal/modelo"
 )
@@ -38,13 +39,6 @@ const (
 	atributoMinFz = 1.0
 )
 
-// Formación fija 4-3-3 para elegir los titulares de cada línea.
-const (
-	titularesDefensas = 4
-	titularesMedios   = 3
-	titularesDelant   = 3
-)
-
 // Resultado es el marcador de un partido y su detalle: alineaciones y sucesos.
 type Resultado struct {
 	GolesLocal     int
@@ -52,65 +46,80 @@ type Resultado struct {
 	Detalle        modelo.DetallePartido
 }
 
-// Marcador simula solo el resultado de un partido, sin alineaciones ni sucesos.
-// Da los mismos goles que Simular con la misma aleatoriedad, pero mucho más
-// rápido: sirve para simular muchos partidos cuando no hace falta el detalle.
+// efectoRoja es cuánto cambia la esperanza de goles por cada partido completo
+// que un equipo juega con diez: el que juega con diez marca esa fracción menos y
+// su rival marca esa fracción más.
+const efectoRoja = 0.18
+
+// Marcador simula solo el resultado de un partido, sin alineaciones ni sucesos y,
+// por tanto, sin el efecto de las tarjetas: cada equipo juega un 4-3-3 con sus
+// mejores jugadores de cada posición. Es mucho más rápido que Simular y sirve para
+// simular muchos partidos cuando no hace falta el detalle.
 func Marcador(r *rand.Rand, local, visitante modelo.Equipo) (golesLocal, golesVisitante int) {
-	ataqueL, defensaL := fuerzas(local)
-	ataqueV, defensaV := fuerzas(visitante)
+	ataqueL, defensaL := fuerzasAutomaticas(local, modelo.F433)
+	ataqueV, defensaV := fuerzasAutomaticas(visitante, modelo.F433)
 
-	esperanzaL := golesBase * ventajaLocal * math.Pow(ataqueL/defensaV, exponenteFuerza)
-	esperanzaV := golesBase * math.Pow(ataqueV/defensaL, exponenteFuerza)
-
-	golesLocal = poisson(r, esperanzaL)
-	golesVisitante = poisson(r, esperanzaV)
+	golesLocal = poisson(r, esperanzaLocal(ataqueL, defensaV, 1))
+	golesVisitante = poisson(r, esperanzaVisitante(ataqueV, defensaL, 1))
 	return golesLocal, golesVisitante
 }
 
+func esperanzaLocal(ataque, defensaRival, factor float64) float64 {
+	return golesBase * ventajaLocal * math.Pow(ataque/defensaRival, exponenteFuerza) * factor
+}
+
+func esperanzaVisitante(ataque, defensaRival, factor float64) float64 {
+	return golesBase * math.Pow(ataque/defensaRival, exponenteFuerza) * factor
+}
+
 // Simular juega un partido entre local y visitante y devuelve el marcador y su
-// detalle. Es una función pura: no modifica los equipos y toda la aleatoriedad
-// sale de r.
+// detalle. Cada equipo elige solo la formación y el once que mejor le van. Es una
+// función pura: no modifica los equipos y toda la aleatoriedad sale de r.
 func Simular(r *rand.Rand, local, visitante modelo.Equipo) Resultado {
-	golesL, golesV := Marcador(r, local, visitante)
+	return SimularConAlineaciones(r,
+		local, AlineacionAutomatica(local, Criterios{}),
+		visitante, AlineacionAutomatica(visitante, Criterios{}))
+}
+
+// SimularConAlineaciones juega un partido con las alineaciones dadas (que deben
+// ser válidas para sus plantillas). Primero se deciden los cambios y las
+// tarjetas; las rojas dejan a un equipo con diez y cambian la esperanza de goles
+// del resto del partido, y después se reparten los goles entre quienes estaban en
+// el campo.
+func SimularConAlineaciones(r *rand.Rand, local modelo.Equipo, alL modelo.Alineacion,
+	visitante modelo.Equipo, alV modelo.Alineacion) Resultado {
+
+	tl := lineaDeTiempo(r, true, local, alL)
+	tv := lineaDeTiempo(r, false, visitante, alV)
+
+	ataqueL, defensaL := Fuerzas(local, alL)
+	ataqueV, defensaV := Fuerzas(visitante, alV)
+	conDiezL, conDiezV := tl.fraccionConDiez(), tv.fraccionConDiez()
+	factorL := math.Max(1-efectoRoja*conDiezL+efectoRoja*conDiezV, 0.3)
+	factorV := math.Max(1-efectoRoja*conDiezV+efectoRoja*conDiezL, 0.3)
+
+	golesL := poisson(r, esperanzaLocal(ataqueL, defensaV, factorL))
+	golesV := poisson(r, esperanzaVisitante(ataqueV, defensaL, factorV))
+
+	var eventos []modelo.Evento
+	eventos = append(eventos, tl.eventos...)
+	eventos = append(eventos, tl.goles(r, golesL)...)
+	eventos = append(eventos, tv.eventos...)
+	eventos = append(eventos, tv.goles(r, golesV)...)
+	// Orden por minuto; a igual minuto se conserva el orden de generación.
+	sort.SliceStable(eventos, func(a, b int) bool { return eventos[a].Minuto < eventos[b].Minuto })
+
 	return Resultado{
 		GolesLocal:     golesL,
 		GolesVisitante: golesV,
-		Detalle:        generarDetalle(r, local, visitante, golesL, golesV),
+		Detalle: modelo.DetallePartido{
+			FormacionLocal:     alL.Formacion,
+			FormacionVisitante: alV.Formacion,
+			TitularesLocal:     alL.Titulares,
+			TitularesVisitante: alV.Titulares,
+			Eventos:            eventos,
+		},
 	}
-}
-
-// fuerzas devuelve la fuerza de ataque y de defensa de un equipo (en la escala
-// de los atributos) a partir de sus titulares.
-func fuerzas(e modelo.Equipo) (ataque, defensa float64) {
-	porteros := mejores(e, modelo.Portero, 1)
-	defensas := mejores(e, modelo.Defensa, titularesDefensas)
-	medios := mejores(e, modelo.Mediocampista, titularesMedios)
-	delanteros := mejores(e, modelo.Delantero, titularesDelant)
-
-	var a, d media
-	for _, j := range delanteros {
-		v := (float64(j.Atributos.Tiro) + float64(j.Atributos.Regate) +
-			float64(j.Atributos.Ritmo) + float64(j.Atributos.Pase)) / 4
-		a.sumar(2, v)
-		a.sumarCrack(j, crackDelantero)
-	}
-	for _, j := range medios {
-		v := (float64(j.Atributos.Pase) + float64(j.Atributos.Regate) + float64(j.Atributos.Tiro)) / 3
-		a.sumar(1, v)
-		a.sumarCrack(j, crackMediocampo)
-		d.sumar(0.5, float64(j.Atributos.Defensa))
-	}
-	for _, j := range defensas {
-		v := (float64(j.Atributos.Defensa) + float64(j.Atributos.Fisico)) / 2
-		d.sumar(1, v)
-		d.sumarCrack(j, crackDefensa)
-	}
-	for _, j := range porteros {
-		v := float64(j.Atributos.Reflejos)
-		d.sumar(3, v)
-		d.sumarCrack(j, crackPortero)
-	}
-	return a.valor(), d.valor()
 }
 
 // media acumula la fuerza de una línea: la media ponderada de sus jugadores más
@@ -126,10 +135,10 @@ func (m *media) sumar(peso, valor float64) {
 }
 
 // sumarCrack acumula el exceso de la valoración del jugador sobre el umbral de
-// crack, con el peso de su posición. Se usa la valoración (la que ve el usuario) y
-// no el valor del rol: así un 90 cuenta igual sea portero o delantero.
-func (m *media) sumarCrack(j modelo.Jugador, puntosPorExceso float64) {
-	m.cracks += puntosPorExceso * math.Max(float64(j.Valoracion())-umbralCrack, 0)
+// crack, con el peso de su puesto. Se usa la valoración en ese puesto (la que ve el
+// usuario) y no el valor del rol: así un 90 cuenta igual sea portero o delantero.
+func (m *media) sumarCrack(j modelo.Jugador, puesto modelo.Posicion, puntosPorExceso float64) {
+	m.cracks += puntosPorExceso * math.Max(float64(j.ValoracionEn(puesto))-umbralCrack, 0)
 }
 
 func (m media) valor() float64 {
@@ -138,28 +147,6 @@ func (m media) valor() float64 {
 	}
 	aporte := topeCracks * (1 - math.Exp(-m.cracks/topeCracks))
 	return math.Max(m.suma/m.peso+aporte, atributoMinFz)
-}
-
-// mejores devuelve hasta n jugadores de la posición dada, los de mayor
-// valoración primero. No modifica la plantilla.
-func mejores(e modelo.Equipo, p modelo.Posicion, n int) []modelo.Jugador {
-	var candidatos []modelo.Jugador
-	for _, j := range e.Plantilla {
-		if j.Posicion == p {
-			candidatos = append(candidatos, j)
-		}
-	}
-	// selección simple por inserción: las plantillas son pequeñas y el orden
-	// debe ser estable y determinista (mayor valoración, luego menor ID).
-	for i := 1; i < len(candidatos); i++ {
-		for k := i; k > 0 && mejorQue(candidatos[k], candidatos[k-1]); k-- {
-			candidatos[k], candidatos[k-1] = candidatos[k-1], candidatos[k]
-		}
-	}
-	if len(candidatos) > n {
-		candidatos = candidatos[:n]
-	}
-	return candidatos
 }
 
 func mejorQue(a, b modelo.Jugador) bool {

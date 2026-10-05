@@ -54,6 +54,10 @@ type Evento struct {
 // ordenados por minuto. De él se derivan los minutos de cada jugador y todas
 // las estadísticas.
 type DetallePartido struct {
+	// Formaciones con que jugó cada equipo; el orden de los titulares es el de
+	// Formacion.Puestos(). El valor cero es el 4-3-3.
+	FormacionLocal     Formacion
+	FormacionVisitante Formacion
 	// Titulares de cada equipo; 0 en las posiciones sin jugador (equipos con
 	// menos de once jugadores).
 	TitularesLocal     [TitularesPorEquipo]int
@@ -89,8 +93,12 @@ func (d DetallePartido) Goles() (local, visitante int) {
 type Participacion struct {
 	Jugador int
 	Local   bool
-	Desde   int // 0 para un titular; el minuto de entrada para un suplente
-	Hasta   int // MinutosPartido, o el minuto de salida o expulsión
+	// Puesto es la posición en que jugó: el de su puesto en el once si fue
+	// titular, o el del jugador al que sustituyó si fue suplente. No tiene por qué
+	// ser su posición natural.
+	Puesto Posicion
+	Desde  int // 0 para un titular; el minuto de entrada para un suplente
+	Hasta  int // MinutosPartido, o el minuto de salida o expulsión
 }
 
 // Minutos son los minutos jugados.
@@ -107,7 +115,7 @@ func (p Participacion) Titular() bool { return p.Desde == 0 }
 func (d DetallePartido) Participaciones() ([]Participacion, error) {
 	var out []Participacion
 	indice := map[int]int{}
-	agregar := func(id int, local bool, desde int) error {
+	agregar := func(id int, local bool, puesto Posicion, desde int) error {
 		if id <= 0 {
 			return fmt.Errorf("ID de jugador invalida: %d", id)
 		}
@@ -115,18 +123,23 @@ func (d DetallePartido) Participaciones() ([]Participacion, error) {
 			return fmt.Errorf("el jugador %d aparece dos veces en el partido", id)
 		}
 		indice[id] = len(out)
-		out = append(out, Participacion{Jugador: id, Local: local, Desde: desde, Hasta: MinutosPartido})
+		out = append(out, Participacion{Jugador: id, Local: local, Puesto: puesto, Desde: desde, Hasta: MinutosPartido})
 		return nil
 	}
 	for _, grupo := range []struct {
-		ids   [TitularesPorEquipo]int
-		local bool
-	}{{d.TitularesLocal, true}, {d.TitularesVisitante, false}} {
-		for _, id := range grupo.ids {
+		ids       [TitularesPorEquipo]int
+		formacion Formacion
+		local     bool
+	}{{d.TitularesLocal, d.FormacionLocal, true}, {d.TitularesVisitante, d.FormacionVisitante, false}} {
+		if !grupo.formacion.Valida() {
+			return nil, fmt.Errorf("formacion invalida: %d", int(grupo.formacion))
+		}
+		puestos := grupo.formacion.Puestos()
+		for i, id := range grupo.ids {
 			if id == 0 {
 				continue
 			}
-			if err := agregar(id, grupo.local, 0); err != nil {
+			if err := agregar(id, grupo.local, puestos[i], 0); err != nil {
 				return nil, err
 			}
 		}
@@ -178,7 +191,7 @@ func (d DetallePartido) Participaciones() ([]Participacion, error) {
 			out[i].Hasta = e.Minuto
 		case Sustitucion:
 			out[i].Hasta = e.Minuto
-			if err := agregar(e.Otro, e.Local, e.Minuto); err != nil {
+			if err := agregar(e.Otro, e.Local, out[i].Puesto, e.Minuto); err != nil {
 				return nil, fmt.Errorf("suceso %d (entra): %w", n+1, err)
 			}
 		}

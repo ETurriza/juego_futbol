@@ -35,6 +35,11 @@ type Carrera struct {
 	// Archivo tiene las estadísticas de los jugadores de la liga en cada
 	// temporada terminada (solo de quienes jugaron).
 	Archivo []EstadisticaTemporada
+	// Alineacion es la que eligió el usuario para su equipo; solo vale si
+	// AlineacionManual es verdadero. Si deja de ser válida (por ejemplo, se retira
+	// un titular) se usa la automática hasta que elija otra.
+	Alineacion       modelo.Alineacion
+	AlineacionManual bool
 	// ProximoID es la ID que recibirá el próximo jugador creado. Nunca se
 	// reutiliza una ID, ni la de un jugador retirado.
 	ProximoID int
@@ -131,7 +136,7 @@ func semillaEvolucion(semilla int64, numero int) int64 {
 // ErrTemporadaTerminada si ya no quedan jornadas.
 func (c *Carrera) AvanzarJornada() ([]ResultadoPartido, error) {
 	r := rand.New(rand.NewSource(semillaJornada(c.semillaTemporada(), c.Temporada.JornadaActual())))
-	resultados, err := c.Temporada.JugarJornada(r)
+	resultados, err := c.Temporada.JugarJornadaCon(r, c.alineacionesElegidas())
 	if err != nil {
 		return nil, err
 	}

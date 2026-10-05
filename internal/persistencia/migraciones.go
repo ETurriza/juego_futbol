@@ -123,6 +123,27 @@ var migraciones = []string{
 	// 4: talento. Rasgo oculto de crecimiento de cada jugador; los jugadores ya
 	// guardados quedan con el talento neutro (100).
 	`ALTER TABLE jugadores ADD COLUMN talento INTEGER NOT NULL DEFAULT 100;`,
+
+	// 5: alineaciones. La formación con que jugó cada equipo en cada partido (0 es
+	// el 4-3-3, que usaban los partidos anteriores) y la alineación elegida por el
+	// usuario: su formación, sus once titulares por puesto y el orden de su
+	// banquillo.
+	`ALTER TABLE resultados ADD COLUMN formacion_local     INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE resultados ADD COLUMN formacion_visitante INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE partidas   ADD COLUMN alineacion_manual   INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE partidas   ADD COLUMN alineacion_formacion INTEGER NOT NULL DEFAULT 0;
+	CREATE TABLE alineacion_titulares (
+		ranura  TEXT    NOT NULL REFERENCES partidas(ranura) ON DELETE CASCADE,
+		puesto  INTEGER NOT NULL,
+		jugador INTEGER NOT NULL,
+		PRIMARY KEY (ranura, puesto)
+	);
+	CREATE TABLE alineacion_banquillo (
+		ranura  TEXT    NOT NULL REFERENCES partidas(ranura) ON DELETE CASCADE,
+		orden   INTEGER NOT NULL,
+		jugador INTEGER NOT NULL,
+		PRIMARY KEY (ranura, orden)
+	);`,
 }
 
 // migrar lleva la base al esquema más reciente. Cada migración corre en su

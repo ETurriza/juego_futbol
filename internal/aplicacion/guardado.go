@@ -36,7 +36,11 @@ type Guardado struct {
 	// Archivo tiene las estadísticas de cada jugador de la liga en cada
 	// temporada terminada (solo de quienes jugaron).
 	Archivo []EstadisticaTemporada
-	Equipos []modelo.Equipo
+	// Alineacion es la alineación que eligió el usuario; solo vale si
+	// AlineacionManual es verdadero.
+	Alineacion       modelo.Alineacion
+	AlineacionManual bool
+	Equipos          []modelo.Equipo
 	// Resultados[i] son los partidos de la jornada i, en el orden del
 	// calendario; su longitud es la cantidad de jornadas jugadas.
 	Resultados [][]ResultadoGuardado
@@ -53,6 +57,7 @@ func (c *Carrera) Exportar() Guardado {
 		Archivo:   append([]EstadisticaTemporada(nil), c.Archivo...),
 		Equipos:   clonarEquipos(c.Temporada.Equipos),
 	}
+	g.Alineacion, g.AlineacionManual = clonarAlineacion(c.Alineacion), c.AlineacionManual
 	for _, jornada := range c.Temporada.Resultados {
 		rs := make([]ResultadoGuardado, len(jornada))
 		for i, r := range jornada {
@@ -74,6 +79,9 @@ func Importar(g Guardado) (*Carrera, error) {
 	if g.Usuario < 0 || g.Usuario >= len(g.Equipos) {
 		return nil, fmt.Errorf("guardado invalido: usuario %d fuera de rango para %d equipos",
 			g.Usuario, len(g.Equipos))
+	}
+	if !g.Alineacion.Formacion.Valida() {
+		return nil, fmt.Errorf("guardado invalido: formacion %d desconocida", int(g.Alineacion.Formacion))
 	}
 	if g.Numero < 1 {
 		return nil, fmt.Errorf("guardado invalido: numero de temporada %d, debe ser al menos 1", g.Numero)
@@ -160,6 +168,10 @@ func Importar(g Guardado) (*Carrera, error) {
 		Historial: append([]ResumenTemporada(nil), g.Historial...),
 		Archivo:   append([]EstadisticaTemporada(nil), g.Archivo...),
 		ProximoID: g.ProximoID,
+		// La alineación elegida se conserva aunque ya no sea válida (por
+		// ejemplo, si se retiró un titular): la carrera usará la automática.
+		Alineacion:       clonarAlineacion(g.Alineacion),
+		AlineacionManual: g.AlineacionManual,
 	}, nil
 }
 
@@ -192,6 +204,7 @@ func (g Guardado) clonar() Guardado {
 		Archivo:   append([]EstadisticaTemporada(nil), g.Archivo...),
 		Equipos:   clonarEquipos(g.Equipos),
 	}
+	c.Alineacion, c.AlineacionManual = clonarAlineacion(g.Alineacion), g.AlineacionManual
 	for _, jornada := range g.Resultados {
 		copia := append([]ResultadoGuardado(nil), jornada...)
 		for i := range copia {
@@ -200,6 +213,13 @@ func (g Guardado) clonar() Guardado {
 		c.Resultados = append(c.Resultados, copia)
 	}
 	return c
+}
+
+// clonarAlineacion copia el banquillo para no compartir memoria; sin banquillo
+// queda nil.
+func clonarAlineacion(a modelo.Alineacion) modelo.Alineacion {
+	a.Banquillo = append([]int(nil), a.Banquillo...)
+	return a
 }
 
 // clonarDetalle copia los sucesos para no compartir memoria; sin sucesos queda

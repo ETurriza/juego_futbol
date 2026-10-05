@@ -20,8 +20,8 @@ type Atributos struct {
 	Reflejos int
 }
 
-// pesos de cada atributo por posición; cada fila suma 100.
-var pesos = map[Posicion]Atributos{
+// pesos de cada atributo por posición, indexados por Posicion; cada fila suma 100.
+var pesos = [...]Atributos{
 	Portero:       {Ritmo: 10, Tiro: 5, Pase: 15, Regate: 5, Defensa: 15, Fisico: 15, Reflejos: 35},
 	Defensa:       {Ritmo: 15, Tiro: 5, Pase: 10, Regate: 5, Defensa: 40, Fisico: 25, Reflejos: 0},
 	Mediocampista: {Ritmo: 10, Tiro: 15, Pase: 35, Regate: 20, Defensa: 10, Fisico: 10, Reflejos: 0},
@@ -32,10 +32,10 @@ var pesos = map[Posicion]Atributos{
 // dada, ponderando cada atributo según lo que importa en ese puesto. Una
 // posición inválida devuelve 0.
 func (a Atributos) Media(p Posicion) int {
-	w, ok := pesos[p]
-	if !ok {
+	if !p.Valida() {
 		return 0
 	}
+	w := pesos[p]
 	suma := a.Ritmo*w.Ritmo + a.Tiro*w.Tiro + a.Pase*w.Pase + a.Regate*w.Regate +
 		a.Defensa*w.Defensa + a.Fisico*w.Fisico + a.Reflejos*w.Reflejos
 	return (suma + 50) / 100 // redondeo al entero más cercano

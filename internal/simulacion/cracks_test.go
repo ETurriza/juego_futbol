@@ -193,7 +193,7 @@ func TestMediaSaturaElAporteDeLosCracks(t *testing.T) {
 	// Cada jugador por debajo del umbral no aporta nada.
 	var bajo media
 	bajo.sumar(1, 70)
-	bajo.sumarCrack(modelo.Jugador{Posicion: modelo.Delantero, Atributos: atributosUniformesSim(umbralCrack)}, crackDelantero)
+	bajo.sumarCrack(modelo.Jugador{Posicion: modelo.Delantero, Atributos: atributosUniformesSim(umbralCrack)}, modelo.Delantero, crackDelantero)
 	if bajo.cracks != 0 {
 		t.Errorf("un jugador justo en el umbral no deberia aportar: %.3f", bajo.cracks)
 	}
@@ -204,7 +204,7 @@ func TestMediaSaturaElAporteDeLosCracks(t *testing.T) {
 		var m media
 		m.sumar(1, 70)
 		for i := 0; i < n; i++ {
-			m.sumarCrack(modelo.Jugador{Posicion: modelo.Defensa, Atributos: atributosUniformesSim(99)}, crackDefensa)
+			m.sumarCrack(modelo.Jugador{Posicion: modelo.Defensa, Atributos: atributosUniformesSim(99)}, modelo.Defensa, crackDefensa)
 		}
 		aporte := m.valor() - 70
 		if aporte < anterior-1e-9 || aporte > topeCracks+1e-9 {
@@ -215,7 +215,7 @@ func TestMediaSaturaElAporteDeLosCracks(t *testing.T) {
 	// Con pocos cracks el aporte es casi lineal.
 	var uno media
 	uno.sumar(1, 70)
-	uno.sumarCrack(modelo.Jugador{Posicion: modelo.Delantero, Atributos: atributosUniformesSim(90)}, crackDelantero)
+	uno.sumarCrack(modelo.Jugador{Posicion: modelo.Delantero, Atributos: atributosUniformesSim(90)}, modelo.Delantero, crackDelantero)
 	esperado := crackDelantero * (90 - umbralCrack)
 	if got := uno.valor() - 70; got > esperado || got < 0.8*esperado {
 		t.Errorf("con un crack leve el aporte (%.3f) deberia ser casi el lineal (%.3f)", got, esperado)
@@ -232,20 +232,29 @@ func TestUnCrackSoloCuentaPorSuValoracion(t *testing.T) {
 	if portero.Valoracion() >= umbralCrack {
 		t.Fatalf("el caso de prueba esta mal: valoracion %d", portero.Valoracion())
 	}
-	m.sumarCrack(portero, crackPortero)
+	m.sumarCrack(portero, modelo.Portero, crackPortero)
 	if m.cracks != 0 {
 		t.Errorf("un portero de valoracion %d con 95 en reflejos no deberia ser crack", portero.Valoracion())
 	}
 }
 
-func TestMarcadorDaLosMismosGolesQueSimular(t *testing.T) {
-	// Marcador y Simular consumen la aleatoriedad igual y dan el mismo resultado.
-	a, b := equipoRealista("A", 1, 62), equipoRealista("B", 101, 58)
-	for semilla := int64(1); semilla <= 200; semilla++ {
-		gl, gv := Marcador(rand.New(rand.NewSource(semilla)), a, b)
-		res := Simular(rand.New(rand.NewSource(semilla)), a, b)
-		if gl != res.GolesLocal || gv != res.GolesVisitante {
-			t.Fatalf("semilla %d: Marcador %d-%d, Simular %d-%d", semilla, gl, gv, res.GolesLocal, res.GolesVisitante)
-		}
+func TestMarcadorYSimularDanLosMismosGolesEnPromedio(t *testing.T) {
+	// Marcador (4-3-3, sin tarjetas) y Simular con la misma formación (con tarjetas
+	// y su efecto sobre los goles) no dan el mismo resultado partido a partido,
+	// pero sí un promedio de goles muy parecido: las rojas son raras.
+	a, b := equipoRealista("A", 1, 62), equipoRealista("B", 101, 62)
+	alA, alB := alineacion433(a), alineacion433(b)
+	rm := rand.New(rand.NewSource(1))
+	rs := rand.New(rand.NewSource(2))
+	const n = 20000
+	var gm, gs float64
+	for i := 0; i < n; i++ {
+		gl, gv := Marcador(rm, a, b)
+		gm += float64(gl + gv)
+		res := SimularConAlineaciones(rs, a, alA, b, alB)
+		gs += float64(res.GolesLocal + res.GolesVisitante)
+	}
+	if d := math.Abs(gm-gs) / n; d > 0.08 {
+		t.Errorf("goles por partido: Marcador %.2f, Simular %.2f", gm/n, gs/n)
 	}
 }
