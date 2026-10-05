@@ -241,14 +241,17 @@ func noComparteEstado(t *testing.T, repo aplicacion.RepositorioPartidas) {
 	// Alterar lo guardado despues de Guardar no cambia lo almacenado...
 	original.Equipos[0].Plantilla[0].Nombre = "Alterado"
 	original.Resultados[0][0].GolesLocal = 99
+	original.Resultados[0][0].Detalle.Eventos[0].Minuto = 77
 	cargado, _ := repo.Cargar(ctx, "p")
-	if cargado.Equipos[0].Plantilla[0].Nombre == "Alterado" || cargado.Resultados[0][0].GolesLocal == 99 {
+	if cargado.Equipos[0].Plantilla[0].Nombre == "Alterado" || cargado.Resultados[0][0].GolesLocal == 99 ||
+		cargado.Resultados[0][0].Detalle.Eventos[0].Minuto == 77 {
 		t.Error("el repositorio comparte memoria con el Guardado que recibio")
 	}
 	// ...ni alterar lo cargado cambia lo almacenado.
 	cargado.Equipos[0].Plantilla[0].Nombre = "Otro"
+	cargado.Resultados[0][0].Detalle.Eventos[0].Minuto = 88
 	otra, _ := repo.Cargar(ctx, "p")
-	if otra.Equipos[0].Plantilla[0].Nombre == "Otro" {
+	if otra.Equipos[0].Plantilla[0].Nombre == "Otro" || otra.Resultados[0][0].Detalle.Eventos[0].Minuto == 88 {
 		t.Error("el repositorio devuelve memoria compartida")
 	}
 }

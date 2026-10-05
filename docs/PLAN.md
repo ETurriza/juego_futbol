@@ -124,8 +124,8 @@ junto con el paquete en su fase.
 ## Fases
 
 El orden cambió respecto al plan original para poner la jugabilidad del modo
-técnico antes del servidor SSH, y para que la carrera de varias temporadas esté
-lista antes de conectar la interfaz con el guardado.
+técnico antes del servidor SSH, y para que la carrera de varias temporadas y las
+estadísticas estén listas antes de conectar la interfaz con el guardado.
 
 | Fase | Contenido                                   | Estado    | Antes     |
 |------|---------------------------------------------|-----------|-----------|
@@ -135,14 +135,18 @@ lista antes de conectar la interfaz con el guardado.
 | 4    | Menús locales con Bubble Tea                | hecha     | 4         |
 | 5    | Guardado: backend con SQLite                | hecha     | 5a        |
 | 6    | Temporadas continuas                        | hecha     | (nueva)   |
+| 9    | Estadísticas individuales y alineación      | en curso  | (nueva)   |
 | 7    | Guardado en la interfaz                     | pendiente | 5b        |
 | 8    | Partido rápido                              | pendiente | (nueva)   |
-| 9    | Estadísticas individuales y alineación      | pendiente | (nueva)   |
 | 10   | Mercado de fichajes                         | pendiente | 7         |
 | 11   | Partido jugable en tiempo real              | pendiente | 8         |
 | 12   | Servidor SSH con Wish                       | pendiente | 6         |
 | 13   | Modo jugador                                | pendiente | (nueva)   |
 | 14   | Estilo visual                               | pendiente | (nueva)   |
+
+La tabla va en orden de ejecución: la fase 9 se hace antes que la 7 y la 8,
+porque cambia el `Guardado` y la base de datos y conviene migrarlos antes de que
+existan partidas reales guardadas.
 
 ### 1. Modelo y generador (hecha)
 Jugador, atributos y equipo en `modelo`. Generador de jugadores con nombres
@@ -230,24 +234,39 @@ ofrecerá también "jugar" el partido.
 *Terminado cuando*: se simula un partido rápido desde el menú, con pruebas.
 
 ### 9. Estadísticas individuales y alineación
-Base común de los dos modos. Hoy la simulación solo devuelve un marcador; esta
-fase hace que genere los sucesos de cada partido. Se entregaría en tres PR:
+Base común de los dos modos. La simulación ya no devuelve solo un marcador:
+genera una línea de tiempo con los sucesos de cada partido. Se entrega en tres PR:
 
-- **9a, sucesos y estadísticas (dominio):** la simulación atribuye goles y
-  asistencias a jugadores concretos, reparte tarjetas amarillas y rojas y
-  registra minutos, titularidades y valoración del partido. Con eso se
-  acumulan, por jugador y por equipo y por temporada (y en la carrera):
-  - jugador: partidos, titularidades, minutos, goles, asistencias, amarillas,
-    rojas, valoración media y, en porteros y defensas, porterías imbatidas;
-  - equipo: partidos, ganados/empatados/perdidos, goles a favor y en contra,
-    porterías imbatidas, partidos sin marcar, tarjetas, goleador y máximo
-    asistente;
-  - clasificaciones: goleadores, asistentes, tarjetas, porteros menos goleados.
-  Con un once automático (el mejor por posición); los suplentes no acumulan
-  minutos hasta que haya sustituciones. `Guardado` v3 y nueva migración.
-- **9b, pantallas:** estadísticas de jugadores y de equipos en `menus`.
-- **9c, alineación elegible:** formación y once titulares, que la simulación
-  usa (hoy elige sola un 4-3-3); sustituciones.
+- **9a, sucesos y estadísticas (dominio y guardado):**
+  - `modelo`: `Evento`, `DetallePartido` (alineaciones titulares y sucesos, de
+    donde se derivan los minutos de cada jugador) y `Estadisticas`.
+  - `simulacion`: para cada equipo, un once automático (portero, 4 defensas, 3
+    medios y 3 delanteros), de 3 a 5 **sustituciones automáticas** entre los
+    minutos 46 y 85 (los porteros no se cambian), tarjetas (unas 3,4 amarillas
+    por partido, 0,14 rojas con las segundas amarillas) y los goles con sus
+    asistencias (el 70 % tiene asistente), repartidos entre quienes están en el
+    campo en cada minuto: seis de cada diez goles son de delanteros.
+  - `liga`: guarda el detalle de cada partido y calcula, a partir de él, las
+    estadísticas de cada jugador (partidos, titularidades, minutos, goles,
+    asistencias, amarillas, rojas, porterías imbatidas, goles encajados y
+    valoración del partido de 1 a 10) y de cada equipo (resultados, goles,
+    imbatidas, partidos sin marcar y tarjetas).
+  - `aplicacion`: consultas de jugadores y equipos (con goleador y máximo
+    asistente de cada club), clasificaciones (goleadores, asistentes,
+    tarjetas, porterías imbatidas, goles encajados por partido y valoración) y
+    estadísticas de carrera. Al terminar cada temporada se **archivan las
+    estadísticas de toda la liga** por jugador.
+  - `Guardado` v3 y migración 3 de la base de datos. Los partidos guardados
+    antes no tienen detalle: cuentan en la tabla pero no en las estadísticas.
+  - Limitaciones: los porteros no reciben rojas directas; una roja reduce los
+    minutos del expulsado pero no cambia el marcador; no hay lesiones.
+  - Como la simulación consume más aleatoriedad, una semilla da una liga
+    distinta a la de antes de esta fase.
+- **9b, pantallas:** estadísticas de jugadores y de equipos, clasificaciones y
+  estadísticas de carrera en `menus`.
+- **9c, alineación elegible:** formación y once titulares elegidos por el
+  usuario, sustituciones elegidas, y el efecto de jugar con diez hombres en el
+  marcador.
 *Terminado cuando*: se puede cambiar la alineación, cambia el rendimiento del
 equipo y las estadísticas individuales y de equipos se acumulan, se ven y se
 guardan.

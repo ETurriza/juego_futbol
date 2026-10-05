@@ -25,6 +25,10 @@ type Resultado struct {
 	Partido
 	GolesLocal     int
 	GolesVisitante int
+	// Detalle son las alineaciones y los sucesos del partido. Es vacío en los
+	// partidos anteriores a las estadísticas, que cuentan en la tabla pero no
+	// en las estadísticas de los jugadores.
+	Detalle modelo.DetallePartido
 }
 
 // Fila es una línea de la tabla de posiciones.
@@ -94,6 +98,7 @@ func (t *Temporada) JugarJornada(r *rand.Rand) ([]Resultado, error) {
 			Partido:        p,
 			GolesLocal:     marcador.GolesLocal,
 			GolesVisitante: marcador.GolesVisitante,
+			Detalle:        marcador.Detalle,
 		})
 	}
 	t.Resultados = append(t.Resultados, resultados)

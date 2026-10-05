@@ -13,6 +13,9 @@ type ResultadoGuardado struct {
 	Visitante      int
 	GolesLocal     int
 	GolesVisitante int
+	// Detalle son las alineaciones y los sucesos. Es vacío en los partidos
+	// guardados antes de que existieran las estadísticas.
+	Detalle modelo.DetallePartido
 }
 
 // Guardado es una foto de una carrera hecha solo con tipos simples, lista para
@@ -30,7 +33,10 @@ type Guardado struct {
 	ProximoID int
 	// Historial tiene un resumen por cada temporada terminada.
 	Historial []ResumenTemporada
-	Equipos   []modelo.Equipo
+	// Archivo tiene las estadísticas de cada jugador de la liga en cada
+	// temporada terminada (solo de quienes jugaron).
+	Archivo []EstadisticaTemporada
+	Equipos []modelo.Equipo
 	// Resultados[i] son los partidos de la jornada i, en el orden del
 	// calendario; su longitud es la cantidad de jornadas jugadas.
 	Resultados [][]ResultadoGuardado
@@ -44,6 +50,7 @@ func (c *Carrera) Exportar() Guardado {
 		Numero:    c.Numero,
 		ProximoID: c.ProximoID,
 		Historial: append([]ResumenTemporada(nil), c.Historial...),
+		Archivo:   append([]EstadisticaTemporada(nil), c.Archivo...),
 		Equipos:   clonarEquipos(c.Temporada.Equipos),
 	}
 	for _, jornada := range c.Temporada.Resultados {
@@ -52,6 +59,7 @@ func (c *Carrera) Exportar() Guardado {
 			rs[i] = ResultadoGuardado{
 				Local: r.Local, Visitante: r.Visitante,
 				GolesLocal: r.GolesLocal, GolesVisitante: r.GolesVisitante,
+				Detalle: clonarDetalle(r.Detalle),
 			}
 		}
 		g.Resultados = append(g.Resultados, rs)
@@ -80,7 +88,17 @@ func Importar(g Guardado) (*Carrera, error) {
 				i+1, h.Numero)
 		}
 	}
+	for i, a := range g.Archivo {
+		if a.Temporada < 1 || a.Temporada >= g.Numero {
+			return nil, fmt.Errorf("guardado invalido: la estadistica %d es de la temporada %d, que no esta terminada",
+				i+1, a.Temporada)
+		}
+		if a.Jugador <= 0 || a.Partidos < 1 {
+			return nil, fmt.Errorf("guardado invalido: la estadistica %d del archivo no tiene jugador o partidos", i+1)
+		}
+	}
 	ids := map[int]string{}
+	equipoDe := map[int]int{} // ID de jugador -> índice de su equipo
 	for i, e := range g.Equipos {
 		if err := e.Validar(); err != nil {
 			return nil, fmt.Errorf("guardado invalido: equipo %d: %w", i, err)
@@ -91,6 +109,7 @@ func Importar(g Guardado) (*Carrera, error) {
 					j.ID, otro, e.Nombre)
 			}
 			ids[j.ID] = e.Nombre
+			equipoDe[j.ID] = i
 			if j.ID >= g.ProximoID {
 				return nil, fmt.Errorf("guardado invalido: el jugador %d de %q no es menor que ProximoID (%d)",
 					j.ID, e.Nombre, g.ProximoID)
@@ -123,7 +142,13 @@ func Importar(g Guardado) (*Carrera, error) {
 				return nil, fmt.Errorf("guardado invalido: jornada %d partido %d con goles negativos",
 					i+1, k+1)
 			}
-			rs[k] = liga.Resultado{Partido: p, GolesLocal: r.GolesLocal, GolesVisitante: r.GolesVisitante}
+			if err := validarDetalle(r, equipoDe); err != nil {
+				return nil, fmt.Errorf("guardado invalido: jornada %d partido %d: %w", i+1, k+1, err)
+			}
+			rs[k] = liga.Resultado{
+				Partido: p, GolesLocal: r.GolesLocal, GolesVisitante: r.GolesVisitante,
+				Detalle: clonarDetalle(r.Detalle),
+			}
 		}
 		temporada.Resultados = append(temporada.Resultados, rs)
 	}
@@ -133,6 +158,7 @@ func Importar(g Guardado) (*Carrera, error) {
 		Usuario:   g.Usuario,
 		Numero:    g.Numero,
 		Historial: append([]ResumenTemporada(nil), g.Historial...),
+		Archivo:   append([]EstadisticaTemporada(nil), g.Archivo...),
 		ProximoID: g.ProximoID,
 	}, nil
 }
@@ -163,12 +189,50 @@ func (g Guardado) clonar() Guardado {
 		Numero:    g.Numero,
 		ProximoID: g.ProximoID,
 		Historial: append([]ResumenTemporada(nil), g.Historial...),
+		Archivo:   append([]EstadisticaTemporada(nil), g.Archivo...),
 		Equipos:   clonarEquipos(g.Equipos),
 	}
 	for _, jornada := range g.Resultados {
-		c.Resultados = append(c.Resultados, append([]ResultadoGuardado(nil), jornada...))
+		copia := append([]ResultadoGuardado(nil), jornada...)
+		for i := range copia {
+			copia[i].Detalle = clonarDetalle(copia[i].Detalle)
+		}
+		c.Resultados = append(c.Resultados, copia)
 	}
 	return c
+}
+
+// clonarDetalle copia los sucesos para no compartir memoria; sin sucesos queda
+// nil, igual que en un detalle recién creado.
+func clonarDetalle(d modelo.DetallePartido) modelo.DetallePartido {
+	d.Eventos = append([]modelo.Evento(nil), d.Eventos...)
+	return d
+}
+
+// validarDetalle comprueba que el detalle de un partido sea coherente con su
+// marcador y con los equipos que lo jugaron. Un detalle vacío (partido anterior
+// a las estadísticas) es válido.
+func validarDetalle(r ResultadoGuardado, equipoDe map[int]int) error {
+	if r.Detalle.Vacio() {
+		return nil
+	}
+	if gl, gv := r.Detalle.Goles(); gl != r.GolesLocal || gv != r.GolesVisitante {
+		return fmt.Errorf("los sucesos suman %d-%d y el marcador es %d-%d", gl, gv, r.GolesLocal, r.GolesVisitante)
+	}
+	partes, err := r.Detalle.Participaciones()
+	if err != nil {
+		return err
+	}
+	for _, p := range partes {
+		esperado := r.Visitante
+		if p.Local {
+			esperado = r.Local
+		}
+		if equipo, ok := equipoDe[p.Jugador]; !ok || equipo != esperado {
+			return fmt.Errorf("el jugador %d no es del equipo que lo alinea", p.Jugador)
+		}
+	}
+	return nil
 }
 
 func clonarEquipos(equipos []modelo.Equipo) []modelo.Equipo {

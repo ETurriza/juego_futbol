@@ -32,6 +32,9 @@ type Carrera struct {
 	Numero int
 	// Historial tiene un resumen por cada temporada ya terminada, en orden.
 	Historial []ResumenTemporada
+	// Archivo tiene las estadísticas de los jugadores de la liga en cada
+	// temporada terminada (solo de quienes jugaron).
+	Archivo []EstadisticaTemporada
 	// ProximoID es la ID que recibirá el próximo jugador creado. Nunca se
 	// reutiliza una ID, ni la de un jugador retirado.
 	ProximoID int

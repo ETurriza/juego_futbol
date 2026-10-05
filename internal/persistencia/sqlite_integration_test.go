@@ -17,6 +17,7 @@ import (
 
 	"github.com/ETurriza/juego_futbol/internal/aplicacion"
 	"github.com/ETurriza/juego_futbol/internal/aplicacion/contrato"
+	"github.com/ETurriza/juego_futbol/internal/modelo"
 )
 
 func abrirTemporal(t *testing.T) *Repositorio {
@@ -408,6 +409,8 @@ func TestMigracion2ConservaLasPartidasDeLaVersion1(t *testing.T) {
 		t.Fatal(err)
 	}
 	original := guardadoDePrueba(t, 14, 6)
+	// El esquema v1 no guardaba el detalle de los partidos.
+	sinDetalle(&original)
 	guardarComoV1(t, db, "vieja", original)
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
@@ -515,5 +518,187 @@ func TestBorrarTambienEliminaElHistorial(t *testing.T) {
 	r.db.QueryRow("SELECT COUNT(*) FROM historial WHERE ranura = 'p'").Scan(&despues)
 	if despues != 0 {
 		t.Errorf("quedaron %d filas de historial huerfanas", despues)
+	}
+}
+
+// sinDetalle quita el detalle de los partidos, como estaban guardadas las
+// partidas de antes de las estadisticas.
+func sinDetalle(g *aplicacion.Guardado) {
+	for _, jornada := range g.Resultados {
+		for k := range jornada {
+			jornada[k].Detalle = modelo.DetallePartido{}
+		}
+	}
+}
+
+func TestMigracion3ConservaLasPartidasDeLaVersion2(t *testing.T) {
+	ctx := context.Background()
+	ruta := filepath.Join(t.TempDir(), "v2.db")
+
+	// Una partida de la version 2: con historial de temporadas, sin detalle.
+	c, _ := aplicacion.NuevaCarrera(18, 10)
+	for temporada := 0; temporada < 2; temporada++ {
+		for !c.Terminada() {
+			c.AvanzarJornada()
+		}
+		if _, err := c.SiguienteTemporada(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 5; i++ {
+		c.AvanzarJornada()
+	}
+	original := c.Exportar()
+	sinDetalle(&original)
+	original.Archivo = nil // la v2 tampoco archivaba estadisticas
+
+	db, err := sql.Open("sqlite", "file:"+ruta+"?_pragma=foreign_keys(1)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range migraciones[:2] {
+		if _, err := db.Exec(m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := db.Exec("PRAGMA user_version = 2"); err != nil {
+		t.Fatal(err)
+	}
+	guardarComoV1(t, db, "v2", original)
+	if _, err := db.Exec("UPDATE partidas SET temporada = ?, proximo_id = ? WHERE ranura = 'v2'",
+		original.Numero, original.ProximoID); err != nil {
+		t.Fatal(err)
+	}
+	for _, h := range original.Historial {
+		if _, err := db.Exec("INSERT INTO historial VALUES ('v2', ?, ?, ?, ?)",
+			h.Numero, h.Campeon, h.PuestoUsuario, h.PuntosUsuario); err != nil {
+			t.Fatal(err)
+		}
+	}
+	db.Close()
+
+	r, err := Abrir(ctx, ruta)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Cerrar()
+	if v := versionEsquema(t, r); v != len(migraciones) {
+		t.Errorf("version = %d, se esperaba %d", v, len(migraciones))
+	}
+	cargado, err := r.Cargar(ctx, "v2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(original, cargado) {
+		t.Error("la partida migrada desde la v2 no es identica")
+	}
+
+	// Se puede seguir jugando: los partidos nuevos traen detalle y estadisticas, y
+	// al terminar la temporada se archivan solo los partidos con detalle.
+	carrera, err := aplicacion.CargarCarrera(ctx, r, "v2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for !carrera.Terminada() {
+		carrera.AvanzarJornada()
+	}
+	filas, _ := carrera.EstadisticasJugadores()
+	jugaron := 0
+	for _, f := range filas {
+		if f.Partidos > 0 {
+			jugaron++
+		}
+	}
+	if jugaron == 0 {
+		t.Error("los partidos nuevos deberian tener estadisticas")
+	}
+	if _, err := carrera.SiguienteTemporada(); err != nil {
+		t.Fatal(err)
+	}
+	if err := aplicacion.GuardarCarrera(ctx, r, "v2", carrera); err != nil {
+		t.Fatal(err)
+	}
+	vuelta, err := aplicacion.CargarCarrera(ctx, r, "v2")
+	if err != nil || len(vuelta.Archivo) == 0 || vuelta.Numero != 4 {
+		t.Errorf("tras migrar y avanzar: %v, temporada %d, archivo %d", err, vuelta.Numero, len(vuelta.Archivo))
+	}
+}
+
+func TestBorrarEliminaDetalleYArchivo(t *testing.T) {
+	ctx := context.Background()
+	r := abrirTemporal(t)
+	c, _ := aplicacion.NuevaCarrera(5, 10)
+	for temporada := 0; temporada < 2; temporada++ {
+		for !c.Terminada() {
+			c.AvanzarJornada()
+		}
+		c.SiguienteTemporada()
+	}
+	c.AvanzarJornada()
+	otra, _ := aplicacion.NuevaCarrera(6, 10)
+	otra.AvanzarJornada()
+	for ranura, carrera := range map[string]*aplicacion.Carrera{"p": c, "otra": otra} {
+		if err := aplicacion.GuardarCarrera(ctx, r, ranura, carrera); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cuenta := func(tabla, ranura string) int {
+		var n int
+		if err := r.db.QueryRow("SELECT COUNT(*) FROM "+tabla+" WHERE ranura = ?", ranura).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	for _, tabla := range []string{"alineaciones", "eventos", "estadisticas_temporada"} {
+		if cuenta(tabla, "p") == 0 || cuenta(tabla, "otra") == 0 && tabla != "estadisticas_temporada" {
+			t.Fatalf("%s: faltan filas tras guardar", tabla)
+		}
+	}
+	if err := r.Borrar(ctx, "p"); err != nil {
+		t.Fatal(err)
+	}
+	for _, tabla := range []string{"alineaciones", "eventos", "estadisticas_temporada"} {
+		if n := cuenta(tabla, "p"); n != 0 {
+			t.Errorf("%s: quedaron %d filas de la ranura borrada", tabla, n)
+		}
+	}
+	if cuenta("alineaciones", "otra") == 0 || cuenta("eventos", "otra") == 0 {
+		t.Error("se perdieron las filas de la otra ranura")
+	}
+}
+
+func TestCargarDetectaUnDetalleOUnArchivoCorruptos(t *testing.T) {
+	casos := map[string]string{
+		"falta un suceso":                 "DELETE FROM eventos WHERE ranura = 'p' AND jornada = 0 AND orden = 0 AND indice = 1",
+		"suceso de un partido ajeno":      "UPDATE eventos SET orden = 77 WHERE ranura = 'p' AND jornada = 0 AND orden = 0 AND indice = 0",
+		"alineacion de partido ajeno":     "UPDATE alineaciones SET jornada = 40 WHERE ranura = 'p' AND jornada = 0 AND orden = 0 AND local = 1 AND puesto = 0",
+		"puesto fuera de la alineacion":   "UPDATE alineaciones SET puesto = 30 WHERE ranura = 'p' AND jornada = 0 AND orden = 0 AND local = 1 AND puesto = 0",
+		"falta una estadistica archivada": "DELETE FROM estadisticas_temporada WHERE ranura = 'p' AND orden = 3",
+	}
+	for nombre, sentencia := range casos {
+		t.Run(nombre, func(t *testing.T) {
+			ctx := context.Background()
+			r := abrirTemporal(t)
+			c, _ := aplicacion.NuevaCarrera(5, 10)
+			for !c.Terminada() {
+				c.AvanzarJornada()
+			}
+			c.SiguienteTemporada()
+			c.AvanzarJornada()
+			c.AvanzarJornada()
+			if err := aplicacion.GuardarCarrera(ctx, r, "p", c); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := r.db.Exec("PRAGMA foreign_keys = OFF"); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := r.db.Exec(sentencia); err != nil {
+				t.Fatal(err)
+			}
+			_, err := r.Cargar(ctx, "p")
+			if err == nil || !strings.Contains(err.Error(), "datos corruptos") {
+				t.Errorf("err = %v, se esperaba 'datos corruptos'", err)
+			}
+		})
 	}
 }

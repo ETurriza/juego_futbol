@@ -138,9 +138,55 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 				p.Local, p.Visitante, p.GolesLocal, p.GolesVisitante); err != nil {
 				return err
 			}
+			if err := guardarDetalle(ctx, tx, ranura, jornada, orden, p.Detalle); err != nil {
+				return err
+			}
+		}
+	}
+	for orden, a := range g.Archivo {
+		e := a.Estadisticas
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO estadisticas_temporada (ranura, orden, temporada, jugador, nombre, equipo, posicion, edad,
+			        partidos, titularidades, minutos, goles, asistencias, amarillas, rojas, imbatidas, encajados,
+			        suma_valoracion)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			ranura, orden, a.Temporada, a.Jugador, a.Nombre, a.Equipo, int(a.Posicion), a.Edad,
+			e.Partidos, e.Titularidades, e.Minutos, e.Goles, e.Asistencias, e.Amarillas, e.Rojas,
+			e.PorteriasImbatidas, e.GolesEncajados, e.SumaValoracion); err != nil {
+			return err
 		}
 	}
 	return tx.Commit()
+}
+
+// guardarDetalle escribe las alineaciones (omitiendo los puestos sin jugador) y
+// los sucesos de un partido. Un detalle vacío no escribe nada.
+func guardarDetalle(ctx context.Context, tx *sql.Tx, ranura string, jornada, orden int, d modelo.DetallePartido) error {
+	for local, titulares := range map[int][modelo.TitularesPorEquipo]int{1: d.TitularesLocal, 0: d.TitularesVisitante} {
+		for puesto, id := range titulares {
+			if id == 0 {
+				continue
+			}
+			if _, err := tx.ExecContext(ctx,
+				`INSERT INTO alineaciones (ranura, jornada, orden, local, puesto, jugador) VALUES (?, ?, ?, ?, ?, ?)`,
+				ranura, jornada, orden, local, puesto, id); err != nil {
+				return err
+			}
+		}
+	}
+	for i, e := range d.Eventos {
+		local := 0
+		if e.Local {
+			local = 1
+		}
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO eventos (ranura, jornada, orden, indice, minuto, tipo, local, jugador, otro)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			ranura, jornada, orden, i, e.Minuto, int(e.Tipo), local, e.Jugador, e.Otro); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Cargar devuelve la partida de la ranura. Devuelve aplicacion.ErrPartidaNoExiste
@@ -178,7 +224,107 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 	if g.Resultados, err = cargarResultados(ctx, tx, ranura, jornadas); err != nil {
 		return aplicacion.Guardado{}, err
 	}
+	if err = cargarDetalles(ctx, tx, ranura, g.Resultados); err != nil {
+		return aplicacion.Guardado{}, err
+	}
+	if g.Archivo, err = cargarArchivo(ctx, tx, ranura); err != nil {
+		return aplicacion.Guardado{}, err
+	}
 	return g, nil
+}
+
+// cargarDetalles completa los resultados con sus alineaciones y sucesos.
+func cargarDetalles(ctx context.Context, tx *sql.Tx, ranura string, resultados [][]aplicacion.ResultadoGuardado) error {
+	partido := func(jornada, orden int) (*aplicacion.ResultadoGuardado, error) {
+		if jornada < 0 || jornada >= len(resultados) || orden < 0 || orden >= len(resultados[jornada]) {
+			return nil, fmt.Errorf("datos corruptos en %q: detalle de un partido inexistente (jornada %d, partido %d)",
+				ranura, jornada+1, orden+1)
+		}
+		return &resultados[jornada][orden], nil
+	}
+
+	filas, err := tx.QueryContext(ctx,
+		`SELECT jornada, orden, local, puesto, jugador FROM alineaciones WHERE ranura = ?
+		 ORDER BY jornada, orden, local, puesto`, ranura)
+	if err != nil {
+		return err
+	}
+	defer filas.Close()
+	for filas.Next() {
+		var jornada, orden, local, puesto, jugador int
+		if err := filas.Scan(&jornada, &orden, &local, &puesto, &jugador); err != nil {
+			return err
+		}
+		p, err := partido(jornada, orden)
+		if err != nil {
+			return err
+		}
+		if puesto < 0 || puesto >= modelo.TitularesPorEquipo {
+			return fmt.Errorf("datos corruptos en %q: puesto %d fuera de la alineacion", ranura, puesto)
+		}
+		if local == 1 {
+			p.Detalle.TitularesLocal[puesto] = jugador
+		} else {
+			p.Detalle.TitularesVisitante[puesto] = jugador
+		}
+	}
+	if err := filas.Err(); err != nil {
+		return err
+	}
+
+	evs, err := tx.QueryContext(ctx,
+		`SELECT jornada, orden, indice, minuto, tipo, local, jugador, otro FROM eventos WHERE ranura = ?
+		 ORDER BY jornada, orden, indice`, ranura)
+	if err != nil {
+		return err
+	}
+	defer evs.Close()
+	for evs.Next() {
+		var jornada, orden, indice, tipo, local int
+		var e modelo.Evento
+		if err := evs.Scan(&jornada, &orden, &indice, &e.Minuto, &tipo, &local, &e.Jugador, &e.Otro); err != nil {
+			return err
+		}
+		p, err := partido(jornada, orden)
+		if err != nil {
+			return err
+		}
+		if indice != len(p.Detalle.Eventos) {
+			return fmt.Errorf("datos corruptos en %q: falta un suceso del partido %d de la jornada %d",
+				ranura, orden+1, jornada+1)
+		}
+		e.Tipo, e.Local = modelo.TipoEvento(tipo), local == 1
+		p.Detalle.Eventos = append(p.Detalle.Eventos, e)
+	}
+	return evs.Err()
+}
+
+func cargarArchivo(ctx context.Context, tx *sql.Tx, ranura string) ([]aplicacion.EstadisticaTemporada, error) {
+	filas, err := tx.QueryContext(ctx,
+		`SELECT orden, temporada, jugador, nombre, equipo, posicion, edad, partidos, titularidades, minutos,
+		        goles, asistencias, amarillas, rojas, imbatidas, encajados, suma_valoracion
+		 FROM estadisticas_temporada WHERE ranura = ? ORDER BY orden`, ranura)
+	if err != nil {
+		return nil, err
+	}
+	defer filas.Close()
+	var archivo []aplicacion.EstadisticaTemporada
+	for filas.Next() {
+		var orden, posicion int
+		var a aplicacion.EstadisticaTemporada
+		e := &a.Estadisticas
+		if err := filas.Scan(&orden, &a.Temporada, &a.Jugador, &a.Nombre, &a.Equipo, &posicion, &a.Edad,
+			&e.Partidos, &e.Titularidades, &e.Minutos, &e.Goles, &e.Asistencias, &e.Amarillas, &e.Rojas,
+			&e.PorteriasImbatidas, &e.GolesEncajados, &e.SumaValoracion); err != nil {
+			return nil, err
+		}
+		if orden != len(archivo) {
+			return nil, fmt.Errorf("datos corruptos en %q: falta una estadistica archivada", ranura)
+		}
+		a.Posicion = modelo.Posicion(posicion)
+		archivo = append(archivo, a)
+	}
+	return archivo, filas.Err()
 }
 
 func cargarHistorial(ctx context.Context, tx *sql.Tx, ranura string, esperadas int) ([]aplicacion.ResumenTemporada, error) {
