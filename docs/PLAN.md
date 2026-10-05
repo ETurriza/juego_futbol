@@ -242,6 +242,29 @@ nuevo calendario y tabla a cero, en el mismo club. Se entrega en dos PR:
   la temporada 1 que en la 20. Las pruebas de `aplicacion/calibracion_test.go`
   miden por posición y por edad, no solo la media.
 
+- **Talento y cracks (PR aparte):** cada jugador tiene un **talento** oculto, un
+  multiplicador de su crecimiento (100 es normal; se sortea con una
+  distribución log-normal, la misma para todas las posiciones). Es lo que separa
+  a los cracks. La ficha muestra una **pista** (la "proyección": limitada,
+  normal, alta o excepcional) solo en los jugadores de 24 años o menos, nunca el
+  número. Se guarda en la base de datos (migración 4; las partidas anteriores
+  quedan con talento neutro). Objetivos y resultado, medidos con 40 ligas:
+  - De cada cien jugadores de campo, ~3,6 llegan a 90 o más en su carrera y
+    ~0,33 a 95 o más, y se reparten por todas las posiciones (defensas 2,6 %,
+    medios 3,9 %, delanteros 4,5 %, porteros 4,7 %; antes el 8 % de los porteros
+    y 1-2 % del campo). Para lograrlo, la valoración del portero reparte su peso
+    entre más atributos (reflejos 35 %), lo que reduce su varianza.
+  - **Un crack pesa más en el partido.** La fuerza de un equipo suma un bono por
+    cada jugador cuya valoración supera 85, con un coeficiente por posición y
+    un tope de saturación por línea. Un crack de 95 suma unos **+8 puntos de
+    victoria** en cada posición (entre +7 y +9 según la posición y la muestra;
+    antes +1 a +3); tres cracks, ~+21; un once de cracks gana ~75 % y no el
+    100 %. La liga sigue abierta: el campeón suma ~36 de 54
+    puntos y el equipo de mayor valoración gana la liga el 24-31 % de las veces
+    (antes 19 %; el azar puro sería 10 %).
+  - Las pruebas garantizan los topes en ambos sentidos, y que un equipo sin
+    cracks se comporta igual que antes.
+
 *Terminado cuando*: se juegan varias temporadas seguidas desde la terminal, el
 historial es correcto y la carrera guardada se reanuda de forma idéntica.
 

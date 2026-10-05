@@ -232,6 +232,10 @@ func (m Modelo) abrirSeleccion() Modelo {
 // Líneas de la ficha que no son filas de la trayectoria.
 const lineasFicha = 16
 
+// edadMaxProyeccion es la edad hasta la que la ficha muestra la proyección del
+// jugador; después ya se ve en su nivel.
+const edadMaxProyeccion = 24
+
 func (m Modelo) visiblesFicha() int {
 	total := len(m.carrera.Trayectoria(m.fichaID))
 	if m.alto <= 0 {
@@ -548,8 +552,13 @@ func (m Modelo) vistaFicha() string {
 	a := j.Atributos
 	b.WriteString(estiloTitulo.Render("FICHA · "+j.Nombre) + "\n")
 	fmt.Fprintf(&b, "%s · %s · %d años · Valoración %d\n", fila.Equipo, j.Posicion, j.Edad, j.Valoracion())
-	fmt.Fprintf(&b, "RIT %d  TIR %d  PAS %d  REG %d  DEF %d  FIS %d  REF %d\n\n",
+	fmt.Fprintf(&b, "RIT %d  TIR %d  PAS %d  REG %d  DEF %d  FIS %d  REF %d\n",
 		a.Ritmo, a.Tiro, a.Pase, a.Regate, a.Defensa, a.Fisico, a.Reflejos)
+	// Pista del talento: en los jóvenes todavía no se sabe hasta dónde llegarán.
+	if j.Edad <= edadMaxProyeccion {
+		fmt.Fprintf(&b, "Proyección: %s\n", j.Proyeccion())
+	}
+	b.WriteString("\n")
 
 	porteria := j.Posicion == modelo.Portero
 	fmt.Fprintf(&b, "Temporada %d (en curso)\n  %s\n\n", c.Numero, resumenStats(fila.Estadisticas, porteria))

@@ -1,6 +1,9 @@
 package modelo
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func atributosUniformes(v int) Atributos {
 	return Atributos{Ritmo: v, Tiro: v, Pase: v, Regate: v, Defensa: v, Fisico: v, Reflejos: v}
@@ -156,5 +159,61 @@ func TestEquipoValoracion(t *testing.T) {
 	e.Plantilla = append(e.Plantilla, crack)
 	if e.Valoracion() <= antes {
 		t.Error("un jugador mejor deberia subir la valoracion")
+	}
+}
+
+func TestTalentoEfectivoYValidacion(t *testing.T) {
+	j := jugadorValido(1, Delantero)
+	if j.Talento != 0 || j.TalentoEfectivo() != TalentoNeutro {
+		t.Errorf("un jugador sin talento definido deberia tener el neutro: %d / %d", j.Talento, j.TalentoEfectivo())
+	}
+	j.Talento = 130
+	if j.TalentoEfectivo() != 130 || j.Validar() != nil {
+		t.Errorf("un talento de 130 deberia ser valido y respetarse: %v", j.Validar())
+	}
+	for _, t0 := range []int{TalentoMin, TalentoMax, TalentoNeutro} {
+		j.Talento = t0
+		if err := j.Validar(); err != nil {
+			t.Errorf("el talento %d deberia ser valido: %v", t0, err)
+		}
+	}
+	for _, t0 := range []int{1, TalentoMin - 1, TalentoMax + 1, -5} {
+		j.Talento = t0
+		if j.Validar() == nil {
+			t.Errorf("el talento %d deberia ser invalido", t0)
+		}
+	}
+}
+
+func TestProyeccionPorTalento(t *testing.T) {
+	casos := []struct {
+		talento int
+		want    Proyeccion
+	}{
+		{0, ProyeccionNormal}, // sin definir: neutro
+		{TalentoMin, ProyeccionLimitada},
+		{talentoProyeccionNormal - 1, ProyeccionLimitada},
+		{talentoProyeccionNormal, ProyeccionNormal},
+		{100, ProyeccionNormal},
+		{talentoProyeccionAlta - 1, ProyeccionNormal},
+		{talentoProyeccionAlta, ProyeccionAlta},
+		{talentoProyeccionExcepcional - 1, ProyeccionAlta},
+		{talentoProyeccionExcepcional, ProyeccionExcepcional},
+		{TalentoMax, ProyeccionExcepcional},
+	}
+	for _, c := range casos {
+		j := jugadorValido(1, Mediocampista)
+		j.Talento = c.talento
+		if got := j.Proyeccion(); got != c.want {
+			t.Errorf("talento %d: proyeccion %v, se esperaba %v", c.talento, got, c.want)
+		}
+	}
+	for p, want := range map[Proyeccion]string{ProyeccionLimitada: "limitada", ProyeccionNormal: "normal", ProyeccionAlta: "alta", ProyeccionExcepcional: "excepcional"} {
+		if p.String() != want {
+			t.Errorf("%d: %q, se esperaba %q", int(p), p.String(), want)
+		}
+	}
+	if !strings.Contains(Proyeccion(9).String(), "9") {
+		t.Error("una proyeccion desconocida deberia mostrar su numero")
 	}
 }

@@ -1,15 +1,15 @@
 TABLA · Temporada 4 · Jornada 11 / 18
 
     #  Equipo                      PJ   G   E   P   GF   GC   DG  Pts
-    1  Unión Pinarel               11   7   2   2   20    9  +11   23
-    2  Club Granvela               11   7   1   3   11   10   +1   22
-    3  Juventud Peñaviva           11   6   2   3   10    8   +2   20
->   4  Unión Dorada                11   6   1   4   10   10   +0   19
-    5  Deportivo Sanvedra          11   4   4   3   21   11  +10   16
-    6  Club Brisanda               11   4   3   4   16   15   +1   15
-    7  Academia Isleta Roja        11   4   2   5   13   13   +0   14
-    8  Academia Nuevaluna          11   4   0   7    9   15   -6   12
-    9  Unión Embalse Nuevo         11   3   1   7   15   23   -8   10
-   10  Academia Dorada             11   2   0   9    6   17  -11    6
+    1  Unión Castelmar             11   8   2   1   21    7  +14   26
+    2  Academia Valmora            11   8   0   3   18    7  +11   24
+    3  Unión Pinarel               11   6   2   3   12    7   +5   20
+    4  Unión Granvela              11   5   2   4   17   15   +2   17
+    5  Deportivo Valmora           11   5   1   5   16   13   +3   16
+    6  Juventud Granvela           11   3   3   5   11   19   -8   12
+>   7  Academia Fontalva           11   3   2   6    8   14   -6   11
+    8  Club Maldoria               11   3   2   6    5   11   -6   11
+    9  Club Brisanda               11   3   2   6   11   19   -8   11
+   10  Club Altamira del Sur       11   2   2   7    8   15   -7    8
 
 esc volver

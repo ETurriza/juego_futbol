@@ -62,6 +62,12 @@ tienen sus constantes con nombre al inicio del archivo. Sus pruebas imprimen con
 simple vista, y comprueban rangos realistas. Cambiar una constante exige
 revisar esas pruebas.
 
+Las pruebas de calibración también fijan cuántos cracks hay y cuánto pesan:
+~3-4 % de los jugadores de campo con pico >= 90 repartidos por todas las
+posiciones, y un crack de 95 suma ~+8 puntos de victoria en cada una. Esos
+números salen de ligas generadas de verdad; para simular muchos partidos sin
+detalle se usa `simulacion.Marcador`, que es mucho más rápido que `Simular`.
+
 Una media global estable no basta: la liga se calibra por posición y por edad
 (`aplicacion/calibracion_test.go`): dispersión, porcentaje de estrellas,
 atributos en el tope, y que la liga inicial se parezca a la de muchas

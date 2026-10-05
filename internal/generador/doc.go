@@ -4,6 +4,9 @@
 // progresión, de modo que su calidad por edad es la misma que tendrán durante la
 // carrera.
 //
+// Cada jugador recibe además un talento oculto (modelo.Talento), con la misma
+// distribución en todas las posiciones.
+//
 // Toda la aleatoriedad se recibe como *rand.Rand, nunca global, para que la
 // generación sea reproducible con una semilla fija. Depende de modelo y de
 // progresion.

@@ -106,8 +106,8 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 	defer insEquipo.Close()
 	insJugador, err := tx.PrepareContext(ctx,
 		`INSERT INTO jugadores (ranura, equipo, orden, id, nombre, edad, posicion,
-		                        ritmo, tiro, pase, regate, defensa, fisico, reflejos)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		                        ritmo, tiro, pase, regate, defensa, fisico, reflejos, talento)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 		for orden, j := range e.Plantilla {
 			a := j.Atributos
 			if _, err := insJugador.ExecContext(ctx, ranura, i, orden, j.ID, j.Nombre, j.Edad, int(j.Posicion),
-				a.Ritmo, a.Tiro, a.Pase, a.Regate, a.Defensa, a.Fisico, a.Reflejos); err != nil {
+				a.Ritmo, a.Tiro, a.Pase, a.Regate, a.Defensa, a.Fisico, a.Reflejos, j.Talento); err != nil {
 				return err
 			}
 		}
@@ -379,7 +379,7 @@ func cargarEquipos(ctx context.Context, tx *sql.Tx, ranura string) ([]modelo.Equ
 	}
 
 	js, err := tx.QueryContext(ctx,
-		`SELECT equipo, orden, id, nombre, edad, posicion, ritmo, tiro, pase, regate, defensa, fisico, reflejos
+		`SELECT equipo, orden, id, nombre, edad, posicion, ritmo, tiro, pase, regate, defensa, fisico, reflejos, talento
 		 FROM jugadores WHERE ranura = ? ORDER BY equipo, orden`, ranura)
 	if err != nil {
 		return nil, err
@@ -391,7 +391,7 @@ func cargarEquipos(ctx context.Context, tx *sql.Tx, ranura string) ([]modelo.Equ
 		var j modelo.Jugador
 		a := &j.Atributos
 		if err := js.Scan(&equipo, &orden, &j.ID, &j.Nombre, &j.Edad, &posicion,
-			&a.Ritmo, &a.Tiro, &a.Pase, &a.Regate, &a.Defensa, &a.Fisico, &a.Reflejos); err != nil {
+			&a.Ritmo, &a.Tiro, &a.Pase, &a.Regate, &a.Defensa, &a.Fisico, &a.Reflejos, &j.Talento); err != nil {
 			return nil, err
 		}
 		if equipo < 0 || equipo >= len(equipos) {
