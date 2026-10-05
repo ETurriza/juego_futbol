@@ -566,3 +566,46 @@ func TestCadaClasificacionMuestraLosValoresCorrectos(t *testing.T) {
 		}
 	}
 }
+
+// fichaDe abre la ficha de un jugador de la carrera tras ajustar su edad y su
+// talento.
+func fichaDe(t *testing.T, edad, talento int) Modelo {
+	t.Helper()
+	m := conJornadas(t, 31, 4)
+	j := &m.carrera.Temporada.Equipos[m.carrera.Usuario].Plantilla[10]
+	j.Edad, j.Talento = edad, talento
+	m.fichaID, m.pantalla = j.ID, pantallaFicha
+	return m
+}
+
+func TestLaFichaDeUnJovenMuestraSuProyeccion(t *testing.T) {
+	casos := map[int]string{
+		70:  "limitada",
+		100: "normal",
+		125: "alta",
+		150: "excepcional",
+	}
+	for talento, etiqueta := range casos {
+		m := fichaDe(t, 19, talento)
+		contiene(t, m, "Proyección: "+etiqueta)
+	}
+	// Un jugador sin talento definido (partidas antiguas) se muestra como normal.
+	contiene(t, fichaDe(t, 19, 0), "Proyección: normal")
+}
+
+func TestLaFichaDeUnVeteranoNoMuestraProyeccion(t *testing.T) {
+	for _, edad := range []int{edadMaxProyeccion + 1, 28, 33} {
+		noContiene(t, fichaDe(t, edad, 150), "Proyección")
+	}
+	// El límite es inclusivo.
+	contiene(t, fichaDe(t, edadMaxProyeccion, 150), "Proyección: excepcional")
+}
+
+func TestLaProyeccionNoRevelaElTalentoExacto(t *testing.T) {
+	// Es una pista: solo la etiqueta, nunca el número.
+	m := fichaDe(t, 20, 137)
+	pantalla := texto(m)
+	if strings.Contains(pantalla, "137") || strings.Contains(strings.ToLower(pantalla), "talento") {
+		t.Errorf("la ficha no deberia mostrar el talento exacto:\n%s", pantalla)
+	}
+}

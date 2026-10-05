@@ -119,6 +119,10 @@ var migraciones = []string{
 		suma_valoracion INTEGER NOT NULL,
 		PRIMARY KEY (ranura, orden)
 	);`,
+
+	// 4: talento. Rasgo oculto de crecimiento de cada jugador; los jugadores ya
+	// guardados quedan con el talento neutro (100).
+	`ALTER TABLE jugadores ADD COLUMN talento INTEGER NOT NULL DEFAULT 100;`,
 }
 
 // migrar lleva la base al esquema más reciente. Cada migración corre en su

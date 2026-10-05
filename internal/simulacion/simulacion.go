@@ -19,6 +19,17 @@ const (
 	exponenteFuerza = 2.0
 	// fuerzaNeutra es la fuerza que se asume cuando falta una línea completa.
 	fuerzaNeutra = 50.0
+	// Cracks: umbralCrack es la valoración a partir de la cual un jugador suma al
+	// equipo más que su parte proporcional; cada posición suma cierta cantidad de
+	// puntos de fuerza por punto de exceso (más en las líneas donde un jugador pesa
+	// menos, para que un crack de cualquier posición se note parecido); topeCracks
+	// es el máximo (de saturación) que pueden sumar los cracks de una misma línea.
+	umbralCrack     = 85.0
+	crackDelantero  = 1.2
+	crackMediocampo = 1.6
+	crackDefensa    = 3.0
+	crackPortero    = 1.9
+	topeCracks      = 16.0
 
 	// límites de seguridad.
 	golesMax      = 12
@@ -41,17 +52,26 @@ type Resultado struct {
 	Detalle        modelo.DetallePartido
 }
 
-// Simular juega un partido entre local y visitante y devuelve el marcador.
-// Es una función pura: no modifica los equipos y toda la aleatoriedad sale de r.
-func Simular(r *rand.Rand, local, visitante modelo.Equipo) Resultado {
+// Marcador simula solo el resultado de un partido, sin alineaciones ni sucesos.
+// Da los mismos goles que Simular con la misma aleatoriedad, pero mucho más
+// rápido: sirve para simular muchos partidos cuando no hace falta el detalle.
+func Marcador(r *rand.Rand, local, visitante modelo.Equipo) (golesLocal, golesVisitante int) {
 	ataqueL, defensaL := fuerzas(local)
 	ataqueV, defensaV := fuerzas(visitante)
 
 	esperanzaL := golesBase * ventajaLocal * math.Pow(ataqueL/defensaV, exponenteFuerza)
 	esperanzaV := golesBase * math.Pow(ataqueV/defensaL, exponenteFuerza)
 
-	golesL := poisson(r, esperanzaL)
-	golesV := poisson(r, esperanzaV)
+	golesLocal = poisson(r, esperanzaL)
+	golesVisitante = poisson(r, esperanzaV)
+	return golesLocal, golesVisitante
+}
+
+// Simular juega un partido entre local y visitante y devuelve el marcador y su
+// detalle. Es una función pura: no modifica los equipos y toda la aleatoriedad
+// sale de r.
+func Simular(r *rand.Rand, local, visitante modelo.Equipo) Resultado {
+	golesL, golesV := Marcador(r, local, visitante)
 	return Resultado{
 		GolesLocal:     golesL,
 		GolesVisitante: golesV,
@@ -69,36 +89,55 @@ func fuerzas(e modelo.Equipo) (ataque, defensa float64) {
 
 	var a, d media
 	for _, j := range delanteros {
-		a.sumar(2, (float64(j.Atributos.Tiro)+float64(j.Atributos.Regate)+
-			float64(j.Atributos.Ritmo)+float64(j.Atributos.Pase))/4)
+		v := (float64(j.Atributos.Tiro) + float64(j.Atributos.Regate) +
+			float64(j.Atributos.Ritmo) + float64(j.Atributos.Pase)) / 4
+		a.sumar(2, v)
+		a.sumarCrack(j, crackDelantero)
 	}
 	for _, j := range medios {
-		a.sumar(1, (float64(j.Atributos.Pase)+float64(j.Atributos.Regate)+
-			float64(j.Atributos.Tiro))/3)
+		v := (float64(j.Atributos.Pase) + float64(j.Atributos.Regate) + float64(j.Atributos.Tiro)) / 3
+		a.sumar(1, v)
+		a.sumarCrack(j, crackMediocampo)
 		d.sumar(0.5, float64(j.Atributos.Defensa))
 	}
 	for _, j := range defensas {
-		d.sumar(1, (float64(j.Atributos.Defensa)+float64(j.Atributos.Fisico))/2)
+		v := (float64(j.Atributos.Defensa) + float64(j.Atributos.Fisico)) / 2
+		d.sumar(1, v)
+		d.sumarCrack(j, crackDefensa)
 	}
 	for _, j := range porteros {
-		d.sumar(3, float64(j.Atributos.Reflejos))
+		v := float64(j.Atributos.Reflejos)
+		d.sumar(3, v)
+		d.sumarCrack(j, crackPortero)
 	}
 	return a.valor(), d.valor()
 }
 
-// media acumula un promedio ponderado.
-type media struct{ suma, peso float64 }
+// media acumula la fuerza de una línea: la media ponderada de sus jugadores más
+// el aporte de sus cracks. Un crack (un jugador cuyo valor de rol supera
+// umbralCrack) suma puntosPorCrack por cada punto de exceso; el aporte total de
+// la línea se satura en topeCracks, de modo que un crack se nota pero muchos
+// cracks no deciden solos el partido.
+type media struct{ suma, peso, cracks float64 }
 
 func (m *media) sumar(peso, valor float64) {
 	m.suma += peso * valor
 	m.peso += peso
 }
 
+// sumarCrack acumula el exceso de la valoración del jugador sobre el umbral de
+// crack, con el peso de su posición. Se usa la valoración (la que ve el usuario) y
+// no el valor del rol: así un 90 cuenta igual sea portero o delantero.
+func (m *media) sumarCrack(j modelo.Jugador, puntosPorExceso float64) {
+	m.cracks += puntosPorExceso * math.Max(float64(j.Valoracion())-umbralCrack, 0)
+}
+
 func (m media) valor() float64 {
 	if m.peso == 0 {
 		return fuerzaNeutra
 	}
-	return math.Max(m.suma/m.peso, atributoMinFz)
+	aporte := topeCracks * (1 - math.Exp(-m.cracks/topeCracks))
+	return math.Max(m.suma/m.peso+aporte, atributoMinFz)
 }
 
 // mejores devuelve hasta n jugadores de la posición dada, los de mayor

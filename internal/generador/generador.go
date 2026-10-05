@@ -25,7 +25,7 @@ const TamanoPlantilla = 22
 // perfil desplaza cada atributo respecto a la calidad base del jugador según
 // su posición.
 var perfil = map[modelo.Posicion]modelo.Atributos{
-	modelo.Portero:       {Ritmo: -15, Tiro: -35, Pase: -10, Regate: -30, Defensa: -10, Fisico: 0, Reflejos: 16},
+	modelo.Portero:       {Ritmo: -15, Tiro: -35, Pase: -10, Regate: -30, Defensa: -10, Fisico: 0, Reflejos: 25},
 	modelo.Defensa:       {Ritmo: 0, Tiro: -20, Pase: -5, Regate: -15, Defensa: 20, Fisico: 10, Reflejos: -50},
 	modelo.Mediocampista: {Ritmo: 0, Tiro: 0, Pase: 15, Regate: 10, Defensa: -5, Fisico: 0, Reflejos: -50},
 	modelo.Delantero:     {Ritmo: 10, Tiro: 20, Pase: 0, Regate: 10, Defensa: -25, Fisico: 0, Reflejos: -50},
@@ -167,6 +167,7 @@ func nuevoJuvenil(r *rand.Rand, id int, p modelo.Posicion, edad int) modelo.Juga
 		Edad:      edad,
 		Posicion:  p,
 		Atributos: atributosDeCalidad(r, p, calidad),
+		Talento:   talentoAleatorio(r),
 	}
 }
 
@@ -179,4 +180,16 @@ func MinimoPorPosicion(p modelo.Posicion) int {
 		}
 	}
 	return 0
+}
+
+// talentoDesv es la dispersión (logarítmica) del talento: con ella, de cada cien
+// jugadores unos tres o cuatro llegan a ser cracks.
+const talentoDesv = 0.18
+
+// talentoAleatorio sortea el talento de un jugador con una distribución
+// log-normal centrada en TalentoNeutro: la mayoría crece de forma normal y unos
+// pocos mucho más (y unos pocos menos).
+func talentoAleatorio(r *rand.Rand) int {
+	t := int(math.Round(modelo.TalentoNeutro * math.Exp(r.NormFloat64()*talentoDesv)))
+	return min(max(t, modelo.TalentoMin), modelo.TalentoMax)
 }

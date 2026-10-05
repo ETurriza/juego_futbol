@@ -1,27 +1,27 @@
-CLUB GRANVELA · estadísticas
+ACADEMIA VALMORA · estadísticas
 
   Posición      Jugador                 PJ Tit   Min   G   A  Am  Ro Imb  Val
-> Portero       Eskardo Herbasco        11  11   990   0   0   0   0   7  6.2
-  Portero       Galdo Herbasco           0   0     0   0   0   0   0   0    -
-  Defensa       Marvel Zaldumar         11  11   879   0   1   3   0   6  6.2
-  Defensa       Eskardo Sandoral        11  11   836   1   0   2   1   6  6.3
-  Defensa       Fabrel Torvelo          11  11   955   0   1   4   0   7  6.2
-  Defensa       Zenel Korvena           11  11   892   0   2   0   0   5  6.2
-  Defensa       Kervo Urdangal           5   0    69   0   0   0   0   0  6.0
-  Defensa       Hemiro Orbaneja          6   0   142   0   0   0   0   0  6.0
-  Defensa       Belron Irueta            5   0   112   0   1   0   0   0  6.2
-  Mediocampista Galdo Aguirel           11  11   807   0   2   1   0   0  6.2
-  Mediocampista Isidoro Pardovan        11  11   984   3   1   2   0   0  6.4
-  Mediocampista Dorvan Roblemar         11  11   844   0   0   3   1   0  6.0
-  Mediocampista Wenceo Pedrosel          4   0    76   0   0   0   0   0  6.0
-  Mediocampista Jaldin Orbaneja          3   0    35   0   0   0   0   0  6.0
-  Mediocampista Lisandor Estoral         5   0   169   0   0   0   0   0  6.0
-  Mediocampista Wenceo Nebreda           2   0    48   0   0   0   0   0  6.0
-  Delantero     Nolven Abrelda          11  11   845   2   0   0   0   0  6.3
-  Delantero     Corvino Cordival        11  11   838   1   1   1   0   0  6.2
-  Delantero     Tavio Duelmo            11  11   882   4   0   2   0   0  6.4
-  Delantero     Orlandi Illanes          3   0    83   0   0   0   0   0  6.1
-  Delantero     Pelayo Montecal          8   0   176   0   0   0   0   0  6.0
-  Delantero     Tavio Hontoria           5   0   101   0   0   0   0   0  6.0
+> Portero       Quirino Pardovan        11  11   990   0   0   0   0   5  6.2
+  Portero       Arlen Sandoral           0   0     0   0   0   0   0   0    -
+  Defensa       Valdor Cordival         11  11   957   1   1   0   0   5  6.4
+  Defensa       Valdor Dunavar          11  11   849   0   0   1   0   5  6.2
+  Defensa       Hilaro Roblemar         11  11   803   1   2   2   0   4  6.4
+  Defensa       Rodvan Maldovar         11  11   883   1   2   1   0   5  6.4
+  Defensa       Selmo Pedrosel           8   0   180   0   0   0   0   0  6.1
+  Defensa       Zenel Irueta             6   0   175   0   0   2   0   0  5.9
+  Defensa       Elmiro Cordival          4   0    99   0   0   0   0   0  6.0
+  Mediocampista Isidoro Frondosa        11  11   931   2   2   2   0   0  6.4
+  Mediocampista Dorvan Sandoral         11  11   819   1   1   3   0   0  6.2
+  Mediocampista Marvel Zaldumar         11  11   829   2   3   1   0   0  6.4
+  Mediocampista Quirino Rivasel          2   0    54   0   0   0   0   0  6.1
+  Mediocampista Pelayo Torvelo           6   0    64   0   0   0   0   0  6.0
+  Mediocampista Baltor Frondosa          3   0   114   0   0   1   0   0  6.1
+  Mediocampista Galdo Jarvale            7   0   191   0   0   1   0   0  6.0
+  Delantero     Florian Urdangal        11  11   802   1   1   0   0   0  6.3
+  Delantero     Hemiro Frondosa         11  11   974   3   2   1   0   0  6.5
+  Delantero     Kaelo Herbasco          11  11   829   4   0   1   0   0  6.5
+  Delantero     Xandro Torvelo           3   0   100   0   0   0   0   0  6.1
+  Delantero     Elmiro Hontoria          5   0   146   1   0   0   0   0  6.2
+  Delantero     Marvel Bocanegro         3   0   101   1   0   0   0   0  6.2
 
 ↑/↓ mover · enter ver ficha · esc volver

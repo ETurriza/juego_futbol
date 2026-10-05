@@ -22,7 +22,7 @@ const (
 	// crece. Con valor <= techoAtributo-amplitudTecho crece al ritmo normal; al
 	// llegar a techoAtributo, solo factorMinimo de lo normal. Solo afecta al
 	// crecimiento: la caída por edad no se frena.
-	techoAtributo = 92.0
+	techoAtributo = 93.0
 	amplitudTecho = 25.0
 	factorMinimo  = 0.10
 
@@ -148,9 +148,10 @@ func Envejecer(r *rand.Rand, j modelo.Jugador) modelo.Jugador {
 	}
 	forma := r.NormFloat64() * ruidoForma
 
+	talento := float64(j.TalentoEfectivo()) / modelo.TalentoNeutro
 	mover := func(valor int, cambio float64) int {
 		if cambio > 0 {
-			cambio *= factorCrecimiento(valor)
+			cambio *= factorCrecimiento(valor) * talento
 		}
 		v := float64(valor) + cambio + forma + r.NormFloat64()*ruidoAtributo
 		return min(max(int(math.Round(v)), modelo.AtributoMin), modelo.AtributoMax)

@@ -1,7 +1,7 @@
 NUEVA CARRERA
 
 Esto empieza una carrera nueva y pierdes la actual
-(Temporada 2 con Club Marisal). Aún no hay guardado automático.
+(Temporada 2 con Deportivo Granvela). Aún no hay guardado automático.
 ¿Seguro?
 
 > No, volver

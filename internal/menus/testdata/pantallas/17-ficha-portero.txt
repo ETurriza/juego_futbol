@@ -1,16 +1,13 @@
-FICHA · Nervio Illanes
-Unión Dorada · Portero · 29 años · Valoración 85
-RIT 75  TIR 63  PAS 81  REG 63  DEF 80  FIS 82  REF 89
+FICHA · Orlandi Pedrosel
+Academia Fontalva · Portero · 24 años · Valoración 75
+RIT 63  TIR 48  PAS 68  REG 53  DEF 70  FIS 74  REF 92
+Proyección: normal
 
 Temporada 4 (en curso)
-  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 5 · Enc 10 · Val 6.0
+  PJ 11 · Tit 11 · Min 990 · G 0 · A 0 · Am 0 · Ro 0 · Imb 2 · Enc 14 · Val 5.6
 
 Trayectoria
-  Temp  Club                       PJ   Min   G   A  Am  Ro Imb  Val
-     1  Unión Dorada               18  1620   0   0   1   0   5  5.8
-     2  Unión Dorada               18  1620   0   0   1   0   8  5.9
-     3  Unión Dorada               18  1620   0   0   3   0   9  6.0
+  Todavía no ha terminado ninguna temporada en esta carrera.
 
-Carrera: 65 partidos · 0 goles · 0 asistencias · 5 amarillas · 0 rojas
 
 esc volver

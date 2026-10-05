@@ -505,7 +505,10 @@ func TestHistorialConTemporadas(t *testing.T) {
 
 	// Solo se marca (con ">") la fila de una temporada en la que el usuario fue
 	// campeón.
-	c.Historial[1].PuestoUsuario = 1
+	for i := range c.Historial {
+		c.Historial[i].PuestoUsuario = 2 // ninguna temporada campeona...
+	}
+	c.Historial[1].PuestoUsuario = 1 // ...salvo la segunda
 	marcadas := 0
 	for _, linea := range strings.Split(texto(m), "\n") {
 		if strings.HasPrefix(linea, ">") {

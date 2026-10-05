@@ -489,3 +489,64 @@ func TestSeRetiraSigueLaProbabilidadPorNivel(t *testing.T) {
 		}
 	}
 }
+
+// cambioConTalento es el cambio medio del pase de un mediocampista de la edad
+// dada, con valor 60, según su talento.
+func cambioConTalento(edad, talento int) float64 {
+	r := nuevoRand(int64(edad*1000 + talento))
+	const n = 8000
+	suma := 0.0
+	for i := 0; i < n; i++ {
+		j := jugador(edad, modelo.Mediocampista, 60, 60)
+		j.Talento = talento
+		suma += float64(Envejecer(r, j).Atributos.Pase - 60)
+	}
+	return suma / n
+}
+
+func TestElTalentoEscalaElCrecimiento(t *testing.T) {
+	// A los 18 el crecimiento medio es +4 (con el factor del tope); con talento
+	// 140 crece proporcionalmente más y con 70, menos.
+	normal := cambioConTalento(18, 100)
+	alto, bajo := cambioConTalento(18, 140), cambioConTalento(18, 70)
+	t.Logf("a los 18, cambio medio del pase: talento 70 -> %.2f, 100 -> %.2f, 140 -> %.2f", bajo, normal, alto)
+	if !(bajo < normal && normal < alto) {
+		t.Errorf("el crecimiento deberia aumentar con el talento: %.2f, %.2f, %.2f", bajo, normal, alto)
+	}
+	if r := alto / normal; r < 1.25 || r > 1.55 {
+		t.Errorf("talento 140 deberia crecer ~1,4 veces lo normal, crece %.2f veces", r)
+	}
+	if r := bajo / normal; r < 0.55 || r > 0.85 {
+		t.Errorf("talento 70 deberia crecer ~0,7 veces lo normal, crece %.2f veces", r)
+	}
+}
+
+func TestElTalentoNoFrenaNiAceleraLaCaida(t *testing.T) {
+	// A los 36 solo hay caída: el talento no la cambia.
+	normal := cambioConTalento(36, 100)
+	for _, talento := range []int{70, 140} {
+		if d := cambioConTalento(36, talento) - normal; d > 0.5 || d < -0.5 {
+			t.Errorf("a los 36 el cambio con talento %d difiere en %.2f del normal", talento, d)
+		}
+	}
+}
+
+func TestSinTalentoDefinidoCrecenComoElNeutro(t *testing.T) {
+	// Cero (jugador sin talento) y 100 dan exactamente lo mismo con la misma semilla.
+	for semilla := int64(1); semilla <= 30; semilla++ {
+		a := jugador(19, modelo.Delantero, 60, 60)
+		b := a
+		b.Talento = modelo.TalentoNeutro
+		if Envejecer(nuevoRand(semilla), a).Atributos != Envejecer(nuevoRand(semilla), b).Atributos {
+			t.Fatalf("semilla %d: talento 0 y 100 deberian crecer igual", semilla)
+		}
+	}
+}
+
+func TestElTalentoSeConservaAlEnvejecer(t *testing.T) {
+	j := jugador(20, modelo.Defensa, 60, 60)
+	j.Talento = 123
+	if got := Envejecer(nuevoRand(1), j).Talento; got != 123 {
+		t.Errorf("el talento cambio a %d", got)
+	}
+}

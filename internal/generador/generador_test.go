@@ -3,6 +3,7 @@ package generador
 import (
 	"math/rand"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/ETurriza/juego_futbol/internal/modelo"
@@ -330,5 +331,109 @@ func TestJugadorSiempreDevuelveUnJugadorValido(t *testing.T) {
 				t.Fatalf("ID o posicion incorrectas: %+v", j)
 			}
 		}
+	}
+}
+
+func TestElTalentoSigueLaDistribucionEsperada(t *testing.T) {
+	r := nuevoRand(51)
+	const n = 100000
+	var proy [4]int
+	suma := 0
+	valores := make([]int, 0, n)
+	for i := 0; i < n; i++ {
+		j := Juvenil(r, i, modelo.Delantero)
+		if j.Talento < modelo.TalentoMin || j.Talento > modelo.TalentoMax {
+			t.Fatalf("talento %d fuera de rango", j.Talento)
+		}
+		valores = append(valores, j.Talento)
+		suma += j.Talento
+		proy[j.Proyeccion()]++
+	}
+	sort.Ints(valores)
+	t.Logf("talento: mediana %d, p10 %d, p90 %d, p99 %d; proyeccion limitada %.1f%%, normal %.1f%%, alta %.1f%%, excepcional %.1f%%",
+		valores[n/2], valores[n/10], valores[n*9/10], valores[n*99/100],
+		100*float64(proy[0])/n, 100*float64(proy[1])/n, 100*float64(proy[2])/n, 100*float64(proy[3])/n)
+	if m := valores[n/2]; m < 98 || m > 102 {
+		t.Errorf("la mediana del talento deberia ser ~100: %d", m)
+	}
+	// Excepcional: unos pocos; alta: bastantes más; limitada: una minoría.
+	pct := func(i int) float64 { return 100 * float64(proy[i]) / n }
+	if p := pct(int(modelo.ProyeccionExcepcional)); p < 2.5 || p > 5.5 {
+		t.Errorf("proyeccion excepcional: %.1f%%, se esperaba entre 2,5%% y 5,5%%", p)
+	}
+	if p := pct(int(modelo.ProyeccionAlta)); p < 8 || p > 18 {
+		t.Errorf("proyeccion alta: %.1f%%, se esperaba entre 8%% y 18%%", p)
+	}
+	if p := pct(int(modelo.ProyeccionLimitada)); p < 8 || p > 25 {
+		t.Errorf("proyeccion limitada: %.1f%%, se esperaba entre 8%% y 25%%", p)
+	}
+}
+
+func TestElTalentoEsIndependienteDeLaPosicion(t *testing.T) {
+	// La misma distribución en todas las posiciones: los cracks no se concentran.
+	r := nuevoRand(52)
+	const n = 30000
+	medias := map[modelo.Posicion]float64{}
+	excepcionales := map[modelo.Posicion]float64{}
+	for _, p := range modelo.Posiciones {
+		for i := 0; i < n; i++ {
+			j := Juvenil(r, i, p)
+			medias[p] += float64(j.Talento) / n
+			if j.Proyeccion() == modelo.ProyeccionExcepcional {
+				excepcionales[p] += 100.0 / n
+			}
+		}
+	}
+	for _, p := range modelo.Posiciones {
+		if medias[p] < 99 || medias[p] > 104 || excepcionales[p] < 2.5 || excepcionales[p] > 5.5 {
+			t.Errorf("%v: talento medio %.1f, excepcionales %.1f%%", p, medias[p], excepcionales[p])
+		}
+	}
+}
+
+func TestElTalentoSeConservaEnLosJugadoresIniciales(t *testing.T) {
+	// Jugador crea un juvenil y lo envejece: su talento no se pierde ni se redibuja.
+	r := nuevoRand(53)
+	altos := 0
+	for i := 0; i < 5000; i++ {
+		j := Jugador(r, i, modelo.Mediocampista)
+		if j.Talento == 0 {
+			t.Fatal("un jugador generado debe tener talento")
+		}
+		if j.Talento >= 120 {
+			altos++
+		}
+	}
+	if altos < 300 || altos > 1200 {
+		t.Errorf("%d de 5000 jugadores con talento >= 120", altos)
+	}
+}
+
+func TestElTalentoSeNotaEnLaCalidadAlMadurar(t *testing.T) {
+	// A igualdad de edad (26 a 31), los de talento alto valen mucho más que los de
+	// talento bajo: es lo que hace a un crack.
+	r := nuevoRand(54)
+	var altos, bajos, nA, nB float64
+	for i := 0; i < 60000; i++ {
+		j := Jugador(r, i, modelo.Mediocampista)
+		if j.Edad < 26 || j.Edad > 31 {
+			continue
+		}
+		switch {
+		case j.Talento >= 125:
+			altos += float64(j.Valoracion())
+			nA++
+		case j.Talento <= 85:
+			bajos += float64(j.Valoracion())
+			nB++
+		}
+	}
+	if nA < 100 || nB < 100 {
+		t.Fatalf("muestras pequeñas: %v y %v", nA, nB)
+	}
+	dif := altos/nA - bajos/nB
+	t.Logf("a los 26-31: talento alto %.1f, bajo %.1f (diferencia %.1f)", altos/nA, bajos/nB, dif)
+	if dif < 10 {
+		t.Errorf("la diferencia entre talento alto y bajo es de solo %.1f puntos", dif)
 	}
 }

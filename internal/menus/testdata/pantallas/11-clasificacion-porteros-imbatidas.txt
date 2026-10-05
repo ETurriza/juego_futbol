@@ -1,14 +1,15 @@
 PORTEROS · PORTERÍAS IMBATIDAS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Imb   Enc
->  1  Eskardo Herbasco       Club Granvela              11     7    10
-   2  Kaelo Irueta           Unión Pinarel              11     6     9
-*  3  Nervio Illanes         Unión Dorada               11     5    10
-   4  Daveo Montecal         Deportivo Sanvedra         11     5    11
-   5  Hemiro Pedrosel        Juventud Peñaviva          11     3     8
-   6  Orlandi Pardovan       Academia Nuevaluna         11     3    15
-   7  Belron Escalona        Academia Isleta Roja       11     2    13
-   8  Selmo Zaldumar         Club Brisanda              11     1    15
-   9  Zenel Korvena          Academia Dorada            11     1    17
+>  1  Lisandor Landrosa      Unión Castelmar            11     6     7
+   2  Quirino Pardovan       Academia Valmora           11     5     7
+   3  Xandro Abrelda         Unión Pinarel              11     5     7
+   4  Selmo Frondosa         Club Maldoria              11     4    11
+   5  Lisandor Escalona      Unión Granvela             11     4    15
+   6  Lorvin Illanes         Deportivo Valmora          11     3    13
+   7  Fabrel Jurado          Club Altamira del Sur      11     3    15
+*  8  Orlandi Pedrosel       Academia Fontalva          11     2    14
+   9  Pelayo Cordival        Juventud Granvela          11     2    19
+  10  Anselmo Urdangal       Club Brisanda              11     1    19
 
 ↑/↓ mover · enter ver ficha · * tu club · esc volver

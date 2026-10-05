@@ -409,8 +409,9 @@ func TestMigracion2ConservaLasPartidasDeLaVersion1(t *testing.T) {
 		t.Fatal(err)
 	}
 	original := guardadoDePrueba(t, 14, 6)
-	// El esquema v1 no guardaba el detalle de los partidos.
+	// El esquema v1 no guardaba el detalle de los partidos ni el talento.
 	sinDetalle(&original)
+	sinTalento(&original)
 	guardarComoV1(t, db, "vieja", original)
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
@@ -531,6 +532,16 @@ func sinDetalle(g *aplicacion.Guardado) {
 	}
 }
 
+// sinTalento deja a todos los jugadores con el talento neutro, que es el que
+// reciben al migrar las partidas guardadas antes de que existiera.
+func sinTalento(g *aplicacion.Guardado) {
+	for i := range g.Equipos {
+		for k := range g.Equipos[i].Plantilla {
+			g.Equipos[i].Plantilla[k].Talento = modelo.TalentoNeutro
+		}
+	}
+}
+
 func TestMigracion3ConservaLasPartidasDeLaVersion2(t *testing.T) {
 	ctx := context.Background()
 	ruta := filepath.Join(t.TempDir(), "v2.db")
@@ -550,6 +561,7 @@ func TestMigracion3ConservaLasPartidasDeLaVersion2(t *testing.T) {
 	}
 	original := c.Exportar()
 	sinDetalle(&original)
+	sinTalento(&original)
 	original.Archivo = nil // la v2 tampoco archivaba estadisticas
 
 	db, err := sql.Open("sqlite", "file:"+ruta+"?_pragma=foreign_keys(1)")
@@ -700,5 +712,121 @@ func TestCargarDetectaUnDetalleOUnArchivoCorruptos(t *testing.T) {
 				t.Errorf("err = %v, se esperaba 'datos corruptos'", err)
 			}
 		})
+	}
+}
+
+func TestMigracion4ConservaLasPartidasDeLaVersion3(t *testing.T) {
+	ctx := context.Background()
+	ruta := filepath.Join(t.TempDir(), "v3.db")
+
+	// Una partida de la versión 3 (con estadísticas, pero sin talento).
+	c, _ := aplicacion.NuevaCarrera(19, 10)
+	for i := 0; i < 6; i++ {
+		c.AvanzarJornada()
+	}
+	original := c.Exportar()
+	sinDetalle(&original) // el ayudante de la prueba escribe el esquema v1
+	sinTalento(&original)
+
+	db, err := sql.Open("sqlite", "file:"+ruta+"?_pragma=foreign_keys(1)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range migraciones[:3] {
+		if _, err := db.Exec(m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := db.Exec("PRAGMA user_version = 3"); err != nil {
+		t.Fatal(err)
+	}
+	guardarComoV1(t, db, "v3", original)
+	if _, err := db.Exec("UPDATE partidas SET temporada = ?, proximo_id = ? WHERE ranura = 'v3'",
+		original.Numero, original.ProximoID); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+
+	r, err := Abrir(ctx, ruta)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Cerrar()
+	if v := versionEsquema(t, r); v != len(migraciones) {
+		t.Errorf("version = %d, se esperaba %d", v, len(migraciones))
+	}
+	cargado, err := r.Cargar(ctx, "v3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(original, cargado) {
+		t.Error("la partida migrada desde la v3 no es identica (todos con talento neutro)")
+	}
+	for _, e := range cargado.Equipos {
+		for _, j := range e.Plantilla {
+			if j.Talento != modelo.TalentoNeutro {
+				t.Fatalf("%s: talento %d, se esperaba el neutro", j.Nombre, j.Talento)
+			}
+		}
+	}
+
+	// Al seguir jugando, los juveniles nuevos traen su talento y se conserva al guardar.
+	carrera, err := aplicacion.CargarCarrera(ctx, r, "v3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for !carrera.Terminada() {
+		carrera.AvanzarJornada()
+	}
+	if _, err := carrera.SiguienteTemporada(); err != nil {
+		t.Fatal(err)
+	}
+	if err := aplicacion.GuardarCarrera(ctx, r, "v3", carrera); err != nil {
+		t.Fatal(err)
+	}
+	vuelta, err := aplicacion.CargarCarrera(ctx, r, "v3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(carrera.Exportar().Equipos, vuelta.Exportar().Equipos) {
+		t.Error("tras migrar y avanzar, las plantillas no se recuperan identicas")
+	}
+	distintos := 0
+	for _, e := range vuelta.Temporada.Equipos {
+		for _, j := range e.Plantilla {
+			if j.Talento != modelo.TalentoNeutro {
+				distintos++
+			}
+		}
+	}
+	if distintos == 0 {
+		t.Error("los juveniles nuevos deberian traer un talento distinto del neutro")
+	}
+}
+
+func TestElTalentoViajaPorLaBaseDeDatos(t *testing.T) {
+	ctx := context.Background()
+	r := abrirTemporal(t)
+	c, _ := aplicacion.NuevaCarrera(23, 10)
+	if err := aplicacion.GuardarCarrera(ctx, r, "p", c); err != nil {
+		t.Fatal(err)
+	}
+	var distintos, total int
+	if err := r.db.QueryRow("SELECT COUNT(*), SUM(talento <> 100) FROM jugadores WHERE ranura = 'p'").Scan(&total, &distintos); err != nil {
+		t.Fatal(err)
+	}
+	if total != 220 || distintos < 100 {
+		t.Errorf("de %d jugadores guardados, %d con talento distinto del neutro; se esperaba la gran mayoria", total, distintos)
+	}
+	cargada, err := aplicacion.CargarCarrera(ctx, r, "p")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, e := range c.Temporada.Equipos {
+		for k, j := range e.Plantilla {
+			if got := cargada.Temporada.Equipos[i].Plantilla[k].Talento; got != j.Talento {
+				t.Fatalf("%s: talento %d tras cargar, era %d", j.Nombre, got, j.Talento)
+			}
+		}
 	}
 }
