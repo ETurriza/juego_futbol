@@ -25,8 +25,8 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
   de `aplicacion`, `menus`, `persistencia` o `red`.
 - `aplicacion` depende de `modelo` y de los servicios de dominio. Define los
   puertos (interfaces) que consume.
-- `persistencia` depende de `modelo` e implementa los puertos de `aplicacion`
-  sin importarla.
+- `persistencia` depende de `modelo` y de `aplicacion`: implementa sus puertos
+  y usa su tipo `Guardado`. Usa SQLite con `modernc.org/sqlite` (sin CGO).
 - `menus` y `red` dependen de `aplicacion`.
 - Las capas externas dependen de las internas, nunca al revés.
 
@@ -53,7 +53,11 @@ reales.
 - Integration: `*_integration_test.go` con `//go:build integration`; se corren
   con `go test -tags=integration ./...`.
 - E2E: en `tests/e2e/`, desde la fase 4.
-- Antes de terminar una tarea se corren `go build ./...` y `go test ./...`.
+- Antes de terminar una tarea se corren `go build ./...` y `go test ./...`. Si
+  se toca `persistencia` o un puerto de `aplicacion`, también
+  `go test -tags=integration ./...`.
+- Cada implementación de un puerto pasa las pruebas de contrato de
+  `internal/aplicacion/contrato`.
 
 ## CLAUDE.md por paquete
 

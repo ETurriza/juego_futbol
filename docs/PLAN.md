@@ -45,8 +45,9 @@ Reglas de dependencias:
 - `modelo` no importa ningún otro paquete del proyecto.
 - `simulacion`, `liga` y `mercado` solo dependen de `modelo` y entre sí.
 - `aplicacion` depende de `modelo` y de los servicios de dominio.
-- `persistencia` depende de `modelo`; implementa las interfaces de `aplicacion`
-  sin importarla (interfaces estructurales de Go).
+- `persistencia` depende de `modelo` y de `aplicacion`: implementa sus puertos y
+  usa su tipo `Guardado` (el adaptador, capa externa, depende de la capa interna
+  que define el puerto).
 - `menus` y `red` dependen de `aplicacion`.
 
 No se crean Unit of Work, repositorios ni `aplicacion` antes de que su fase los
@@ -144,8 +145,21 @@ Se entrega en dos PR:
 *Terminado cuando*: se puede jugar una temporada desde la terminal.
 
 ### 5. Persistencia con SQLite
-Adaptador en `persistencia` que implementa los puertos de `aplicacion`.
-Pruebas de integración.
+Se guarda el estado real de la carrera (equipos, jugadores, resultados), no solo
+la semilla, porque los fichajes de la fase 7 cambiarán las plantillas. Se
+entrega en dos PR:
+
+- **5a, backend:** en `aplicacion`, `Guardado` (foto de la carrera con tipos
+  simples), `Exportar`/`Importar` con validación, el puerto
+  `RepositorioPartidas` (por *ranura*: una en local, una por usuario en SSH),
+  `GuardarCarrera`/`CargarCarrera` y un repositorio en memoria. Pruebas de
+  contrato reutilizables en `aplicacion/contrato`. En `persistencia`, el
+  adaptador SQLite (`modernc.org/sqlite`, sin CGO) con migraciones por
+  `PRAGMA user_version`, guardado transaccional y pruebas de integración.
+- **5b, entrypoints:** en `menus` y `cmd/juego`, autoguardado tras cada
+  jornada, "Continuar"/"Nueva carrera" al arrancar y bandera `--db`
+  (por defecto en el directorio de datos del usuario); E2E de cerrar y reanudar.
+
 *Terminado cuando*: una carrera se guarda y se reanuda.
 
 ### 6. Servidor SSH con Wish
