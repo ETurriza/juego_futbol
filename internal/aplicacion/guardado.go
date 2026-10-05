@@ -23,7 +23,14 @@ type Guardado struct {
 	Semilla int64
 	// Usuario es el índice, en Equipos, del equipo del usuario.
 	Usuario int
-	Equipos []modelo.Equipo
+	// Numero es el número de la temporada en curso, desde 1.
+	Numero int
+	// ProximoID es la ID del próximo jugador que se cree; siempre mayor que la
+	// de cualquier jugador existente.
+	ProximoID int
+	// Historial tiene un resumen por cada temporada terminada.
+	Historial []ResumenTemporada
+	Equipos   []modelo.Equipo
 	// Resultados[i] son los partidos de la jornada i, en el orden del
 	// calendario; su longitud es la cantidad de jornadas jugadas.
 	Resultados [][]ResultadoGuardado
@@ -32,9 +39,12 @@ type Guardado struct {
 // Exportar devuelve una copia independiente del estado de la carrera.
 func (c *Carrera) Exportar() Guardado {
 	g := Guardado{
-		Semilla: c.Semilla,
-		Usuario: c.Usuario,
-		Equipos: clonarEquipos(c.Temporada.Equipos),
+		Semilla:   c.Semilla,
+		Usuario:   c.Usuario,
+		Numero:    c.Numero,
+		ProximoID: c.ProximoID,
+		Historial: append([]ResumenTemporada(nil), c.Historial...),
+		Equipos:   clonarEquipos(c.Temporada.Equipos),
 	}
 	for _, jornada := range c.Temporada.Resultados {
 		rs := make([]ResultadoGuardado, len(jornada))
@@ -57,6 +67,19 @@ func Importar(g Guardado) (*Carrera, error) {
 		return nil, fmt.Errorf("guardado invalido: usuario %d fuera de rango para %d equipos",
 			g.Usuario, len(g.Equipos))
 	}
+	if g.Numero < 1 {
+		return nil, fmt.Errorf("guardado invalido: numero de temporada %d, debe ser al menos 1", g.Numero)
+	}
+	if len(g.Historial) != g.Numero-1 {
+		return nil, fmt.Errorf("guardado invalido: temporada %d con %d resumenes en el historial, se esperaban %d",
+			g.Numero, len(g.Historial), g.Numero-1)
+	}
+	for i, h := range g.Historial {
+		if h.Numero != i+1 {
+			return nil, fmt.Errorf("guardado invalido: el resumen %d del historial es de la temporada %d",
+				i+1, h.Numero)
+		}
+	}
 	ids := map[int]string{}
 	for i, e := range g.Equipos {
 		if err := e.Validar(); err != nil {
@@ -68,6 +91,10 @@ func Importar(g Guardado) (*Carrera, error) {
 					j.ID, otro, e.Nombre)
 			}
 			ids[j.ID] = e.Nombre
+			if j.ID >= g.ProximoID {
+				return nil, fmt.Errorf("guardado invalido: el jugador %d de %q no es menor que ProximoID (%d)",
+					j.ID, e.Nombre, g.ProximoID)
+			}
 		}
 	}
 
@@ -100,7 +127,14 @@ func Importar(g Guardado) (*Carrera, error) {
 		}
 		temporada.Resultados = append(temporada.Resultados, rs)
 	}
-	return &Carrera{Semilla: g.Semilla, Temporada: temporada, Usuario: g.Usuario}, nil
+	return &Carrera{
+		Semilla:   g.Semilla,
+		Temporada: temporada,
+		Usuario:   g.Usuario,
+		Numero:    g.Numero,
+		Historial: append([]ResumenTemporada(nil), g.Historial...),
+		ProximoID: g.ProximoID,
+	}, nil
 }
 
 // Resumen devuelve los datos de listado de la partida guardada en la ranura
@@ -115,6 +149,7 @@ func (g Guardado) Resumen(ranura string) (ResumenPartida, error) {
 	}
 	return ResumenPartida{
 		Ranura:        ranura,
+		Temporada:     g.Numero,
 		Equipo:        g.Equipos[g.Usuario].Nombre,
 		Jornada:       len(g.Resultados),
 		TotalJornadas: len(calendario),
@@ -122,7 +157,14 @@ func (g Guardado) Resumen(ranura string) (ResumenPartida, error) {
 }
 
 func (g Guardado) clonar() Guardado {
-	c := Guardado{Semilla: g.Semilla, Usuario: g.Usuario, Equipos: clonarEquipos(g.Equipos)}
+	c := Guardado{
+		Semilla:   g.Semilla,
+		Usuario:   g.Usuario,
+		Numero:    g.Numero,
+		ProximoID: g.ProximoID,
+		Historial: append([]ResumenTemporada(nil), g.Historial...),
+		Equipos:   clonarEquipos(g.Equipos),
+	}
 	for _, jornada := range g.Resultados {
 		c.Resultados = append(c.Resultados, append([]ResultadoGuardado(nil), jornada...))
 	}

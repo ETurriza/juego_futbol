@@ -18,6 +18,7 @@ var ErrPartidaNoExiste = errors.New("no existe una partida en esa ranura")
 // ResumenPartida describe una partida guardada, para listarlas.
 type ResumenPartida struct {
 	Ranura        string
+	Temporada     int    // temporada en curso, desde 1
 	Equipo        string // equipo del usuario
 	Jornada       int    // jornadas jugadas
 	TotalJornadas int

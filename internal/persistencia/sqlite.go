@@ -83,11 +83,20 @@ func (r *Repositorio) Guardar(ctx context.Context, ranura string, g aplicacion.G
 		return err
 	}
 	if _, err := tx.ExecContext(ctx,
-		`INSERT INTO partidas (ranura, semilla, usuario, equipo_usuario, jornadas_jugadas, total_jornadas, actualizada)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO partidas (ranura, semilla, usuario, equipo_usuario, jornadas_jugadas, total_jornadas,
+		                       actualizada, temporada, proximo_id)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		ranura, g.Semilla, g.Usuario, resumen.Equipo, resumen.Jornada, resumen.TotalJornadas,
-		r.ahora().UnixMilli()); err != nil {
+		r.ahora().UnixMilli(), g.Numero, g.ProximoID); err != nil {
 		return err
+	}
+	for _, h := range g.Historial {
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO historial (ranura, numero, campeon, puesto_usuario, puntos_usuario)
+			 VALUES (?, ?, ?, ?, ?)`,
+			ranura, h.Numero, h.Campeon, h.PuestoUsuario, h.PuntosUsuario); err != nil {
+			return err
+		}
 	}
 
 	insEquipo, err := tx.PrepareContext(ctx, "INSERT INTO equipos (ranura, indice, nombre) VALUES (?, ?, ?)")
@@ -151,8 +160,8 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 	var g aplicacion.Guardado
 	var jornadas int
 	err = tx.QueryRowContext(ctx,
-		"SELECT semilla, usuario, jornadas_jugadas FROM partidas WHERE ranura = ?", ranura).
-		Scan(&g.Semilla, &g.Usuario, &jornadas)
+		"SELECT semilla, usuario, jornadas_jugadas, temporada, proximo_id FROM partidas WHERE ranura = ?", ranura).
+		Scan(&g.Semilla, &g.Usuario, &jornadas, &g.Numero, &g.ProximoID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return aplicacion.Guardado{}, fmt.Errorf("%w: %q", aplicacion.ErrPartidaNoExiste, ranura)
 	}
@@ -160,6 +169,9 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 		return aplicacion.Guardado{}, err
 	}
 
+	if g.Historial, err = cargarHistorial(ctx, tx, ranura, g.Numero-1); err != nil {
+		return aplicacion.Guardado{}, err
+	}
 	if g.Equipos, err = cargarEquipos(ctx, tx, ranura); err != nil {
 		return aplicacion.Guardado{}, err
 	}
@@ -167,6 +179,35 @@ func (r *Repositorio) Cargar(ctx context.Context, ranura string) (aplicacion.Gua
 		return aplicacion.Guardado{}, err
 	}
 	return g, nil
+}
+
+func cargarHistorial(ctx context.Context, tx *sql.Tx, ranura string, esperadas int) ([]aplicacion.ResumenTemporada, error) {
+	filas, err := tx.QueryContext(ctx,
+		`SELECT numero, campeon, puesto_usuario, puntos_usuario
+		 FROM historial WHERE ranura = ? ORDER BY numero`, ranura)
+	if err != nil {
+		return nil, err
+	}
+	defer filas.Close()
+	var historial []aplicacion.ResumenTemporada
+	for filas.Next() {
+		var h aplicacion.ResumenTemporada
+		if err := filas.Scan(&h.Numero, &h.Campeon, &h.PuestoUsuario, &h.PuntosUsuario); err != nil {
+			return nil, err
+		}
+		if h.Numero != len(historial)+1 {
+			return nil, fmt.Errorf("datos corruptos en %q: falta el resumen de la temporada %d", ranura, len(historial)+1)
+		}
+		historial = append(historial, h)
+	}
+	if err := filas.Err(); err != nil {
+		return nil, err
+	}
+	if len(historial) != esperadas {
+		return nil, fmt.Errorf("datos corruptos en %q: %d resumenes en el historial, se esperaban %d",
+			ranura, len(historial), esperadas)
+	}
+	return historial, nil
 }
 
 func cargarEquipos(ctx context.Context, tx *sql.Tx, ranura string) ([]modelo.Equipo, error) {
@@ -256,7 +297,7 @@ func (r *Repositorio) Listar(ctx context.Context) ([]aplicacion.ResumenPartida, 
 		return nil, err
 	}
 	filas, err := r.db.QueryContext(ctx,
-		`SELECT ranura, equipo_usuario, jornadas_jugadas, total_jornadas, actualizada
+		`SELECT ranura, temporada, equipo_usuario, jornadas_jugadas, total_jornadas, actualizada
 		 FROM partidas ORDER BY actualizada DESC, ranura ASC`)
 	if err != nil {
 		return nil, err
@@ -266,7 +307,7 @@ func (r *Repositorio) Listar(ctx context.Context) ([]aplicacion.ResumenPartida, 
 	for filas.Next() {
 		var s aplicacion.ResumenPartida
 		var ms int64
-		if err := filas.Scan(&s.Ranura, &s.Equipo, &s.Jornada, &s.TotalJornadas, &ms); err != nil {
+		if err := filas.Scan(&s.Ranura, &s.Temporada, &s.Equipo, &s.Jornada, &s.TotalJornadas, &ms); err != nil {
 			return nil, err
 		}
 		s.Actualizada = time.UnixMilli(ms)

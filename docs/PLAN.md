@@ -91,6 +91,7 @@ internal/
   simulacion/           (2)
   arquitectura/         (2) prueba de reglas de dependencias entre paquetes
   liga/                 (3)
+  progresion/           (6) edad, evolución y retiro de los jugadores
   aplicacion/           (4) casos de uso + puertos
     contrato/           (5) pruebas de contrato de los puertos
   menus/                (4)
@@ -133,7 +134,7 @@ lista antes de conectar la interfaz con el guardado.
 | 3    | Liga                                        | hecha     | 3         |
 | 4    | Menús locales con Bubble Tea                | hecha     | 4         |
 | 5    | Guardado: backend con SQLite                | hecha     | 5a        |
-| 6    | Temporadas continuas                        | pendiente | (nueva)   |
+| 6    | Temporadas continuas (6a dominio, 6b menús) | en curso  | (nueva)   |
 | 7    | Guardado en la interfaz                     | pendiente | 5b        |
 | 8    | Partido rápido                              | pendiente | (nueva)   |
 | 9    | Estadísticas individuales y alineación      | pendiente | (nueva)   |
@@ -178,17 +179,37 @@ y un repositorio en memoria, con pruebas de contrato reutilizables. En
 
 ### 6. Temporadas continuas
 Al terminar una temporada la carrera sigue: acción "Siguiente temporada" con
-nuevo calendario y tabla a cero, en el mismo club.
-- `Carrera` pasa a llevar el número de temporada y un **historial** (campeón,
-  puesto y puntos del usuario de cada año).
-- **Edad y evolución:** cada jugador cumple un año; los jóvenes mejoran, los
-  veteranos bajan según su edad; hay retiros y entran juveniles nuevos para
-  mantener las plantillas, también en los clubes rivales.
-- La semilla de cada jornada se deriva también del número de temporada, de modo
-  que la carrera sigue siendo reproducible.
-- `Guardado` v2 y segunda migración de la base de datos.
-*Terminado cuando*: se juegan varias temporadas seguidas, el historial es
-correcto y la carrera guardada se reanuda de forma idéntica.
+nuevo calendario y tabla a cero, en el mismo club. Se entrega en dos PR:
+
+- **6a, dominio y guardado:**
+  - `progresion` (solo depende de `modelo`): evolución anual y retiro por edad.
+    Los atributos técnicos tienen una meseta larga (de los 28 a los 33, con un
+    20 % de probabilidad anual de "gran año" entre los 31 y los 34) y el
+    declive es rápido desde los 34; el físico baja antes (desde los 28). Los
+    porteros envejecen tres años más tarde. No hay retiros antes de los 34;
+    después la probabilidad sube hasta el 100 % a los 39 (42 en porteros). Las
+    constantes de calibración están al inicio de `progresion.go`.
+  - `generador.Juvenil` y `generador.MinimoPorPosicion`: los retiros se reponen
+    con juveniles de 16 a 19 años de la misma posición, hasta la composición
+    mínima de 2 porteros, 7 defensas, 7 mediocampistas y 6 delanteros (nunca se
+    recorta una plantilla que ya la supera).
+  - `Carrera` pasa a llevar el número de temporada, un historial (campeón,
+    puesto y puntos del usuario de cada año) y `ProximoID` (una ID de jugador
+    nunca se reutiliza). `SiguienteTemporada()` es atómica y devuelve las bajas
+    y altas del club del usuario.
+  - La semilla de la temporada 1 es la de la carrera; las siguientes derivan la
+    suya, y la evolución de las plantillas usa otra semilla derivada.
+  - `Guardado` v2 y migración 2 de la base de datos (las partidas existentes
+    quedan en la temporada 1).
+  - Se verificó con pruebas que la liga es estable a largo plazo: promediando
+    12 semillas, la valoración media va de 70,8 a 71,1 en 40 temporadas y la
+    edad media se queda en 27.
+- **6b, menús:** "Siguiente temporada" en el fin de temporada, pantalla de
+  inicio de temporada con bajas y altas del club, historial, número de
+  temporada en el encabezado y E2E de varias temporadas seguidas.
+
+*Terminado cuando*: se juegan varias temporadas seguidas desde la terminal, el
+historial es correcto y la carrera guardada se reanuda de forma idéntica.
 
 ### 7. Guardado en la interfaz
 En `menus` y `cmd/juego`:

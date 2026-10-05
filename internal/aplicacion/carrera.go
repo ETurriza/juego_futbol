@@ -28,6 +28,13 @@ type Carrera struct {
 	Temporada *liga.Temporada
 	// Usuario es el índice, en Temporada.Equipos, del equipo del usuario.
 	Usuario int
+	// Numero es el número de la temporada en curso, desde 1.
+	Numero int
+	// Historial tiene un resumen por cada temporada ya terminada, en orden.
+	Historial []ResumenTemporada
+	// ProximoID es la ID que recibirá el próximo jugador creado. Nunca se
+	// reutiliza una ID, ni la de un jugador retirado.
+	ProximoID int
 }
 
 // ResultadoPartido es un partido jugado, con los nombres de los equipos.
@@ -69,7 +76,13 @@ func NuevaCarrera(semilla int64, numEquipos int) (*Carrera, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Carrera{Semilla: semilla, Temporada: temporada, Usuario: r.Intn(numEquipos)}, nil
+	return &Carrera{
+		Semilla:   semilla,
+		Temporada: temporada,
+		Usuario:   r.Intn(numEquipos),
+		Numero:    1,
+		ProximoID: numEquipos*generador.TamanoPlantilla + 1,
+	}, nil
 }
 
 // nombreNuevo inventa un nombre de club que no esté en usados.
@@ -85,16 +98,36 @@ func nombreNuevo(r *rand.Rand, usados map[string]bool) string {
 // carrera (mezcla tipo splitmix64), de modo que jornadas distintas no
 // comparten secuencia aleatoria.
 func semillaJornada(semilla int64, jornada int) int64 {
-	z := uint64(semilla) + (uint64(jornada)+1)*0x9E3779B97F4A7C15
+	return mezclar(uint64(semilla) + (uint64(jornada)+1)*0x9E3779B97F4A7C15)
+}
+
+// mezclar es el paso final de splitmix64: dispersa los bits de z.
+func mezclar(z uint64) int64 {
 	z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9
 	z = (z ^ (z >> 27)) * 0x94D049BB133111EB
 	return int64(z ^ (z >> 31))
 }
 
+// semillaTemporada es la semilla base de las jornadas de la temporada en curso.
+// La primera temporada usa la semilla de la carrera tal cual, de modo que una
+// semilla sigue dando la misma liga de siempre; las siguientes derivan la suya.
+func (c *Carrera) semillaTemporada() int64 {
+	if c.Numero <= 1 {
+		return c.Semilla
+	}
+	return mezclar(uint64(c.Semilla) ^ (uint64(c.Numero) * 0xD6E8FEB86659FD93))
+}
+
+// semillaEvolucion es la semilla con la que evolucionan las plantillas al
+// terminar la temporada numero.
+func semillaEvolucion(semilla int64, numero int) int64 {
+	return mezclar(uint64(semilla) + uint64(numero)*0xA0761D6478BD642F)
+}
+
 // AvanzarJornada juega la próxima jornada y devuelve sus resultados. Devuelve
 // ErrTemporadaTerminada si ya no quedan jornadas.
 func (c *Carrera) AvanzarJornada() ([]ResultadoPartido, error) {
-	r := rand.New(rand.NewSource(semillaJornada(c.Semilla, c.Temporada.JornadaActual())))
+	r := rand.New(rand.NewSource(semillaJornada(c.semillaTemporada(), c.Temporada.JornadaActual())))
 	resultados, err := c.Temporada.JugarJornada(r)
 	if err != nil {
 		return nil, err

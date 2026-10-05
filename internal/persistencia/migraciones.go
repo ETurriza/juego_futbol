@@ -54,6 +54,23 @@ var migraciones = []string{
 		goles_visitante INTEGER NOT NULL,
 		PRIMARY KEY (ranura, jornada, orden)
 	);`,
+
+	// 2: temporadas continuas. Las partidas guardadas con el esquema anterior
+	// quedan en la temporada 1 y su próxima ID de jugador se calcula a partir de
+	// los jugadores que ya tienen.
+	`ALTER TABLE partidas ADD COLUMN temporada  INTEGER NOT NULL DEFAULT 1;
+	ALTER TABLE partidas ADD COLUMN proximo_id INTEGER NOT NULL DEFAULT 0;
+	UPDATE partidas SET proximo_id = (
+		SELECT COALESCE(MAX(id), 0) + 1 FROM jugadores WHERE jugadores.ranura = partidas.ranura
+	);
+	CREATE TABLE historial (
+		ranura         TEXT    NOT NULL REFERENCES partidas(ranura) ON DELETE CASCADE,
+		numero         INTEGER NOT NULL,
+		campeon        TEXT    NOT NULL,
+		puesto_usuario INTEGER NOT NULL,
+		puntos_usuario INTEGER NOT NULL,
+		PRIMARY KEY (ranura, numero)
+	);`,
 }
 
 // migrar lleva la base al esquema más reciente. Cada migración corre en su

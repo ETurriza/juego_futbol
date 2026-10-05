@@ -1,0 +1,10 @@
+// Package progresion modela cómo cambian los jugadores con la edad: su
+// evolución de un año al siguiente y su retiro.
+//
+// Los atributos técnicos (tiro, pase, regate, defensa y los reflejos de los
+// porteros) se sostienen más que los físicos (ritmo y físico): la técnica tiene
+// una meseta larga, con un posible "último prime" pasados los 30, y el declive
+// llega rápido después de los 34. Los porteros envejecen unos años más tarde.
+//
+// Toda la aleatoriedad se recibe como *rand.Rand. Solo depende de modelo.
+package progresion
