@@ -441,3 +441,87 @@ func TestOrdenDeLasClasificacionesEsTotal(t *testing.T) {
 		t.Error("la clasificacion no deberia depender del orden de las plantillas")
 	}
 }
+
+func TestEstadisticasDeEquipo(t *testing.T) {
+	c := carreraConJornadas(t, 15, 10)
+	club := c.Temporada.Equipos[3].Nombre
+	filas, err := c.EstadisticasDeEquipo(club)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(filas) != 22 {
+		t.Fatalf("%d jugadores, se esperaban 22", len(filas))
+	}
+	for i, f := range filas {
+		if f.Equipo != club {
+			t.Fatalf("jugador de otro equipo: %s", f.Equipo)
+		}
+		if i > 0 {
+			a, b := filas[i-1].Jugador, f.Jugador
+			if a.Posicion > b.Posicion || (a.Posicion == b.Posicion && a.Valoracion() < b.Valoracion()) {
+				t.Fatalf("mal ordenado en el puesto %d", i+1)
+			}
+		}
+	}
+	if filas[0].Jugador.Posicion != modelo.Portero || filas[len(filas)-1].Jugador.Posicion != modelo.Delantero {
+		t.Error("deberia empezar por porteros y terminar en delanteros")
+	}
+	golesClub := 0
+	for _, f := range filas {
+		golesClub += f.Goles
+	}
+	equipos, _ := c.EstadisticasEquipos()
+	if golesClub != equipos[3].GF {
+		t.Errorf("los jugadores suman %d goles y el equipo %d", golesClub, equipos[3].GF)
+	}
+	if ninguno, err := c.EstadisticasDeEquipo("No existe"); err != nil || ninguno != nil {
+		t.Errorf("un equipo inexistente deberia dar nil: %v, %v", ninguno, err)
+	}
+}
+
+func TestEstadisticaDeJugador(t *testing.T) {
+	c := carreraConJornadas(t, 16, 6)
+	todos, _ := c.EstadisticasJugadores()
+	esperado := todos[37]
+	got, ok, err := c.EstadisticaDeJugador(esperado.Jugador.ID)
+	if err != nil || !ok || !reflect.DeepEqual(got, esperado) {
+		t.Errorf("EstadisticaDeJugador = %+v, %v, %v; se esperaba %+v", got, ok, err, esperado)
+	}
+	if _, ok, _ := c.EstadisticaDeJugador(-1); ok {
+		t.Error("un jugador que no existe no deberia encontrarse")
+	}
+}
+
+func TestTrayectoria(t *testing.T) {
+	c := carreraConJornadas(t, 17, 0)
+	jugarTemporadas(t, c, 3)
+	// Un jugador que haya jugado las tres temporadas.
+	candidatos := map[int]int{}
+	for _, a := range c.Archivo {
+		candidatos[a.Jugador]++
+	}
+	var id int
+	for j, n := range candidatos {
+		if n == 3 && (id == 0 || j < id) {
+			id = j
+		}
+	}
+	if id == 0 {
+		t.Fatal("nadie jugo las tres temporadas")
+	}
+	tray := c.Trayectoria(id)
+	if len(tray) != 3 {
+		t.Fatalf("%d temporadas, se esperaban 3", len(tray))
+	}
+	for i, a := range tray {
+		if a.Temporada != i+1 || a.Jugador != id {
+			t.Errorf("fila %d incorrecta: %+v", i+1, a)
+		}
+		if i > 0 && a.Edad != tray[i-1].Edad+1 {
+			t.Errorf("la edad deberia subir un ano por temporada: %d tras %d", a.Edad, tray[i-1].Edad)
+		}
+	}
+	if ninguna := c.Trayectoria(-3); len(ninguna) != 0 {
+		t.Errorf("un jugador que no existe no tiene trayectoria: %v", ninguna)
+	}
+}

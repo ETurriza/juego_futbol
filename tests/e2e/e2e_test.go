@@ -157,9 +157,9 @@ func temporadaCompleta() []string {
 
 func TestNuevaCarreraAlTerminar(t *testing.T) {
 	teclas := temporadaCompleta()
-	// Nueva carrera es la cuarta opción del fin de temporada y pide
+	// Nueva carrera es la quinta opción del fin de temporada y pide
 	// confirmación: se baja a "Sí, empezar de cero".
-	teclas = append(teclas, abajo, abajo, abajo, enter, abajo, enter)
+	teclas = append(teclas, abajo, abajo, abajo, abajo, enter, abajo, enter)
 	teclas = append(teclas, "q") // salir desde el menú de la carrera nueva
 
 	modelo, _ := jugar(t, 1, teclas...)
@@ -174,8 +174,8 @@ func TestNuevaCarreraAlTerminar(t *testing.T) {
 
 func TestNuevaCarreraCanceladaConservaLaActual(t *testing.T) {
 	teclas := temporadaCompleta()
-	teclas = append(teclas, abajo, abajo, abajo, enter) // pide confirmación
-	teclas = append(teclas, enter)                      // "No, volver"
+	teclas = append(teclas, abajo, abajo, abajo, abajo, enter) // pide confirmación
+	teclas = append(teclas, enter)                             // "No, volver"
 	teclas = append(teclas, "q")
 
 	modelo, _ := jugar(t, 1, teclas...)
@@ -194,9 +194,9 @@ func TestVariasTemporadasSeguidasConTeclado(t *testing.T) {
 		teclas = append(teclas, temporadaCompleta()...)
 		teclas = append(teclas, enter, enter) // siguiente temporada y continuar
 	}
-	teclas = append(teclas, temporadaCompleta()...) // tercera temporada
-	teclas = append(teclas, abajo, abajo, enter)    // historial
-	teclas = append(teclas, retroceso)              // volver al fin
+	teclas = append(teclas, temporadaCompleta()...)     // tercera temporada
+	teclas = append(teclas, abajo, abajo, abajo, enter) // historial
+	teclas = append(teclas, retroceso)                  // volver al fin
 	teclas = append(teclas, "q")
 
 	modelo, _ := jugar(t, 1, teclas...)
@@ -224,5 +224,73 @@ func TestLaCarreraDeVariasTemporadasEsReproducible(t *testing.T) {
 	b, _ := jugar(t, 9, teclas...)
 	if !reflect.DeepEqual(a.Carrera(), b.Carrera()) {
 		t.Error("las mismas teclas con la misma semilla deberian dar la misma carrera")
+	}
+}
+
+func TestRecorridoPorLasEstadisticas(t *testing.T) {
+	var teclas []string
+	for i := 0; i < 3; i++ {
+		teclas = append(teclas, enter, enter) // tres jornadas
+	}
+	teclas = append(teclas,
+		abajo, abajo, abajo, enter, // Estadísticas
+		enter,                                           // Goleadores
+		enter,                                           // ficha del primero
+		retroceso,                                       // a Goleadores
+		retroceso,                                       // al menú de estadísticas
+		abajo, abajo, abajo, abajo, abajo, abajo, enter, // Equipos
+		enter,                                      // plantilla del líder
+		enter,                                      // ficha de su primer jugador
+		retroceso, retroceso, retroceso, retroceso, // hasta el menú principal
+		"q")
+
+	modelo, out := jugar(t, 1, teclas...)
+	carrera := modelo.Carrera()
+	if carrera.Jornada() != 3 {
+		t.Fatalf("Jornada = %d, se esperaba 3", carrera.Jornada())
+	}
+	for _, f := range []string{"JUEGO DE FÚTBOL", "Temporada 1 · Jornada 3 / 18", "> Estadísticas"} {
+		if !strings.Contains(pantalla(modelo), f) {
+			t.Errorf("la pantalla final deberia contener %q:\n%s", f, pantalla(modelo))
+		}
+	}
+	if out.Len() == 0 {
+		t.Error("el programa no escribio nada en la terminal")
+	}
+}
+
+func TestEstadisticasAlTerminarLaTemporada(t *testing.T) {
+	teclas := temporadaCompleta()
+	teclas = append(teclas,
+		abajo, abajo, enter, // Estadísticas
+		abajo, abajo, abajo, abajo, abajo, abajo, enter, // Equipos
+		retroceso, retroceso, // de vuelta al fin de temporada
+		"q")
+	modelo, _ := jugar(t, 1, teclas...)
+	if !modelo.Carrera().Terminada() {
+		t.Fatal("la temporada deberia estar terminada")
+	}
+	for _, f := range []string{"TEMPORADA 1 TERMINADA", "> Estadísticas"} {
+		if !strings.Contains(pantalla(modelo), f) {
+			t.Errorf("la pantalla final deberia contener %q:\n%s", f, pantalla(modelo))
+		}
+	}
+}
+
+func TestLaPlantillaAlternaEstadisticasConTab(t *testing.T) {
+	// ctrl+c (el byte 0x03) cierra el juego desde cualquier pantalla, y deja la
+	// pantalla final a la vista para revisarla.
+	const ctrlC = "\x03"
+	modelo, _ := jugar(t, 1, enter, enter, abajo, abajo, enter, "\t", ctrlC)
+	for _, f := range []string{"· estadísticas", "Tit", "Min", "tab atributos"} {
+		if !strings.Contains(pantalla(modelo), f) {
+			t.Errorf("la plantilla con estadisticas deberia contener %q:\n%s", f, pantalla(modelo))
+		}
+	}
+
+	// Con otro tab vuelven los atributos.
+	modelo, _ = jugar(t, 1, enter, enter, abajo, abajo, enter, "\t", "\t", ctrlC)
+	if p := pantalla(modelo); !strings.Contains(p, "RIT") || strings.Contains(p, "Tit") {
+		t.Errorf("deberia volver a los atributos:\n%s", p)
 	}
 }

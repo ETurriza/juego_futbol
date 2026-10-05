@@ -1,0 +1,27 @@
+PLANTILLA · Deportivo Valmora
+
+  Posición       Nombre                  Ed  Val  RIT TIR PAS REG DEF FIS REF
+  Portero        Gervasio Quintaleo      20   87   58  37  69  45  64  76  99
+  Portero        Zenel Garmendo          29   72   44  33  50  37  47  62  84
+  Defensa        Anselmo Orbaneja        29   81   73  50  68  54  98  76  15
+  Defensa        Marvel Zaldumar         24   81   68  49  66  51  94  85  19
+  Defensa        Nolven Aguirel          30   77   69  50  58  55  93  75  17
+  Defensa        Kaelo Calderan          22   76   68  45  59  57  89  76   7
+  Defensa        Daveo Escalona          30   75   60  51  58  60  91  74  16
+  Defensa        Baltor Pedrosel         32   66   57  37  46  36  80  69   7
+  Defensa        Tavio Dunavar           35   51   39  25  47  29  66  46  10
+  Mediocampista  Mendo Olmedrar          21   93   84  85  99  99  84  87  16
+  Mediocampista  Florian Abrelda         26   89   83  83  97  88  85  79  17
+  Mediocampista  Corvino Jarvale         28   78   73  64  88  83  73  68   8
+  Mediocampista  Elmiro Cordival         24   77   71  72  83  82  67  65   9
+  Mediocampista  Quirino Norvalde        33   72   59  64  80  77  63  65  20
+  Mediocampista  Orlandi Urdangal        27   67   62  63  76  65  55  61   4
+  Mediocampista  Lorvin Norvalde         24   64   55  56  76  67  49  52   1
+  Delantero      Anselmo Fuentalba       21   92   91  99  83  97  54  91  23
+  Delantero      Elmiro Nebreda          28   81   83  95  71  78  49  63  21
+  Delantero      Quirino Valmeron        26   72   70  82  62  79  34  58  12
+  Delantero      Galdo Garmendo          29   72   70  83  59  74  35  67  13
+  Delantero      Lisandor Yrigaldo       33   71   75  80  69  69  39  58  13
+  Delantero      Valdor Cordival         19   63   61  81  47  56  25  49   1
+
+tab estadísticas · esc volver

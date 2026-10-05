@@ -1,0 +1,10 @@
+NUEVA CARRERA
+
+Esto empieza una carrera nueva y pierdes la actual
+(Temporada 2 con Club Pinarel). Aún no hay guardado automático.
+¿Seguro?
+
+> No, volver
+  Sí, empezar de cero
+
+↑/↓ mover · enter elegir · esc volver

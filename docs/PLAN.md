@@ -262,8 +262,16 @@ genera una línea de tiempo con los sucesos de cada partido. Se entrega en tres 
     minutos del expulsado pero no cambia el marcador; no hay lesiones.
   - Como la simulación consume más aleatoriedad, una semilla da una liga
     distinta a la de antes de esta fase.
-- **9b, pantallas:** estadísticas de jugadores y de equipos, clasificaciones y
-  estadísticas de carrera en `menus`.
+- **9b, pantallas:** opción **Estadísticas** en el menú principal y en el de fin
+  de temporada. Las seis clasificaciones (goleadores, asistentes, tarjetas,
+  porterías imbatidas, menos goles encajados y valoración), la comparativa de
+  equipos (con goleador y máximo asistente de cada club), la plantilla de
+  cualquier equipo con estadísticas y la **ficha del jugador** (atributos,
+  temporada en curso, trayectoria por temporada y totales de carrera). En
+  `Plantilla`, `tab` alterna atributos y estadísticas. Cursor con scroll, pila de
+  navegación que vuelve a cada pantalla tal como estaba, y tu club marcado con
+  `*`. `aplicacion` gana `EstadisticasDeEquipo`, `EstadisticaDeJugador` y
+  `Trayectoria`. Una prueba verifica que ninguna pantalla pasa de 80 columnas.
 - **9c, alineación elegible:** formación y once titulares elegidos por el
   usuario, sustituciones elegidas, y el efecto de jugar con diez hombres en el
   marcador.
@@ -272,7 +280,17 @@ equipo y las estadísticas individuales y de equipos se acumulan, se ven y se
 guardan.
 
 ### 10. Mercado de fichajes
-Paquete `mercado`: compra, venta y valoración de jugadores, con presupuesto.
+Paquete `mercado`. Requisitos pedidos por el usuario (el diseño detallado se
+decide antes de empezar):
+- Lista de **agentes libres**, con filtros, para ficharlos.
+- **Búsqueda** de jugadores concretos de otros clubes para intentar comprarlos.
+- Posibilidad de **pagar la cláusula de rescisión** de un jugador.
+- Un **criterio claro** para que un club no quiera vender a un jugador, y que el
+  usuario vea el motivo del rechazo.
+- Presupuesto, valor de mercado y contratos (salario, duración, cláusula).
+- Pendiente de decidir: si un modelo de lenguaje local (Ollama) tendría algún
+  papel; la recomendación es que las reglas decidan siempre y, como mucho, el
+  modelo redacte los mensajes de forma opcional.
 *Terminado cuando*: se puede fichar y vender dentro de la carrera.
 
 ### 11. Partido jugable en tiempo real
