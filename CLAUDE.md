@@ -9,8 +9,8 @@ Módulo: `github.com/ETurriza/juego_futbol`.
 ## Paquetes
 
 Todo el código vive en `internal/`, con nombres en español sin acentos:
-`modelo`, `generador`, `simulacion`, `liga`, `aplicacion`, `menus`,
-`persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
+`modelo`, `generador`, `simulacion`, `liga`, `progresion`, `aplicacion`,
+`menus`, `persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
 la prueba que verifica las reglas de dependencias de abajo.
 
 Al crear un paquete nuevo hay que agregarlo al mapa `permitidos` de
@@ -21,14 +21,20 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 ## Dependencias entre paquetes
 
 - `internal/modelo` no importa ningún otro paquete del proyecto.
+- `progresion` solo depende de `modelo`.
 - `simulacion`, `liga` y `mercado` solo dependen de `modelo` y entre sí; nunca
   de `aplicacion`, `menus`, `persistencia` o `red`.
 - `aplicacion` depende de `modelo` y de los servicios de dominio. Define los
   puertos (interfaces) que consume.
-- `persistencia` depende de `modelo` e implementa los puertos de `aplicacion`
-  sin importarla.
+- `persistencia` depende de `modelo` y de `aplicacion`: implementa sus puertos
+  y usa su tipo `Guardado`. Usa SQLite con `modernc.org/sqlite` (sin CGO).
 - `menus` y `red` dependen de `aplicacion`.
 - Las capas externas dependen de las internas, nunca al revés.
+
+## Ejecutar
+
+`go run ./cmd/juego [--semilla N] [--equipos N]` (necesita una terminal real).
+La misma semilla da siempre la misma liga.
 
 ## Aleatoriedad
 
@@ -47,8 +53,12 @@ reales.
 - Unit: `*_test.go` junto al código, con semilla fija, sin disco ni red.
 - Integration: `*_integration_test.go` con `//go:build integration`; se corren
   con `go test -tags=integration ./...`.
-- E2E: en `tests/e2e/`, desde la fase 4.
-- Antes de terminar una tarea se corren `go build ./...` y `go test ./...`.
+- E2E: en `tests/e2e/`, con un `tea.Program` real (ver `docs/PLAN.md`).
+- Antes de terminar una tarea se corren `go build ./...` y `go test ./...`. Si
+  se toca `persistencia` o un puerto de `aplicacion`, también
+  `go test -tags=integration ./...`.
+- Cada implementación de un puerto pasa las pruebas de contrato de
+  `internal/aplicacion/contrato`.
 
 ## CLAUDE.md por paquete
 

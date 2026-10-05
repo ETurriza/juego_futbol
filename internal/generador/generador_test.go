@@ -120,3 +120,63 @@ func TestNombreEquipoReproducible(t *testing.T) {
 		t.Error("NombreJugador deberia ser reproducible con la misma semilla")
 	}
 }
+
+func TestJuvenilValidoYEnRango(t *testing.T) {
+	r := nuevoRand(11)
+	for i := 0; i < 500; i++ {
+		for _, p := range modelo.Posiciones {
+			j := Juvenil(r, i, p)
+			if err := j.Validar(); err != nil {
+				t.Fatalf("%v: %v", p, err)
+			}
+			if j.Edad < EdadJuvenilMin || j.Edad > EdadJuvenilMax {
+				t.Fatalf("edad %d fuera de [%d, %d]", j.Edad, EdadJuvenilMin, EdadJuvenilMax)
+			}
+			if j.ID != i || j.Posicion != p {
+				t.Fatalf("ID o posicion incorrectas: %+v", j)
+			}
+		}
+	}
+}
+
+func TestJuvenilReproducible(t *testing.T) {
+	if Juvenil(nuevoRand(5), 1, modelo.Defensa) != Juvenil(nuevoRand(5), 1, modelo.Defensa) {
+		t.Error("la misma semilla deberia dar el mismo juvenil")
+	}
+	if Juvenil(nuevoRand(5), 1, modelo.Defensa) == Juvenil(nuevoRand(6), 1, modelo.Defensa) {
+		t.Error("semillas distintas deberian dar juveniles distintos")
+	}
+}
+
+func TestLosJuvenilesSonMasFlojosQueLosJugadoresHechos(t *testing.T) {
+	r := nuevoRand(12)
+	const n = 1000
+	for _, p := range modelo.Posiciones {
+		var juveniles, hechos int
+		for i := 0; i < n; i++ {
+			juveniles += Juvenil(r, i, p).Valoracion()
+			hechos += Jugador(r, i, p).Valoracion()
+		}
+		if juveniles+10*n > hechos {
+			t.Errorf("%v: los juveniles (%.1f) deberian valer al menos 10 puntos menos que los hechos (%.1f)",
+				p, float64(juveniles)/n, float64(hechos)/n)
+		}
+	}
+}
+
+func TestMinimoPorPosicionCoincideConLaPlantillaGenerada(t *testing.T) {
+	e := Equipo(nuevoRand(1), "Club Prueba", 1)
+	total := 0
+	for _, p := range modelo.Posiciones {
+		if MinimoPorPosicion(p) != e.Contar(p) {
+			t.Errorf("%v: minimo %d, plantilla generada %d", p, MinimoPorPosicion(p), e.Contar(p))
+		}
+		total += MinimoPorPosicion(p)
+	}
+	if total != TamanoPlantilla {
+		t.Errorf("los minimos suman %d, se esperaban %d", total, TamanoPlantilla)
+	}
+	if MinimoPorPosicion(modelo.Posicion(99)) != 0 {
+		t.Error("una posicion invalida deberia tener minimo 0")
+	}
+}
