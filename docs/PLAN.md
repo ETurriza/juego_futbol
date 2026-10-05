@@ -128,7 +128,18 @@ correcta.
 
 ### 4. Menús locales con Bubble Tea
 Casos de uso en `aplicacion` y menús en `menus`: plantilla, tabla, avanzar
-jornada. Primeras pruebas E2E con `teatest`.
+jornada. Primeras pruebas E2E. Bubble Tea v2 (`charm.land/bubbletea/v2`).
+Se entrega en dos PR:
+
+- **4a, `aplicacion`:** `Carrera` (liga de 10 equipos inventados y un equipo del
+  usuario), `AvanzarJornada`, `Tabla`, `Plantilla`, `Campeon`. Cada jornada usa
+  un `*rand.Rand` derivado de la semilla y del número de jornada, de modo que
+  una carrera queda determinada por su semilla y su avance (clave para la
+  persistencia de la fase 5).
+- **4b, `menus` y `cmd/juego`:** menú principal, plantilla, tabla, avanzar
+  jornada y fin de temporada; bandera `--semilla`; pruebas de `Update`/`View` y
+  E2E en `tests/e2e/`.
+
 *Terminado cuando*: se puede jugar una temporada desde la terminal.
 
 ### 5. Persistencia con SQLite
