@@ -412,3 +412,80 @@ func TestLaCurvaNoCambiaConLaSemilla(t *testing.T) {
 		t.Error("la cohorte deberia ser reproducible")
 	}
 }
+
+// jugadorConNivel arma un jugador de campo de la edad dada cuya valoración es
+// aproximadamente nivel (todos sus atributos iguales).
+func jugadorConNivel(edad int, p modelo.Posicion, nivel int) modelo.Jugador {
+	return jugador(edad, p, nivel, nivel)
+}
+
+func TestElRetiroDependeDelNivelDeLosVeteranos(t *testing.T) {
+	// A los 38 años, con el nivel de un titular o más, rige la probabilidad por edad.
+	base := ProbabilidadRetiro(38, modelo.Mediocampista)
+	if got := ProbabilidadRetiroDe(jugadorConNivel(38, modelo.Mediocampista, nivelMinimoTitular)); got != base {
+		t.Errorf("con el nivel minimo deberia regir la edad: %.2f, se esperaba %.2f", got, base)
+	}
+	if got := ProbabilidadRetiroDe(jugadorConNivel(38, modelo.Mediocampista, 90)); got != base {
+		t.Errorf("un crack no se retira antes por ser bueno: %.2f", got)
+	}
+	// Cuanto más flojo, más probable el retiro, hasta el 100 %.
+	anterior := 0.0
+	for nivel := nivelMinimoTitular + 5; nivel >= 30; nivel -= 3 {
+		p := ProbabilidadRetiroDe(jugadorConNivel(36, modelo.Delantero, nivel))
+		if p < anterior || p > 1 {
+			t.Fatalf("a los 36, con nivel %d: %.2f tras %.2f", nivel, p, anterior)
+		}
+		anterior = p
+	}
+	if got := ProbabilidadRetiroDe(jugadorConNivel(38, modelo.Mediocampista, 47)); got != 1 {
+		t.Errorf("un jugador de 38 con 47 deberia retirarse seguro: %.2f", got)
+	}
+	// Valores concretos: base por edad más pesoNivelEnRetiro por punto de déficit.
+	falta := float64(nivelMinimoTitular - 55)
+	if got, want := ProbabilidadRetiroDe(jugadorConNivel(36, modelo.Delantero, 55)), 0.30+falta*pesoNivelEnRetiro; math.Abs(got-want) > 1e-9 {
+		t.Errorf("36 años con 55: %.3f, se esperaba %.3f", got, want)
+	}
+}
+
+func TestElRetiroPorNivelSoloAfectaAVeteranos(t *testing.T) {
+	// Un joven flojo no se retira: esta creciendo.
+	for _, edad := range []int{16, 20, 25, 30, 32} {
+		if got := ProbabilidadRetiroDe(jugadorConNivel(edad, modelo.Defensa, 35)); got != 0 {
+			t.Errorf("a los %d con nivel 35 no deberia retirarse: %.2f", edad, got)
+		}
+	}
+	// Y empieza en edadRetiroPorNivel, segun la edad efectiva: un portero, tres años después.
+	if got := ProbabilidadRetiroDe(jugadorConNivel(edadRetiroPorNivel, modelo.Delantero, 50)); got <= 0 {
+		t.Errorf("a los %d un jugador flojo ya deberia tener probabilidad de retiro: %.2f", edadRetiroPorNivel, got)
+	}
+	if got := ProbabilidadRetiroDe(jugadorConNivel(edadRetiroPorNivel-1, modelo.Delantero, 50)); got != 0 {
+		t.Errorf("un año antes no: %.2f", got)
+	}
+	if got := ProbabilidadRetiroDe(jugadorConNivel(edadRetiroPorNivel+DesfasePortero, modelo.Portero, 50)); got <= 0 {
+		t.Errorf("un portero flojo de %d anos ya deberia tener probabilidad de retiro: %.2f", edadRetiroPorNivel+DesfasePortero, got)
+	}
+	if got := ProbabilidadRetiroDe(jugadorConNivel(edadRetiroPorNivel+DesfasePortero-1, modelo.Portero, 50)); got != 0 {
+		t.Errorf("un portero un año antes no: %.2f", got)
+	}
+}
+
+func TestSeRetiraSigueLaProbabilidadPorNivel(t *testing.T) {
+	r := nuevoRand(41)
+	const n = 20000
+	for _, c := range []struct {
+		edad  int
+		nivel int
+	}{{34, 50}, {36, 55}, {37, 60}, {38, 70}} {
+		j := jugadorConNivel(c.edad, modelo.Mediocampista, c.nivel)
+		retiros := 0
+		for i := 0; i < n; i++ {
+			if SeRetira(r, j) {
+				retiros++
+			}
+		}
+		obs, want := float64(retiros)/n, ProbabilidadRetiroDe(j)
+		if math.Abs(obs-want) > 0.02 {
+			t.Errorf("%d anos con nivel %d: %.3f de retiros, se esperaba %.3f", c.edad, c.nivel, obs, want)
+		}
+	}
+}

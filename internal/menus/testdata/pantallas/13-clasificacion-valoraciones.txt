@@ -1,30 +1,30 @@
 MEJORES VALORACIONES · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Val Goles Asist
->  1  Lisandor Illanes       Juventud Altamira del Sur  11   6.6     4     2
-   2  Dorvan Landrosa        Deportivo Hondaluz         11   6.5     5     0
-   3  Selmo Bastaro          Deportivo Hondaluz         11   6.5     4     1
-   4  Zenel Jarvale          Juventud Altamira del Sur  11   6.5     3     2
-   5  Florian Bocanegro      Unión Fontalva             11   6.4     3     2
-*  6  Lorvin Dunavar         Estrella Altamira del Sur  11   6.4     4     2
-   7  Xandro Bastaro         Unión Fontalva             11   6.4     3     2
-   8  Ivaro Urdangal         Unión Fontalva             11   6.4     3     1
-   9  Marvel Norvalde        Juventud Altamira del Sur  11   6.4     3     0
-  10  Lisandor Garmendo      Juventud Altamira del Sur  11   6.4     3     0
-  11  Kaelo Zaldumar         Unión Altamira del Sur     11   6.4     3     3
-  12  Wenceo Korvena         Juventud Altamira del Sur  11   6.4     1     3
-* 13  Dorvan Orbaneja        Estrella Altamira del Sur  11   6.4     3     3
-  14  Tavio Orbaneja         Unión Fontalva             11   6.3     4     0
-  15  Lisandor Bastaro       Deportivo Hondaluz         11   6.3     1     3
-  16  Dorvan Herbasco        Club Brisanda              11   6.3     2     3
-  17  Lorvin Duelmo          Club Brisanda              11   6.3     3     2
-  18  Eskardo Olmedrar       Juventud Altamira del Sur  11   6.3     2     0
-  19  Mendo Fuentalba        Estrella Salinera          11   6.3     1     3
-  20  Lorvin Lacerna         Estrella Salinera          11   6.3     3     0
-  21  Lorvin Abrelda         Juventud Riobravo           5   6.3     2     0
-  22  Florian Olmedrar       Deportivo Hondaluz          6   6.2     2     0
-  23  Orlandi Quintaleo      Club Brisanda              11   6.2     3     1
-  24  Galdo Lacerna          Unión Fontalva             11   6.2     0     3
-  25  Baltor Pardovan        Unión Altamira del Sur     11   6.2     2     1
+>  1  Rodvan Cordival        Unión Pinarel              11   6.9     7     2
+   2  Mendo Orbaneja         Deportivo Sanvedra         11   6.6     7     0
+   3  Anselmo Torvelo        Unión Pinarel              11   6.5     4     1
+   4  Selmo Quintaleo        Deportivo Sanvedra         11   6.5     5     0
+   5  Tavio Duelmo           Club Granvela              11   6.4     4     0
+   6  Dorvan Fuentalba       Club Brisanda              11   6.4     4     1
+   7  Isidoro Pardovan       Club Granvela              11   6.4     3     1
+   8  Kervo Norvalde         Club Brisanda              11   6.4     3     2
+   9  Joldan Dunavar         Juventud Peñaviva          11   6.3     2     3
+  10  Nervio Gallardel       Unión Pinarel              11   6.3     2     1
+  11  Dorvan Escalona        Club Brisanda              11   6.3     2     3
+  12  Valdor Roblemar        Club Brisanda              11   6.3     3     2
+  13  Elmiro Dunavar         Unión Pinarel              11   6.3     2     1
+  14  Daveo Lacerna          Unión Embalse Nuevo        11   6.3     4     1
+  15  Eskardo Sandoral       Club Granvela              11   6.3     1     0
+  16  Florian Duelmo         Deportivo Sanvedra         11   6.3     2     3
+  17  Xandro Aguirel         Unión Pinarel              11   6.3     1     0
+  18  Nolven Abrelda         Club Granvela              11   6.3     2     0
+  19  Zenel Olmedrar         Deportivo Sanvedra         11   6.3     2     3
+  20  Hilaro Dunavar         Juventud Peñaviva          11   6.3     1     2
+  21  Xandro Cordival        Unión Pinarel              11   6.3     0     1
+* 22  Anselmo Sandoral       Unión Dorada               11   6.3     2     1
+  23  Kaelo Garmendo         Unión Pinarel              11   6.3     2     0
+* 24  Rodvan Olmedrar        Unión Dorada               11   6.3     3     0
+  25  Eskardo Abrelda        Deportivo Sanvedra         11   6.3     1     2
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver

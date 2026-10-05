@@ -292,3 +292,43 @@ func TestLasEdadesIniciales(t *testing.T) {
 		t.Errorf("edades de campo %d-%d y de porteros %d-%d; se esperaban 17-36 y 17-39", minC, maxC, minP, maxP)
 	}
 }
+
+func TestLaLigaInicialNoTieneVeteranosQueYaSeHabrianRetirado(t *testing.T) {
+	// Un veterano muy flojo habria dejado el fútbol: pocos de 36 o más con
+	// valoración de 50 o menos.
+	r := nuevoRand(35)
+	veteranos, flojos := 0, 0
+	for i := 0; i < 40000; i++ {
+		j := Jugador(r, i, modelo.Mediocampista)
+		if j.Edad >= 36 {
+			veteranos++
+			if j.Valoracion() <= 50 {
+				flojos++
+			}
+		}
+	}
+	if veteranos == 0 {
+		t.Fatal("no salio ningun veterano")
+	}
+	if frac := float64(flojos) / float64(veteranos); frac > 0.04 {
+		t.Errorf("%.1f%% de los veteranos de 36 o mas con valoracion <= 50; deberia ser casi ninguno", 100*frac)
+	}
+}
+
+func TestJugadorSiempreDevuelveUnJugadorValido(t *testing.T) {
+	// Aunque haya que reintentar (el jugador se retiraria antes de llegar a la
+	// edad), siempre se devuelve uno con la ID pedida, de la edad y posicion
+	// correctas y con datos validos.
+	r := nuevoRand(36)
+	for i := 0; i < 3000; i++ {
+		for _, p := range modelo.Posiciones {
+			j := Jugador(r, 1000+i, p)
+			if err := j.Validar(); err != nil {
+				t.Fatalf("%v: %v", p, err)
+			}
+			if j.ID != 1000+i || j.Posicion != p {
+				t.Fatalf("ID o posicion incorrectas: %+v", j)
+			}
+		}
+	}
+}

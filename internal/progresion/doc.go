@@ -9,5 +9,8 @@
 // El crecimiento tiene rendimientos decrecientes cerca del tope de los atributos
 // (la caída por edad, no), de modo que los atributos no se apilan en 99.
 //
+// El retiro depende de la edad y también del nivel: un veterano que ya no da el
+// nivel de un titular se retira antes.
+//
 // Toda la aleatoriedad se recibe como *rand.Rand. Solo depende de modelo.
 package progresion

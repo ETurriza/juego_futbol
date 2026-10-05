@@ -1,14 +1,14 @@
-FICHA · Elmiro Montecal
-Estrella Altamira del Sur · Delantero · 18 años · Valoración 47
-RIT 51  TIR 54  PAS 42  REG 44  DEF 10  FIS 47  REF 1
+FICHA · Baltor Orbaneja
+Unión Dorada · Delantero · 18 años · Valoración 55
+RIT 56  TIR 67  PAS 43  REG 53  DEF 17  FIS 43  REF 1
 
 Temporada 4 (en curso)
-  PJ 7 · Tit 0 · Min 204 · G 1 · A 0 · Am 0 · Ro 0 · Imb 0 · Val 6.1
+  PJ 5 · Tit 0 · Min 95 · G 0 · A 0 · Am 0 · Ro 0 · Imb 0 · Val 6.0
 
 Trayectoria
   Temp  Club                       PJ   Min   G   A  Am  Ro Imb  Val
-     3  Estrella Altamira del Sur   8   204   0   0   0   0   0  6.0
+     3  Unión Dorada                7   184   0   0   0   0   0  6.0
 
-Carrera: 15 partidos · 1 goles · 0 asistencias · 0 amarillas · 0 rojas
+Carrera: 12 partidos · 0 goles · 0 asistencias · 0 amarillas · 0 rojas
 
 esc volver

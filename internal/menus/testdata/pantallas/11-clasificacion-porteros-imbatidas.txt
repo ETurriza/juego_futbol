@@ -1,15 +1,14 @@
 PORTEROS · PORTERÍAS IMBATIDAS · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ   Imb   Enc
->  1  Nolven Jarvale         Academia Salinera          11     6     7
-   2  Joldan Dunavar         Juventud Altamira del Sur  11     5     8
-   3  Isidoro Montecal       Deportivo Hondaluz         11     5     9
-   4  Eskardo Cordival       Estrella Salinera          11     5    11
-   5  Kervo Illanes          Unión Fontalva             11     4    13
-   6  Lisandor Montecal      Unión Altamira del Sur     11     4    13
-*  7  Mendo Cordival         Estrella Altamira del Sur  11     3    10
-   8  Anselmo Urdangal       Club Brisanda              11     1    17
-   9  Orlandi Jarvale        Juventud Riobravo          11     1    17
-  10  Gervasio Roblemar      Deportivo Nuevaluna        11     1    18
+>  1  Eskardo Herbasco       Club Granvela              11     7    10
+   2  Kaelo Irueta           Unión Pinarel              11     6     9
+*  3  Nervio Illanes         Unión Dorada               11     5    10
+   4  Daveo Montecal         Deportivo Sanvedra         11     5    11
+   5  Hemiro Pedrosel        Juventud Peñaviva          11     3     8
+   6  Orlandi Pardovan       Academia Nuevaluna         11     3    15
+   7  Belron Escalona        Academia Isleta Roja       11     2    13
+   8  Selmo Zaldumar         Club Brisanda              11     1    15
+   9  Zenel Korvena          Academia Dorada            11     1    17
 
 ↑/↓ mover · enter ver ficha · * tu club · esc volver

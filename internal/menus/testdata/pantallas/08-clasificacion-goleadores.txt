@@ -1,30 +1,30 @@
 GOLEADORES · Temporada 4 · Jornada 11 / 18
 
    #  Jugador                Equipo                     PJ Goles Asist   Min
->  1  Dorvan Landrosa        Deportivo Hondaluz         11     5     0   857
-   2  Lisandor Illanes       Juventud Altamira del Sur  11     4     2   897
-*  3  Lorvin Dunavar         Estrella Altamira del Sur  11     4     2   928
-   4  Selmo Bastaro          Deportivo Hondaluz         11     4     1   957
-   5  Tavio Orbaneja         Unión Fontalva             11     4     0   830
-*  6  Dorvan Orbaneja        Estrella Altamira del Sur  11     3     3   892
-   7  Kaelo Zaldumar         Unión Altamira del Sur     11     3     3   928
-   8  Zenel Jarvale          Juventud Altamira del Sur  11     3     2   769
-   9  Florian Bocanegro      Unión Fontalva             11     3     2   898
-  10  Xandro Bastaro         Unión Fontalva             11     3     2   915
-  11  Lorvin Duelmo          Club Brisanda              11     3     2   969
-  12  Ivaro Urdangal         Unión Fontalva             11     3     1   865
-  13  Orlandi Quintaleo      Club Brisanda              11     3     1   874
-  14  Lorvin Lacerna         Estrella Salinera          11     3     0   779
-  15  Marvel Norvalde        Juventud Altamira del Sur  11     3     0   906
-  16  Lisandor Garmendo      Juventud Altamira del Sur  11     3     0   931
-  17  Dorvan Herbasco        Club Brisanda              11     2     3   734
-  18  Nervio Bocanegro       Deportivo Nuevaluna        11     2     2   920
-  19  Baltor Pardovan        Unión Altamira del Sur     11     2     1   707
-  20  Hemiro Pedrosel        Unión Altamira del Sur     11     2     1   811
-  21  Wenceo Abrelda         Club Brisanda              11     2     1   905
-  22  Galdo Montecal         Estrella Salinera          11     2     1   959
-  23  Lorvin Abrelda         Juventud Riobravo           5     2     0   148
-  24  Florian Olmedrar       Deportivo Hondaluz          6     2     0   174
-  25  Eskardo Olmedrar       Juventud Altamira del Sur  11     2     0   783
+>  1  Rodvan Cordival        Unión Pinarel              11     7     2   857
+   2  Mendo Orbaneja         Deportivo Sanvedra         11     7     0   893
+   3  Selmo Quintaleo        Deportivo Sanvedra         11     5     0   965
+   4  Anselmo Torvelo        Unión Pinarel              11     4     1   842
+   5  Dorvan Fuentalba       Club Brisanda              11     4     1   861
+   6  Daveo Lacerna          Unión Embalse Nuevo        11     4     1   902
+   7  Tavio Duelmo           Club Granvela              11     4     0   882
+   8  Kervo Norvalde         Club Brisanda              11     3     2   871
+   9  Fabrel Pardovan        Unión Embalse Nuevo        11     3     2   943
+  10  Valdor Roblemar        Club Brisanda              11     3     2   990
+  11  Hemiro Jurado          Unión Embalse Nuevo        11     3     1   903
+  12  Isidoro Pardovan       Club Granvela              11     3     1   984
+  13  Hemiro Escalona        Deportivo Sanvedra         11     3     0   873
+  14  Fabrel Sandoral        Academia Isleta Roja       11     3     0   896
+* 15  Rodvan Olmedrar        Unión Dorada               11     3     0   896
+  16  Dorvan Escalona        Club Brisanda              11     2     3   780
+  17  Zenel Olmedrar         Deportivo Sanvedra         11     2     3   840
+  18  Joldan Dunavar         Juventud Peñaviva          11     2     3   854
+  19  Florian Duelmo         Deportivo Sanvedra         11     2     3   864
+  20  Eskardo Norvalde       Academia Isleta Roja       11     2     2   794
+  21  Selmo Pedrosel         Club Brisanda              11     2     2   888
+  22  Orlandi Norvalde       Academia Isleta Roja       11     2     2   933
+  23  Nervio Gallardel       Unión Pinarel              11     2     1   821
+  24  Orlandi Bocanegro      Academia Nuevaluna         11     2     1   843
+* 25  Xandro Herbasco        Unión Dorada               11     2     1   864
 
 ↑/↓ mover (1-25 de 50) · enter ver ficha · * tu club · esc volver

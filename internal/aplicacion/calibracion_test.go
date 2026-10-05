@@ -179,3 +179,98 @@ func TestLaCalidadPorEdadEsEstacionaria(t *testing.T) {
 		t.Errorf("los de 26-31 (%.1f) deberian valer mas que los de 20-25 (%.1f)", final["26-31"], final["20-25"])
 	}
 }
+
+// TestPocosVeteranosFlojosEnLasPlantillas comprueba el retiro por nivel: los
+// veteranos que ya no dan el nivel no se quedan años en las plantillas.
+func TestPocosVeteranosFlojosEnLasPlantillas(t *testing.T) {
+	var equipos, conFlojo, de36, flojos36, de38, flojos38 int
+	for s := int64(1); s <= ligasDeCalibracion; s++ {
+		for _, e := range ligaEnvejecida(t, s*13, 15) {
+			equipos++
+			hay := false
+			for _, j := range e.Plantilla {
+				if j.Posicion == modelo.Portero {
+					continue
+				}
+				flojo := j.Valoracion() <= 50
+				if j.Edad >= 35 && j.Valoracion() <= 55 {
+					hay = true
+				}
+				if j.Edad >= 36 {
+					de36++
+					if flojo {
+						flojos36++
+					}
+				}
+				if j.Edad >= 38 {
+					de38++
+					if flojo {
+						flojos38++
+					}
+				}
+			}
+			if hay {
+				conFlojo++
+			}
+		}
+	}
+	pct := func(a, b int) float64 { return 100 * float64(a) / float64(max(b, 1)) }
+	t.Logf("plantillas con un veterano (>=35) de valoracion <=55: %.0f%% (%d de %d); de los de 36+, con <=50: %.1f%%; de los de 38+: %.1f%%",
+		pct(conFlojo, equipos), conFlojo, equipos, pct(flojos36, de36), pct(flojos38, de38))
+	if p := pct(conFlojo, equipos); p > 18 {
+		t.Errorf("%.0f%% de las plantillas con un veterano flojo; deberia ser poco comun", p)
+	}
+	if p := pct(flojos36, de36); p > 4 {
+		t.Errorf("%.1f%% de los veteranos de 36+ con valoracion <= 50", p)
+	}
+	if p := pct(flojos38, de38); p > 6 {
+		t.Errorf("%.1f%% de los de 38+ con valoracion <= 50", p)
+	}
+}
+
+// TestElRetiroPorNivelNoCambiaLaEdadMedia comprueba que adelantar los retiros no
+// rejuvenece ni envejece la liga: la edad media sigue siendo la de siempre.
+func TestElRetiroPorNivelNoCambiaLaEdadMedia(t *testing.T) {
+	media := func(temporadas int) float64 {
+		suma, n := 0.0, 0.0
+		for s := int64(1); s <= ligasDeCalibracion; s++ {
+			for _, e := range ligaEnvejecida(t, s*19, temporadas) {
+				for _, j := range e.Plantilla {
+					suma += float64(j.Edad)
+					n++
+				}
+			}
+		}
+		return suma / n
+	}
+	inicial, final := media(0), media(15)
+	t.Logf("edad media: inicial %.2f, tras 15 temporadas %.2f", inicial, final)
+	if final < 25.5 || final > 28.5 || math.Abs(final-inicial) > 1 {
+		t.Errorf("edad media inicial %.2f y final %.2f", inicial, final)
+	}
+}
+
+// TestLaLigaInicialTienePocosVeteranosFlojos comprueba que la liga que se crea
+// al empezar una carrera no incluye veteranos que, siguiendo la progresión, ya se
+// habrían retirado por falta de nivel (sin el filtro de supervivencia del
+// generador, el porcentaje casi se duplica).
+func TestLaLigaInicialTienePocosVeteranosFlojos(t *testing.T) {
+	equipos, con := 0, 0
+	for s := int64(1); s <= 300; s++ {
+		c := nuevaCarrera(t, s*3, 10)
+		for _, e := range c.Temporada.Equipos {
+			equipos++
+			for _, j := range e.Plantilla {
+				if j.Posicion != modelo.Portero && j.Edad >= 35 && j.Valoracion() <= 55 {
+					con++
+					break
+				}
+			}
+		}
+	}
+	pct := 100 * float64(con) / float64(equipos)
+	t.Logf("liga inicial: plantillas con un veterano (>=35) de valoracion <=55: %.1f%% (%d de %d)", pct, con, equipos)
+	if pct > 5.5 {
+		t.Errorf("%.1f%% de las plantillas iniciales con un veterano flojo; deberia ser ~4 %%", pct)
+	}
+}
