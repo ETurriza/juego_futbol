@@ -118,7 +118,7 @@ func TestNavegacionDelMenu(t *testing.T) {
 	m, _ = pulsar(m, "j", "j", "j", "j") // no pasa del final
 	contiene(t, m, "> Salir")
 	m, _ = pulsar(m, "k")
-	contiene(t, m, "> Plantilla")
+	contiene(t, m, "> Historial")
 }
 
 func TestSalirDelMenu(t *testing.T) {
@@ -126,7 +126,7 @@ func TestSalirDelMenu(t *testing.T) {
 	if _, cmd := pulsar(m, "q"); !esSalir(cmd) {
 		t.Error("q deberia salir desde el menu")
 	}
-	if _, cmd := pulsar(m, "down", "down", "down", "enter"); !esSalir(cmd) {
+	if _, cmd := pulsar(m, "down", "down", "down", "down", "enter"); !esSalir(cmd) {
 		t.Error("la opcion Salir deberia salir")
 	}
 	if _, cmd := pulsar(m, "esc"); esSalir(cmd) {
@@ -173,7 +173,7 @@ func TestTablaDePosiciones(t *testing.T) {
 	m := modeloDePrueba(t, 1, 10)
 	m, _ = pulsar(m, "enter", "enter") // jugar una jornada y volver al menu
 	m, _ = pulsar(m, "down", "enter")
-	contiene(t, m, "TABLA · Jornada 1 / 18", "Equipo", "Pts", "esc volver")
+	contiene(t, m, "TABLA · Temporada 1 · Jornada 1 / 18", "Equipo", "Pts", "esc volver")
 	// Solo la fila del equipo del usuario va marcada con ">".
 	marcadas := 0
 	for _, linea := range strings.Split(texto(m), "\n") {
@@ -288,8 +288,8 @@ func TestFinDeTemporada(t *testing.T) {
 		t.Fatal("la temporada deberia estar terminada")
 	}
 	campeon, _ := m.carrera.Campeon()
-	contiene(t, m, "TEMPORADA TERMINADA", "Campeón: "+campeon, "Tu equipo: "+m.carrera.NombreEquipo(),
-		"de 10", "puntos", "> Nueva carrera", "  Ver tabla final", "  Salir")
+	contiene(t, m, "TEMPORADA 1 TERMINADA", "Campeón: "+campeon, "Tu equipo: "+m.carrera.NombreEquipo(),
+		"de 10", "puntos", "> Siguiente temporada", "  Ver tabla final", "  Historial", "  Nueva carrera", "  Salir")
 	// El menú principal ya no está disponible: no se puede avanzar más.
 	noContiene(t, m, "Avanzar jornada")
 }
@@ -302,7 +302,7 @@ func TestUltimaJornadaLlevaAlFin(t *testing.T) {
 	m, _ = pulsar(m, "enter") // última jornada
 	contiene(t, m, "JORNADA 18 / 18")
 	m, _ = pulsar(m, "enter")
-	contiene(t, m, "TEMPORADA TERMINADA")
+	contiene(t, m, "TEMPORADA 1 TERMINADA")
 }
 
 func TestFelicitaAlCampeonDelUsuario(t *testing.T) {
@@ -328,9 +328,9 @@ func TestFelicitaAlCampeonDelUsuario(t *testing.T) {
 func TestVerTablaFinalYVolverAlFin(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	m, _ = pulsar(m, "down", "enter")
-	contiene(t, m, "TABLA · Jornada 18 / 18")
+	contiene(t, m, "TABLA · Temporada 1 · Jornada 18 / 18")
 	m, _ = pulsar(m, "esc")
-	contiene(t, m, "TEMPORADA TERMINADA", "> Ver tabla final")
+	contiene(t, m, "TEMPORADA 1 TERMINADA", "> Ver tabla final")
 }
 
 func TestSalirDesdeElFin(t *testing.T) {
@@ -338,30 +338,58 @@ func TestSalirDesdeElFin(t *testing.T) {
 	if _, cmd := pulsar(m, "q"); !esSalir(cmd) {
 		t.Error("q deberia salir desde el fin de temporada")
 	}
-	if _, cmd := pulsar(m, "down", "down", "enter"); !esSalir(cmd) {
+	if _, cmd := pulsar(m, "down", "down", "down", "down", "enter"); !esSalir(cmd) {
 		t.Error("la opcion Salir deberia salir")
+	}
+}
+
+func TestNuevaCarreraPideConfirmacion(t *testing.T) {
+	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
+	anterior := m.carrera
+	m, _ = pulsar(m, "down", "down", "down", "enter")
+	contiene(t, m, "NUEVA CARRERA", "pierdes la actual", "Temporada 1 con "+anterior.NombreEquipo(),
+		"> No, volver", "  Sí, empezar de cero")
+	if m.carrera != anterior {
+		t.Fatal("pedir la confirmacion no deberia cambiar la carrera")
+	}
+
+	// q no cierra el juego en la confirmacion; esc y "No" vuelven al fin.
+	if _, cmd := pulsar(m, "q"); esSalir(cmd) {
+		t.Error("q no deberia salir desde la confirmacion")
+	}
+	vuelta, _ := pulsar(m, "esc")
+	contiene(t, vuelta, "TEMPORADA 1 TERMINADA", "> Nueva carrera")
+	vuelta, _ = pulsar(m, "enter")
+	contiene(t, vuelta, "TEMPORADA 1 TERMINADA", "> Nueva carrera")
+	if vuelta.carrera != anterior {
+		t.Error("cancelar no deberia cambiar la carrera")
+	}
+
+	// ctrl+c sí cierra desde cualquier pantalla.
+	if _, cmd := pulsar(m, "ctrl+c"); !esSalir(cmd) {
+		t.Error("ctrl+c deberia salir")
 	}
 }
 
 func TestNuevaCarreraDesdeElFin(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	anterior := m.carrera
-	m, _ = pulsar(m, "enter")
-	if m.carrera == anterior || m.carrera.Jornada() != 0 {
+	m, _ = pulsar(m, "down", "down", "down", "enter", "down", "enter")
+	if m.carrera == anterior || m.carrera.Jornada() != 0 || m.carrera.Numero != 1 {
 		t.Fatal("deberia haber una carrera nueva sin jornadas jugadas")
 	}
-	contiene(t, m, "JUEGO DE FÚTBOL", "Jornada 0 / 18", "> Avanzar jornada")
+	contiene(t, m, "JUEGO DE FÚTBOL", "Temporada 1 · Jornada 0 / 18", "> Avanzar jornada")
 }
 
 func TestNuevaCarreraConErrorMuestraAviso(t *testing.T) {
 	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
 	m.nueva = func() (*aplicacion.Carrera, error) { return nil, errors.New("sin espacio") }
 	anterior := m.carrera
-	m, _ = pulsar(m, "enter")
+	m, _ = pulsar(m, "down", "down", "down", "enter", "down", "enter")
 	if m.carrera != anterior {
 		t.Error("la carrera no deberia cambiar si falla")
 	}
-	contiene(t, m, "TEMPORADA TERMINADA", "sin espacio")
+	contiene(t, m, "TEMPORADA 1 TERMINADA", "sin espacio")
 }
 
 func TestIniciaEnElFinSiLaTemporadaYaTermino(t *testing.T) {
@@ -372,7 +400,7 @@ func TestIniciaEnElFinSiLaTemporadaYaTermino(t *testing.T) {
 		}
 	}
 	m := Nuevo(c, nil)
-	contiene(t, m, "TEMPORADA TERMINADA")
+	contiene(t, m, "TEMPORADA 1 TERMINADA")
 }
 
 func TestMensajesDesconocidosSeIgnoran(t *testing.T) {
@@ -389,4 +417,150 @@ func TestMensajesDesconocidosSeIgnoran(t *testing.T) {
 	if texto(m) != enJornada {
 		t.Error("solo enter deberia salir de la pantalla de jornada")
 	}
+}
+
+// avanzarCarrera termina n temporadas directamente sobre la carrera, sin pasar
+// por la interfaz, y la deja al inicio de la temporada n+1.
+func avanzarCarrera(t *testing.T, c *aplicacion.Carrera, n int) {
+	t.Helper()
+	for i := 0; i < n; i++ {
+		for !c.Terminada() {
+			if _, err := c.AvanzarJornada(); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err := c.SiguienteTemporada(); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestSiguienteTemporadaMuestraElInicio(t *testing.T) {
+	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
+	antes := m.carrera.ValoracionEquipo()
+
+	m, _ = pulsar(m, "enter") // Siguiente temporada
+	if m.carrera.Numero != 2 || m.carrera.Terminada() {
+		t.Fatalf("deberia haber empezado la temporada 2: numero %d", m.carrera.Numero)
+	}
+	contiene(t, m, "TEMPORADA 2 · "+m.carrera.NombreEquipo(),
+		fmt.Sprintf("Valoración del equipo: %d → %d", antes, m.carrera.ValoracionEquipo()),
+		fmt.Sprintf("En toda la liga: %d retiros y %d juveniles.", m.cambios.RetiradosLiga, m.cambios.JuvenilesLiga),
+		"enter continuar")
+	// Lista exactamente a los retirados y a los juveniles de su club.
+	for _, j := range m.cambios.Retirados {
+		contiene(t, m, j.Nombre)
+	}
+	for _, j := range m.cambios.Juveniles {
+		contiene(t, m, j.Nombre, "años")
+	}
+	if len(m.cambios.Retirados) > 0 {
+		contiene(t, m, fmt.Sprintf("Se retiran (%d)", len(m.cambios.Retirados)))
+	}
+	if len(m.cambios.Juveniles) > 0 {
+		contiene(t, m, fmt.Sprintf("Llegan de la cantera (%d)", len(m.cambios.Juveniles)))
+	}
+
+	m, _ = pulsar(m, "enter")
+	contiene(t, m, "JUEGO DE FÚTBOL", "Temporada 2 · Jornada 0 / 18", "> Avanzar jornada")
+}
+
+func TestInicioDeTemporadaSinBajasNiAltas(t *testing.T) {
+	m := modeloDePrueba(t, 1, 10)
+	m.pantalla = pantallaInicioTemporada
+	contiene(t, m, "Nadie se retira este año.", "No llega nadie de la cantera.", "En toda la liga: 0 retiros")
+	noContiene(t, m, "Se retiran", "Llegan de la cantera")
+}
+
+func TestSiguienteTemporadaSoloEnElFin(t *testing.T) {
+	m := modeloDePrueba(t, 1, 10)
+	// Forzar la pantalla de fin con una temporada sin terminar: el error se
+	// muestra como aviso y el juego no se cierra ni cambia de pantalla.
+	m.pantalla = pantallaFin
+	m, cmd := pulsar(m, "enter")
+	if esSalir(cmd) || m.carrera.Numero != 1 {
+		t.Fatal("no deberia cerrarse ni cambiar de temporada")
+	}
+	contiene(t, m, "TEMPORADA 1 TERMINADA", "todavia no termino")
+}
+
+func TestHistorialSinTemporadas(t *testing.T) {
+	m := modeloDePrueba(t, 1, 10)
+	m, _ = pulsar(m, "down", "down", "down", "enter")
+	contiene(t, m, "HISTORIAL · "+m.carrera.NombreEquipo(), "Todavía no has terminado ninguna temporada.", "esc volver")
+	noContiene(t, m, "Campeón")
+	m, _ = pulsar(m, "esc")
+	contiene(t, m, "JUEGO DE FÚTBOL", "> Historial")
+}
+
+func TestHistorialConTemporadas(t *testing.T) {
+	c := carreraDePrueba(t, 4, 10)
+	avanzarCarrera(t, c, 3)
+	m := Nuevo(c, nil)
+	m, _ = pulsar(m, "down", "down", "down", "enter")
+	contiene(t, m, "HISTORIAL", "Temp", "Campeón", "Tu puesto", "Pts", "esc volver")
+	for _, h := range c.Historial {
+		contiene(t, m, h.Campeon, fmt.Sprintf("%d de 10", h.PuestoUsuario))
+	}
+
+	// Solo se marca (con ">") la fila de una temporada en la que el usuario fue
+	// campeón.
+	c.Historial[1].PuestoUsuario = 1
+	marcadas := 0
+	for _, linea := range strings.Split(texto(m), "\n") {
+		if strings.HasPrefix(linea, ">") {
+			marcadas++
+			if !strings.Contains(linea, c.Historial[1].Campeon) {
+				t.Errorf("fila marcada que no es la del campeonato: %q", linea)
+			}
+		}
+	}
+	if marcadas != 1 {
+		t.Errorf("%d filas marcadas, se esperaba 1", marcadas)
+	}
+}
+
+func TestHistorialConScroll(t *testing.T) {
+	c := carreraDePrueba(t, 4, 10)
+	avanzarCarrera(t, c, 12)
+	m := redimensionar(Nuevo(c, nil), 80, 10) // caben 5 filas de 12
+	m, _ = pulsar(m, "down", "down", "down", "enter")
+	contiene(t, m, "1-5 de 12")
+	noContiene(t, m, "  12  ")
+	m, _ = pulsar(m, "pgdown", "pgdown", "pgdown")
+	contiene(t, m, "8-12 de 12", c.Historial[11].Campeon)
+	m, _ = pulsar(m, "esc")
+	contiene(t, m, "JUEGO DE FÚTBOL")
+}
+
+func TestHistorialDesdeElFinVuelveAlFin(t *testing.T) {
+	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
+	m, _ = pulsar(m, "down", "down", "enter")
+	contiene(t, m, "HISTORIAL", "Todavía no has terminado")
+	m, _ = pulsar(m, "esc")
+	contiene(t, m, "TEMPORADA 1 TERMINADA", "> Historial")
+}
+
+func TestLaTemporadaApareceEnTodasLasPantallas(t *testing.T) {
+	c := carreraDePrueba(t, 6, 10)
+	avanzarCarrera(t, c, 1)
+	m := Nuevo(c, nil)
+	contiene(t, m, "Temporada 2 · Jornada 0 / 18")
+
+	m, _ = pulsar(m, "down", "enter") // tabla
+	contiene(t, m, "TABLA · Temporada 2 · Jornada 0 / 18")
+	m, _ = pulsar(m, "esc", "up", "enter") // avanzar jornada
+	contiene(t, m, "JORNADA 1 / 18 · Temporada 2")
+}
+
+func TestSegundaTemporadaSePuedeJugarCompleta(t *testing.T) {
+	m := jugarTemporada(t, modeloDePrueba(t, 1, 10))
+	m, _ = pulsar(m, "enter", "enter") // siguiente temporada y continuar
+	m = jugarTemporada(t, m)
+	contiene(t, m, "TEMPORADA 2 TERMINADA", "> Siguiente temporada")
+	if len(m.carrera.Historial) != 1 || m.carrera.Numero != 2 {
+		t.Errorf("historial %d, temporada %d", len(m.carrera.Historial), m.carrera.Numero)
+	}
+	m, _ = pulsar(m, "down", "down", "enter") // historial
+	contiene(t, m, "HISTORIAL", m.carrera.Historial[0].Campeon)
 }
