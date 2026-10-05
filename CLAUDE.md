@@ -52,7 +52,7 @@ reales.
 - Unit: `*_test.go` junto al código, con semilla fija, sin disco ni red.
 - Integration: `*_integration_test.go` con `//go:build integration`; se corren
   con `go test -tags=integration ./...`.
-- E2E: en `tests/e2e/`, desde la fase 4.
+- E2E: en `tests/e2e/`, con un `tea.Program` real (ver `docs/PLAN.md`).
 - Antes de terminar una tarea se corren `go build ./...` y `go test ./...`. Si
   se toca `persistencia` o un puerto de `aplicacion`, también
   `go test -tags=integration ./...`.
