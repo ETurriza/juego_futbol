@@ -24,7 +24,7 @@ var permitidos = map[string][]string{
 	"mercado":      {"modelo", "simulacion", "liga"},
 	"partido":      {"modelo", "simulacion"},
 	"aplicacion":   {"modelo", "generador", "simulacion", "liga", "mercado", "partido"},
-	"persistencia": {"modelo"},
+	"persistencia": {"modelo", "aplicacion"},
 	"menus":        {"aplicacion", "modelo"},
 	"red":          {"aplicacion", "menus", "modelo"},
 }
