@@ -120,6 +120,9 @@ resultado, y mejores atributos producen mejores resultados en promedio.
 
 ### 3. Liga
 Calendario todos contra todos, jornadas y tabla de posiciones (`liga`).
+Ida y vuelta (la segunda vuelta invierte las localías); con un número impar de
+equipos se agrega un descanso por jornada. Tabla ordenada por puntos,
+diferencia de goles, goles a favor y nombre.
 *Terminado cuando*: se juega una temporada completa en memoria y la tabla es
 correcta.
 
