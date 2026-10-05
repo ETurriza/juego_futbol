@@ -75,6 +75,7 @@ internal/
   modelo/               fase 1: dominio puro
   generador/            fase 1: generador de jugadores y equipos inventados
   simulacion/           fase 2
+  arquitectura/         fase 2: prueba de reglas de dependencias entre paquetes
   liga/                 fase 3
   aplicacion/           fase 4: casos de uso + puertos
   menus/                fase 4
