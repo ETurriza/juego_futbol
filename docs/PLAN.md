@@ -229,6 +229,13 @@ nuevo calendario y tabla a cero, en el mismo club. Se entrega en dos PR:
   - La valoración del portero dependía en un 60 % de los reflejos: ahora 50 %, y
     su ventaja en reflejos baja de +25 a +16.
   - Los porteros se generan con edades de 17 a 39 (juegan tres años más).
+  - **Retiro por nivel:** el retiro no depende solo de la edad. Desde los 33 años
+    (36 en porteros), un jugador con valoración por debajo de 62 suma 8 puntos
+    porcentuales de probabilidad de retiro por cada punto que le falta (un
+    jugador de 38 años con 47 se retira seguro). Antes, el 31 % de las plantillas
+    tenía un veterano de 35 o más con valoración <= 55 y el 25 % de los de 38
+    años estaba en 50 o menos; ahora son el 13 % y ninguno. La liga inicial
+    descarta a los jugadores que se habrían retirado antes de llegar a su edad.
   Resultado, medido con 30 ligas: la liga de la temporada 20 se parece a la
   inicial por posición (campo 70,5 y porteros 72,7 de media; élite >= 85 de
   ~4 % y ~10 %; dispersión de 9,5 y 11), y cada tramo de edad vale lo mismo en
@@ -309,6 +316,11 @@ decide antes de empezar):
 - Un **criterio claro** para que un club no quiera vender a un jugador, y que el
   usuario vea el motivo del rechazo.
 - Presupuesto, valor de mercado y contratos (salario, duración, cláusula).
+- **Rescindir el contrato** de un jugador (liberarlo), por ejemplo un veterano que
+  ya no da el nivel.
+- **Que un club no pueda acumular estrellas:** precios que suben de forma
+  superlineal con el nivel, tope de masa salarial, cláusulas de rescisión altas
+  para los cracks y que un crack solo acepte clubes con prestigio o proyecto.
 - Pendiente de decidir: si un modelo de lenguaje local (Ollama) tendría algún
   papel; la recomendación es que las reglas decidan siempre y, como mucho, el
   modelo redacte los mensajes de forma opcional.

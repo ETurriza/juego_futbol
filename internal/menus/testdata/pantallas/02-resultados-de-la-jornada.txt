@@ -1,9 +1,9 @@
 JORNADA 12 / 18 · Temporada 4
 
-  Unión Fontalva              0 - 0   Club Brisanda
-  Deportivo Nuevaluna         1 - 2   Estrella Salinera
-> Unión Altamira del Sur      1 - 3   Estrella Altamira del Sur
-  Academia Salinera           0 - 1   Juventud Riobravo
-  Juventud Altamira del Sur   2 - 3   Deportivo Hondaluz
+  Unión Embalse Nuevo         0 - 0   Club Brisanda
+> Academia Dorada             1 - 2   Unión Dorada
+  Juventud Peñaviva           1 - 3   Academia Isleta Roja
+  Club Granvela               0 - 1   Academia Nuevaluna
+  Deportivo Sanvedra          2 - 3   Unión Pinarel
 
 enter continuar

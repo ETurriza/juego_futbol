@@ -1,27 +1,27 @@
-PLANTILLA · Estrella Altamira del Sur · estadísticas
+PLANTILLA · Unión Dorada · estadísticas
 
   Posición      Jugador                 PJ Tit   Min   G   A  Am  Ro Imb  Val
-  Portero       Mendo Cordival          11  11   990   0   0   0   0   3  5.9
-  Portero       Fabrel Landrosa          0   0     0   0   0   0   0   0    -
-  Defensa       Wenceo Zaldumar         11  11   886   0   1   1   0   3  6.0
-  Defensa       Hilaro Bastaro          11  11   867   0   0   1   0   2  5.9
-  Defensa       Ulmar Hontoria          11  11   859   0   1   1   0   2  6.0
-  Defensa       Corvino Nebreda         11  11   883   0   0   2   0   3  5.9
-  Defensa       Yeraldo Quintaleo        7   0   137   0   0   0   0   0  6.0
-  Defensa       Fabrel Jurado            4   0    67   0   0   1   0   0  6.0
-  Defensa       Cedrio Abrelda           7   0   196   0   0   1   0   0  5.9
-  Mediocampista Lorvin Dunavar          11  11   928   4   2   2   0   0  6.4
-  Mediocampista Kaelo Dunavar           11  11   843   1   0   3   0   0  6.0
-  Mediocampista Dorvan Orbaneja         11  11   892   3   3   3   0   0  6.4
-  Mediocampista Galdo Abrelda            3   0    64   0   0   0   0   0  6.1
-  Mediocampista Marvel Dunavar           2   0    64   1   0   0   0   0  6.5
-  Mediocampista Zenel Rivasel            3   0   107   0   0   1   0   0  5.9
-  Mediocampista Yeraldo Cordival         3   0    66   0   0   1   0   0  5.9
-  Delantero     Hemiro Jurado           11  11   850   1   0   0   0   0  6.1
-  Delantero     Quirino Zaldumar        11  11   794   0   0   0   0   0  6.0
-  Delantero     Valdor Quintaleo        11  11   814   1   0   1   0   0  6.1
-  Delantero     Dorvan Nebreda           4   0   110   0   0   0   0   0  6.0
-  Delantero     Hemiro Yrigaldo          9   0   269   1   0   0   0   0  6.1
-  Delantero     Elmiro Montecal          7   0   204   1   0   0   0   0  6.1
+  Portero       Nervio Illanes          11  11   990   0   0   0   0   5  6.0
+  Portero       Isidoro Calderan         0   0     0   0   0   0   0   0    -
+  Defensa       Florian Abrelda         11  11   899   1   0   2   0   5  6.2
+  Defensa       Arlen Orbaneja          11  11   775   0   0   2   1   3  5.9
+  Defensa       Joldan Norvalde         11  11   951   0   0   1   0   5  6.1
+  Defensa       Eskardo Hontoria        11  11   873   0   0   2   0   2  5.9
+  Defensa       Daveo Zaldumar           4   0   127   0   0   0   0   0  6.0
+  Defensa       Dorvan Fuentalba         3   0   110   0   0   1   0   0  6.0
+  Defensa       Zenel Norvalde           5   0   137   0   0   0   0   0  6.0
+  Mediocampista Rodvan Olmedrar         11  11   896   3   0   2   0   0  6.3
+  Mediocampista Kervo Yrigaldo          11  11   903   0   1   0   0   0  6.1
+  Mediocampista Hemiro Calderan         11  11   815   1   2   0   0   0  6.2
+  Mediocampista Cedrio Pardovan          6   0   136   0   0   0   0   0  6.0
+  Mediocampista Tavio Escalona           5   0    76   0   0   0   0   0  6.0
+  Mediocampista Orlandi Korvena          5   0   123   0   0   0   0   0  6.1
+  Mediocampista Zenel Valmeron           5   0    68   0   0   0   0   0  6.0
+  Delantero     Xandro Herbasco         11  11   864   2   1   1   0   0  6.2
+  Delantero     Hemiro Jarvale          11  11   826   0   2   2   0   0  6.1
+  Delantero     Anselmo Sandoral        11  11   950   2   1   1   0   0  6.3
+  Delantero     Ivaro Urdangal           5   0   168   1   0   0   0   0  6.2
+  Delantero     Belron Abrelda           4   0    72   0   0   0   0   0  6.0
+  Delantero     Baltor Orbaneja          5   0    95   0   0   0   0   0  6.0
 
 tab atributos · esc volver

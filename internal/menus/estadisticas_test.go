@@ -333,19 +333,20 @@ func TestFichaConTrayectoriaYCarrera(t *testing.T) {
 	for i := 0; i < 8; i++ {
 		c.AvanzarJornada()
 	}
-	// Un jugador que haya jugado las tres temporadas archivadas.
+	// Un jugador que haya jugado las tres temporadas archivadas y siga en la liga
+	// (los veteranos flojos se retiran).
 	cuenta := map[int]int{}
 	for _, a := range c.Archivo {
 		cuenta[a.Jugador]++
 	}
 	var id int
 	for j, n := range cuenta {
-		if n == 3 && (id == 0 || j < id) {
+		if _, sigue, _ := c.EstadisticaDeJugador(j); sigue && n == 3 && (id == 0 || j < id) {
 			id = j
 		}
 	}
 	if id == 0 {
-		t.Fatal("nadie jugo las tres temporadas")
+		t.Fatal("nadie jugo las tres temporadas y sigue en la liga")
 	}
 	fila, _, _ := c.EstadisticaDeJugador(id)
 	tray := c.Trayectoria(id)
@@ -383,6 +384,9 @@ func TestFichaConScrollEnLaTrayectoria(t *testing.T) {
 	}
 	var id, mejor int
 	for j, n := range cuenta {
+		if _, sigue, _ := c.EstadisticaDeJugador(j); !sigue {
+			continue // ya se retiro: no tiene ficha
+		}
 		if n > mejor || (n == mejor && j < id) {
 			id, mejor = j, n
 		}

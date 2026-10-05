@@ -26,6 +26,14 @@ const (
 	amplitudTecho = 25.0
 	factorMinimo  = 0.10
 
+	// Retiro por nivel: desde edadRetiroPorNivel (edad efectiva) un jugador cuya
+	// valoración está por debajo de nivelMinimoTitular suma pesoNivelEnRetiro de
+	// probabilidad de retiro por cada punto que le falta. Un veterano que ya no
+	// da el nivel se retira antes que uno que sigue rindiendo.
+	edadRetiroPorNivel = 33
+	nivelMinimoTitular = 62
+	pesoNivelEnRetiro  = 0.08
+
 	// "Último prime": entre estas edades, cada año hay una probabilidad de un
 	// gran año que suma un bono a los atributos técnicos.
 	granAnoDesde = 31
@@ -107,12 +115,26 @@ func ProbabilidadRetiro(edad int, p modelo.Posicion) float64 {
 	return prob
 }
 
-// SeRetira decide si el jugador se retira al final de la temporada.
+// ProbabilidadRetiroDe es la probabilidad de que este jugador se retire al final
+// de la temporada: la que corresponde a su edad y posición, más un adelanto si es
+// un veterano que ya no da el nivel (ver edadRetiroPorNivel).
+func ProbabilidadRetiroDe(j modelo.Jugador) float64 {
+	prob := ProbabilidadRetiro(j.Edad, j.Posicion)
+	if edadEfectiva(j) >= edadRetiroPorNivel {
+		if falta := nivelMinimoTitular - j.Valoracion(); falta > 0 {
+			prob += float64(falta) * pesoNivelEnRetiro
+		}
+	}
+	return math.Min(prob, 1)
+}
+
+// SeRetira decide si el jugador se retira al final de la temporada, según su
+// edad y su nivel.
 func SeRetira(r *rand.Rand, j modelo.Jugador) bool {
 	// Siempre se consume un número aleatorio, para que la secuencia no dependa
-	// de la edad.
+	// de la edad ni del nivel.
 	x := r.Float64()
-	return x < ProbabilidadRetiro(j.Edad, j.Posicion)
+	return x < ProbabilidadRetiroDe(j)
 }
 
 // Envejecer devuelve al jugador un año mayor, con sus atributos evolucionados.

@@ -86,12 +86,32 @@ func Jugador(r *rand.Rand, id int, p modelo.Posicion) modelo.Jugador {
 		rango += progresion.DesfasePortero // 17 a 39
 	}
 	edad := 17 + r.Intn(rango)
-	j := nuevoJuvenil(r, id, p, EdadJuvenilMin)
-	for j.Edad < edad {
-		j = progresion.Envejecer(r, j)
+
+	// Solo existen los jugadores que han llegado a esa edad sin retirarse: si en
+	// algún año el jugador se habría retirado (por edad o por nivel), se parte de
+	// uno nuevo. Así la liga inicial no tiene veteranos que en la carrera ya
+	// habrían dejado el fútbol.
+	var j modelo.Jugador
+	for intento := 0; intento < maxIntentosSuperviviente; intento++ {
+		j = nuevoJuvenil(r, id, p, EdadJuvenilMin)
+		vivo := true
+		for j.Edad < edad {
+			if progresion.SeRetira(r, j) {
+				vivo = false
+				break
+			}
+			j = progresion.Envejecer(r, j)
+		}
+		if vivo {
+			break
+		}
 	}
 	return j
 }
+
+// maxIntentosSuperviviente acota los reintentos al crear un jugador veterano;
+// con las probabilidades de retiro, bastan unas pocas docenas.
+const maxIntentosSuperviviente = 2000
 
 // Equipo genera una plantilla de TamanoPlantilla jugadores con IDs
 // consecutivas desde idInicial. Los nombres de jugador no se repiten dentro del
