@@ -9,8 +9,8 @@ Módulo: `github.com/ETurriza/juego_futbol`.
 ## Paquetes
 
 Todo el código vive en `internal/`, con nombres en español sin acentos:
-`modelo`, `generador`, `simulacion`, `liga`, `aplicacion`, `menus`,
-`persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
+`modelo`, `generador`, `simulacion`, `liga`, `progresion`, `aplicacion`,
+`menus`, `persistencia`, `mercado`, `partido`, `red`. Además, `arquitectura` solo contiene
 la prueba que verifica las reglas de dependencias de abajo.
 
 Al crear un paquete nuevo hay que agregarlo al mapa `permitidos` de
@@ -21,6 +21,7 @@ carpetas ni código por adelantado. El punto de entrada está en `cmd/juego/`.
 ## Dependencias entre paquetes
 
 - `internal/modelo` no importa ningún otro paquete del proyecto.
+- `progresion` solo depende de `modelo`.
 - `simulacion`, `liga` y `mercado` solo dependen de `modelo` y entre sí; nunca
   de `aplicacion`, `menus`, `persistencia` o `red`.
 - `aplicacion` depende de `modelo` y de los servicios de dominio. Define los

@@ -4,6 +4,7 @@ package persistencia
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -351,5 +352,168 @@ func TestErrorSiLaBaseSeCerro(t *testing.T) {
 	}
 	if _, err := r.Cargar(context.Background(), "p"); err == nil || errors.Is(err, aplicacion.ErrPartidaNoExiste) {
 		t.Errorf("cargar sobre una base cerrada deberia dar un error distinto de 'no existe': %v", err)
+	}
+}
+
+// guardarComoV1 escribe un Guardado con el esquema de la migración 1, tal como
+// lo hacia la version anterior del programa.
+func guardarComoV1(t *testing.T, db *sql.DB, ranura string, g aplicacion.Guardado) {
+	t.Helper()
+	exec := func(consulta string, args ...any) {
+		t.Helper()
+		if _, err := db.Exec(consulta, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	resumen, err := g.Resumen(ranura)
+	if err != nil {
+		t.Fatal(err)
+	}
+	exec(`INSERT INTO partidas (ranura, semilla, usuario, equipo_usuario, jornadas_jugadas, total_jornadas, actualizada)
+	      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		ranura, g.Semilla, g.Usuario, resumen.Equipo, resumen.Jornada, resumen.TotalJornadas, 1700000000000)
+	for i, e := range g.Equipos {
+		exec("INSERT INTO equipos (ranura, indice, nombre) VALUES (?, ?, ?)", ranura, i, e.Nombre)
+		for orden, j := range e.Plantilla {
+			a := j.Atributos
+			exec(`INSERT INTO jugadores (ranura, equipo, orden, id, nombre, edad, posicion,
+			                             ritmo, tiro, pase, regate, defensa, fisico, reflejos)
+			      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				ranura, i, orden, j.ID, j.Nombre, j.Edad, int(j.Posicion),
+				a.Ritmo, a.Tiro, a.Pase, a.Regate, a.Defensa, a.Fisico, a.Reflejos)
+		}
+	}
+	for jornada, partidos := range g.Resultados {
+		for orden, p := range partidos {
+			exec(`INSERT INTO resultados (ranura, jornada, orden, local, visitante, goles_local, goles_visitante)
+			      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+				ranura, jornada, orden, p.Local, p.Visitante, p.GolesLocal, p.GolesVisitante)
+		}
+	}
+}
+
+func TestMigracion2ConservaLasPartidasDeLaVersion1(t *testing.T) {
+	ctx := context.Background()
+	ruta := filepath.Join(t.TempDir(), "viejo.db")
+
+	// Una base con el esquema de la version 1 y una partida dentro.
+	db, err := sql.Open("sqlite", "file:"+ruta+"?_pragma=foreign_keys(1)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(migraciones[0]); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec("PRAGMA user_version = 1"); err != nil {
+		t.Fatal(err)
+	}
+	original := guardadoDePrueba(t, 14, 6)
+	guardarComoV1(t, db, "vieja", original)
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Al abrirla se migra a la version actual sin perder nada.
+	r, err := Abrir(ctx, ruta)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Cerrar()
+	if v := versionEsquema(t, r); v != len(migraciones) {
+		t.Errorf("version = %d, se esperaba %d", v, len(migraciones))
+	}
+	cargado, err := r.Cargar(ctx, "vieja")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Queda en la temporada 1, sin historial, y con ProximoID recalculado a
+	// partir de los jugadores existentes.
+	if cargado.Numero != 1 || len(cargado.Historial) != 0 {
+		t.Errorf("Numero = %d, historial = %d; se esperaba 1 y vacio", cargado.Numero, len(cargado.Historial))
+	}
+	if !reflect.DeepEqual(original, cargado) {
+		t.Error("la partida migrada no es identica a la original")
+	}
+	c, err := aplicacion.CargarCarrera(ctx, r, "vieja")
+	if err != nil {
+		t.Fatalf("la partida migrada no se puede cargar como carrera: %v", err)
+	}
+	// Y la carrera migrada puede seguir: termina la temporada y pasa a la 2.
+	for !c.Terminada() {
+		if _, err := c.AvanzarJornada(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := c.SiguienteTemporada(); err != nil {
+		t.Fatal(err)
+	}
+	if err := aplicacion.GuardarCarrera(ctx, r, "vieja", c); err != nil {
+		t.Fatal(err)
+	}
+	segunda, err := aplicacion.CargarCarrera(ctx, r, "vieja")
+	if err != nil || segunda.Numero != 2 || len(segunda.Historial) != 1 {
+		t.Errorf("tras migrar y avanzar: %v, temporada %d", err, segunda.Numero)
+	}
+}
+
+func TestCargarDetectaUnHistorialIncoherente(t *testing.T) {
+	casos := map[string]string{
+		"falta un resumen":      "DELETE FROM historial WHERE ranura = 'p' AND numero = 2",
+		"sobra un resumen":      "INSERT INTO historial VALUES ('p', 4, 'X', 1, 1)",
+		"resumen mal numerado":  "UPDATE historial SET numero = 9 WHERE ranura = 'p' AND numero = 3",
+		"temporada sin resumen": "UPDATE partidas SET temporada = 7 WHERE ranura = 'p'",
+	}
+	for nombre, sentencia := range casos {
+		t.Run(nombre, func(t *testing.T) {
+			ctx := context.Background()
+			r := abrirTemporal(t)
+			c, _ := aplicacion.NuevaCarrera(5, 10)
+			for i := 0; i < 3; i++ {
+				for !c.Terminada() {
+					c.AvanzarJornada()
+				}
+				if _, err := c.SiguienteTemporada(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := aplicacion.GuardarCarrera(ctx, r, "p", c); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := r.db.Exec(sentencia); err != nil {
+				t.Fatal(err)
+			}
+			_, err := r.Cargar(ctx, "p")
+			if err == nil || !strings.Contains(err.Error(), "datos corruptos") {
+				t.Errorf("err = %v, se esperaba 'datos corruptos'", err)
+			}
+		})
+	}
+}
+
+func TestBorrarTambienEliminaElHistorial(t *testing.T) {
+	ctx := context.Background()
+	r := abrirTemporal(t)
+	c, _ := aplicacion.NuevaCarrera(5, 10)
+	for !c.Terminada() {
+		c.AvanzarJornada()
+	}
+	if _, err := c.SiguienteTemporada(); err != nil {
+		t.Fatal(err)
+	}
+	if err := aplicacion.GuardarCarrera(ctx, r, "p", c); err != nil {
+		t.Fatal(err)
+	}
+	var antes int
+	r.db.QueryRow("SELECT COUNT(*) FROM historial WHERE ranura = 'p'").Scan(&antes)
+	if antes != 1 {
+		t.Fatalf("deberia haber 1 resumen guardado, hay %d", antes)
+	}
+	if err := r.Borrar(ctx, "p"); err != nil {
+		t.Fatal(err)
+	}
+	var despues int
+	r.db.QueryRow("SELECT COUNT(*) FROM historial WHERE ranura = 'p'").Scan(&despues)
+	if despues != 0 {
+		t.Errorf("quedaron %d filas de historial huerfanas", despues)
 	}
 }

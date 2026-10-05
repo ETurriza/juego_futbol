@@ -77,20 +77,26 @@ func TestExportarNoComparteMemoria(t *testing.T) {
 
 func TestImportarRechazaDatosIncoherentes(t *testing.T) {
 	casos := map[string]func(*Guardado){
-		"usuario negativo":     func(g *Guardado) { g.Usuario = -1 },
-		"usuario fuera":        func(g *Guardado) { g.Usuario = len(g.Equipos) },
-		"sin equipos":          func(g *Guardado) { g.Equipos = nil },
-		"un solo equipo":       func(g *Guardado) { g.Equipos = g.Equipos[:1] },
-		"nombre repetido":      func(g *Guardado) { g.Equipos[1].Nombre = g.Equipos[0].Nombre },
-		"equipo invalido":      func(g *Guardado) { g.Equipos[2].Plantilla[0].Edad = 0 },
-		"ID repetida en liga":  func(g *Guardado) { g.Equipos[1].Plantilla[0].ID = g.Equipos[0].Plantilla[0].ID },
-		"demasiadas jornadas":  func(g *Guardado) { g.Resultados = append(g.Resultados, g.Resultados...) },
-		"jornada incompleta":   func(g *Guardado) { g.Resultados[1] = g.Resultados[1][:2] },
-		"partido distinto":     func(g *Guardado) { g.Resultados[0][0].Local, g.Resultados[0][0].Visitante = 0, 0 },
-		"goles negativos":      func(g *Guardado) { g.Resultados[2][1].GolesVisitante = -1 },
-		"orden de partidos":    func(g *Guardado) { g.Resultados[0][0], g.Resultados[0][1] = g.Resultados[0][1], g.Resultados[0][0] },
-		"jornada con relleno":  func(g *Guardado) { g.Resultados[0] = append(g.Resultados[0], ResultadoGuardado{}) },
-		"jornada sin partidos": func(g *Guardado) { g.Resultados[0] = nil },
+		"temporada cero":         func(g *Guardado) { g.Numero = 0 },
+		"historial de menos":     func(g *Guardado) { g.Numero = 3 },
+		"historial de mas":       func(g *Guardado) { g.Historial = []ResumenTemporada{{Numero: 1}} },
+		"historial mal numerado": func(g *Guardado) { g.Numero = 2; g.Historial = []ResumenTemporada{{Numero: 5}} },
+		"ProximoID repetido":     func(g *Guardado) { g.ProximoID = g.Equipos[0].Plantilla[0].ID },
+		"ProximoID chico":        func(g *Guardado) { g.ProximoID = 1 },
+		"usuario negativo":       func(g *Guardado) { g.Usuario = -1 },
+		"usuario fuera":          func(g *Guardado) { g.Usuario = len(g.Equipos) },
+		"sin equipos":            func(g *Guardado) { g.Equipos = nil },
+		"un solo equipo":         func(g *Guardado) { g.Equipos = g.Equipos[:1] },
+		"nombre repetido":        func(g *Guardado) { g.Equipos[1].Nombre = g.Equipos[0].Nombre },
+		"equipo invalido":        func(g *Guardado) { g.Equipos[2].Plantilla[0].Edad = 0 },
+		"ID repetida en liga":    func(g *Guardado) { g.Equipos[1].Plantilla[0].ID = g.Equipos[0].Plantilla[0].ID },
+		"demasiadas jornadas":    func(g *Guardado) { g.Resultados = append(g.Resultados, g.Resultados...) },
+		"jornada incompleta":     func(g *Guardado) { g.Resultados[1] = g.Resultados[1][:2] },
+		"partido distinto":       func(g *Guardado) { g.Resultados[0][0].Local, g.Resultados[0][0].Visitante = 0, 0 },
+		"goles negativos":        func(g *Guardado) { g.Resultados[2][1].GolesVisitante = -1 },
+		"orden de partidos":      func(g *Guardado) { g.Resultados[0][0], g.Resultados[0][1] = g.Resultados[0][1], g.Resultados[0][0] },
+		"jornada con relleno":    func(g *Guardado) { g.Resultados[0] = append(g.Resultados[0], ResultadoGuardado{}) },
+		"jornada sin partidos":   func(g *Guardado) { g.Resultados[0] = nil },
 		"resultados de sobra": func(g *Guardado) {
 			g.Resultados = append(g.Resultados, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 		},
@@ -115,7 +121,7 @@ func TestResumen(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := ResumenPartida{Ranura: "mi ranura", Equipo: g.Equipos[g.Usuario].Nombre, Jornada: 5, TotalJornadas: 18}
+	want := ResumenPartida{Ranura: "mi ranura", Temporada: 1, Equipo: g.Equipos[g.Usuario].Nombre, Jornada: 5, TotalJornadas: 18}
 	if r != want {
 		t.Errorf("Resumen = %+v, se esperaba %+v", r, want)
 	}

@@ -48,6 +48,7 @@ func Ejecutar(t *testing.T, nuevo Fabrica) {
 		{"RanuraInvalida", ranuraInvalida},
 		{"ContextoCancelado", contextoCancelado},
 		{"NoComparteEstado", noComparteEstado},
+		{"VariasTemporadas", variasTemporadas},
 	}
 	for _, p := range pruebas {
 		t.Run(p.nombre, func(t *testing.T) { p.fn(t, nuevo(t)) })
@@ -249,5 +250,58 @@ func noComparteEstado(t *testing.T, repo aplicacion.RepositorioPartidas) {
 	otra, _ := repo.Cargar(ctx, "p")
 	if otra.Equipos[0].Plantilla[0].Nombre == "Otro" {
 		t.Error("el repositorio devuelve memoria compartida")
+	}
+}
+
+// variasTemporadas guarda una carrera con temporadas terminadas, historial y
+// una temporada nueva a medias, y comprueba que se recupera idéntica.
+func variasTemporadas(t *testing.T, repo aplicacion.RepositorioPartidas) {
+	ctx := context.Background()
+	c, err := aplicacion.NuevaCarrera(33, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for temporada := 0; temporada < 3; temporada++ {
+		for !c.Terminada() {
+			if _, err := c.AvanzarJornada(); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err := c.SiguienteTemporada(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 6; i++ {
+		c.AvanzarJornada()
+	}
+	original := c.Exportar()
+	if original.Numero != 4 || len(original.Historial) != 3 {
+		t.Fatalf("el caso de prueba esta mal armado: temporada %d, historial %d", original.Numero, len(original.Historial))
+	}
+
+	if err := repo.Guardar(ctx, "larga", original); err != nil {
+		t.Fatal(err)
+	}
+	cargado, err := repo.Cargar(ctx, "larga")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(original, cargado) {
+		t.Fatal("una carrera de varias temporadas no se recupera identica")
+	}
+	reanudada, err := aplicacion.Importar(cargado)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(c, reanudada) {
+		t.Error("la carrera reconstruida no es identica a la original")
+	}
+
+	lista, err := repo.Listar(ctx)
+	if err != nil || len(lista) != 1 {
+		t.Fatalf("Listar = %v, %v", lista, err)
+	}
+	if r := lista[0]; r.Temporada != 4 || r.Jornada != 6 || r.TotalJornadas != 18 {
+		t.Errorf("resumen incorrecto: %+v", r)
 	}
 }

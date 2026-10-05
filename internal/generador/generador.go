@@ -51,7 +51,12 @@ func NombreEquipo(r *rand.Rand) string {
 // Atributos genera atributos para la posición dada: una calidad base común al
 // jugador, el perfil de la posición y una pequeña variación por atributo.
 func Atributos(r *rand.Rand, p modelo.Posicion) modelo.Atributos {
-	calidad := int(math.Round(r.NormFloat64()*8 + 62))
+	return atributosDeCalidad(r, p, int(math.Round(r.NormFloat64()*8+62)))
+}
+
+// atributosDeCalidad genera los atributos de la posición a partir de una
+// calidad base ya elegida.
+func atributosDeCalidad(r *rand.Rand, p modelo.Posicion, calidad int) modelo.Atributos {
 	ajuste := perfil[p]
 	attr := func(desplazamiento int) int {
 		return limitar(calidad + desplazamiento + r.Intn(13) - 6)
@@ -99,4 +104,38 @@ func Equipo(r *rand.Rand, nombre string, idInicial int) modelo.Equipo {
 		}
 	}
 	return e
+}
+
+// Calidad base de los juveniles: bastante por debajo de la de un jugador
+// hecho, porque la progresión por edad los hace crecer varios años seguidos.
+const (
+	juvenilCalidadMedia = 42.0
+	juvenilCalidadDesv  = 5.0
+	// Edad de un juvenil: de EdadJuvenilMin a EdadJuvenilMax.
+	EdadJuvenilMin = 16
+	EdadJuvenilMax = 19
+)
+
+// Juvenil genera un jugador de cantera, de EdadJuvenilMin a EdadJuvenilMax
+// años, con la ID y la posición dadas.
+func Juvenil(r *rand.Rand, id int, p modelo.Posicion) modelo.Jugador {
+	calidad := int(math.Round(r.NormFloat64()*juvenilCalidadDesv + juvenilCalidadMedia))
+	return modelo.Jugador{
+		ID:        id,
+		Nombre:    NombreJugador(r),
+		Edad:      EdadJuvenilMin + r.Intn(EdadJuvenilMax-EdadJuvenilMin+1),
+		Posicion:  p,
+		Atributos: atributosDeCalidad(r, p, calidad),
+	}
+}
+
+// MinimoPorPosicion es cuántos jugadores de la posición tiene una plantilla
+// completa; la renovación de plantillas repone hasta esa cantidad.
+func MinimoPorPosicion(p modelo.Posicion) int {
+	for _, c := range composicion {
+		if c.posicion == p {
+			return c.cantidad
+		}
+	}
+	return 0
 }
