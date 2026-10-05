@@ -54,7 +54,10 @@ con el paquete en su fase. No repetir ahí las reglas de este archivo.
 
 ## Git
 
-- Nunca trabajar en `main`.
+- Flujo: `feat/*` -> PR a `dev` -> PR de `dev` a `main` (prod). Las ramas de
+  trabajo salen de `dev`. Ambas ramas largas tienen un ruleset en GitHub (PR
+  obligatorio, sin push directo).
+- Nunca trabajar en `main` ni en `dev`.
 - Se pueden hacer commits y crear ramas, pero antes de cada commit se entrega
   al usuario un resumen detallado de lo que se va a hacer (rama, archivos
   incluidos, mensaje).

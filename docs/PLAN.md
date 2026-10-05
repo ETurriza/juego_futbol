@@ -52,6 +52,19 @@ Reglas de dependencias:
 No se crean Unit of Work, repositorios ni `aplicacion` antes de que su fase los
 necesite.
 
+## Ramas y flujo de trabajo
+
+```
+feat/*  --PR-->  dev  --PR-->  main (prod)
+```
+
+- `main` es prod: código estable, solo recibe PR desde `dev`. Es lo que se
+  despliega para el servidor SSH.
+- `dev` es la integración: recibe PR de las ramas `feat/*` (una por fase o
+  tarea), que salen de `dev`.
+- Ambas tienen un ruleset: PR obligatorio, sin push directo, sin force-push ni
+  borrado, y comprobación de `go build`, `go vet` y `go test`.
+
 ## Estructura de carpetas
 
 Cada paquete se crea solo cuando llega su fase.
