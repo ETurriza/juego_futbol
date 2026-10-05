@@ -137,8 +137,9 @@ Se entrega en dos PR:
   una carrera queda determinada por su semilla y su avance (clave para la
   persistencia de la fase 5).
 - **4b, `menus` y `cmd/juego`:** menú principal, plantilla, tabla, avanzar
-  jornada y fin de temporada; bandera `--semilla`; pruebas de `Update`/`View` y
-  E2E en `tests/e2e/`.
+  jornada y fin de temporada; banderas `--semilla` y `--equipos`; pruebas de
+  `Update`/`View` y E2E en `tests/e2e/` con un `tea.Program` real alimentado con
+  bytes de teclado (no se usa `teatest`: no está etiquetado para Bubble Tea v2).
 
 *Terminado cuando*: se puede jugar una temporada desde la terminal.
 
